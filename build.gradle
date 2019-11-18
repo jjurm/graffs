@@ -30,6 +30,16 @@ jar {
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
 }
 
+def remoteWorkingDir = "/local/scratch/jm2186/partii-jars"
+
+task jarUpload(type: Exec, dependsOn: jar) {
+    commandLine "scp", "${buildDir}/libs/${archivesBaseName}-${version}.jar", "yellow:${remoteWorkingDir}"
+}
+
+task sparkSubmit(type: Exec, dependsOn: jarUpload) {
+    commandLine "ssh", "yellow", "~/spark-2.4.4-bin-hadoop2.7/bin/spark-submit --deploy-mode client ${remoteWorkingDir}/${archivesBaseName}-${version}.jar"
+}
+
 repositories {
     mavenCentral()
 }
