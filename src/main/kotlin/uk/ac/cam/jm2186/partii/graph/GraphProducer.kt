@@ -6,4 +6,6 @@ interface GraphProducer {
 
     fun produce(): Graph
 
+    fun compute()
+
 }
