@@ -9,5 +9,5 @@ fun Graph.stringRepresentation(): String {
     val fs = FileSinkDGS()
     val baos = ByteArrayOutputStream()
     fs.writeAll(this, baos)
-    return baos.toString(StandardCharsets.UTF_8)
+    return baos.toString(StandardCharsets.UTF_8.name())
 }
