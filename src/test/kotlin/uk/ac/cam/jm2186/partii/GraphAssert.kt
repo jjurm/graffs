@@ -9,7 +9,8 @@ object GraphAssert {
 
     fun assertGraphEquals(expected: String, actual: Graph) =
         Assertions.assertEquals(
-            StringUtils.normalizeSpace(expected.trimIndent()),
-            StringUtils.normalizeSpace(actual.stringRepresentation().trim()))
+            expected.trimIndent(),
+            actual.stringRepresentation()
+        )
 
 }

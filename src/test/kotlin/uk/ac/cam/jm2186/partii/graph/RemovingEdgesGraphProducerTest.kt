@@ -12,32 +12,20 @@ internal class RemovingEdgesGraphProducerTest {
         val generated = producer.produce()
         producer.compute()
 
-        GraphAssert.assertGraphEquals("""
-            DGS004
-            null 0 0
-            an "0"
-            an "1"
-            an "2"
-            an "3"
-            an "4"
-            an "5"
-            an "6"
-            an "7"
-            an "8"
-            an "9"
-            ae "2_6" "2"  "6"
-            ae "5_7" "5"  "7"
-            ae "1_3" "1"  "3"
-            ae "2_4" "2"  "4"
-            ae "0_8" "0"  "8"
-            ae "2_7" "2"  "7"
-            ae "3_7" "3"  "7"
-            ae "4_7" "4"  "7"
-            ae "0_9" "0"  "9"
-            ae "3_9" "3"  "9"
-            ae "5_9" "5"  "9"
-            ae "6_9" "6"  "9"
-        """, generated)
+        GraphAssert.assertGraphEquals(
+            """
+            0
+            1
+            2
+            3 [3->1_3]
+            4 [4->2_4]
+            5
+            6 [6->2_6]
+            7 [7->5_7,7->2_7,7->3_7,7->4_7]
+            8 [8->0_8]
+            9 [9->0_9,9->3_9,9->5_9,9->6_9]""",
+            generated
+        )
     }
 
     @Test
@@ -46,31 +34,19 @@ internal class RemovingEdgesGraphProducerTest {
         val producer = RemovingEdgesGraphProducer(graph, deletionRate = 0.3, seed = 42)
         val generated = producer.produceComputed()
 
-        GraphAssert.assertGraphEquals("""
-            DGS004
-            null 0 0
-            an "0"
-            an "1"
-            an "2"
-            an "3"
-            an "4"
-            an "5"
-            an "6"
-            an "7"
-            an "8"
-            an "9"
-            ae "8_9" "8"  "9"
-            ae "6_9" "6"  "9"
-            ae "5_9" "5"  "9"
-            ae "0_9" "0"  "9"
-            ae "4_7" "4"  "7"
-            ae "1_3" "1"  "3"
-            ae "3_4" "3"  "4"
-            ae "3_5" "3"  "5"
-            ae "2_4" "2"  "4"
-            ae "0_5" "0"  "5"
-            ae "0_8" "0"  "8"
-            ae "2_7" "2"  "7"
-        """, generated)
+        GraphAssert.assertGraphEquals(
+            """
+            0
+            1
+            2
+            3 [3->1_3]
+            4 [4->3_4,4->2_4]
+            5 [5->0_5,5->3_5]
+            6
+            7 [7->4_7,7->2_7]
+            8 [8->0_8]
+            9 [9->0_9,9->8_9,9->5_9,9->6_9]""",
+            generated
+        )
     }
 }

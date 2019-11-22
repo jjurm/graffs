@@ -22,42 +22,21 @@ internal class FilteredGraphReplayTest {
         replay.addSink(replayed)
         replay.replay(graph)
 
-        GraphAssert.assertGraphEquals("""
-            DGS004
-            null 0 0
-            cg  "graph_attr":1
-            an "0"
-            cn "0"  "node_attr":2
-            an "1"
-            an "2"
-            an "3"
-            an "4"
-            an "5"
-            an "6"
-            an "7"
-            an "8"
-            an "9"
-            ae "0_1" "0"  "1"
-            ce "0_1"  "edge_attr":3
-            ae "2_6" "2"  "6"
-            ae "5_8" "5"  "8"
-            ae "5_7" "5"  "7"
-            ae "4_5" "4"  "5"
-            ae "1_3" "1"  "3"
-            ae "3_4" "3"  "4"
-            ae "3_5" "3"  "5"
-            ae "2_4" "2"  "4"
-            ae "0_5" "0"  "5"
-            ae "0_8" "0"  "8"
-            ae "2_7" "2"  "7"
-            ae "3_7" "3"  "7"
-            ae "4_7" "4"  "7"
-            ae "0_9" "0"  "9"
-            ae "3_9" "3"  "9"
-            ae "5_9" "5"  "9"
-            ae "6_9" "6"  "9"
-            ae "8_9" "8"  "9"
-        """, replayed)
+        GraphAssert.assertGraphEquals(
+            """
+            {graph_attr=1}
+            0{node_attr=2}
+            1 [1->0_1{edge_attr=3}]
+            2
+            3 [3->1_3]
+            4 [4->3_4,4->2_4]
+            5 [5->4_5,5->3_5,5->0_5]
+            6 [6->2_6]
+            7 [7->5_7,7->2_7,7->3_7,7->4_7]
+            8 [8->5_8,8->0_8]
+            9 [9->0_9,9->3_9,9->5_9,9->6_9,9->8_9]""",
+            replayed
+        )
     }
 
     @Test
@@ -75,12 +54,11 @@ internal class FilteredGraphReplayTest {
         val replayed = DefaultGraph(GraphTestUtils.createGraphId())
         replay.addSink(replayed)
         replay.replay(graph)
-        println(replayed.stringRepresentation())
 
-        GraphAssert.assertGraphEquals("""
-            DGS004
-            null 0 0
-            cg  "graph_attr":1
-        """, replayed)
+        GraphAssert.assertGraphEquals(
+            """
+            {graph_attr=1}""",
+            replayed
+        )
     }
 }
