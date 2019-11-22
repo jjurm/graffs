@@ -7,6 +7,11 @@ import org.graphstream.stream.GraphReplay
 import org.graphstream.util.Filter
 import org.graphstream.util.Filters
 
+/**
+ * A simple source of graph events that takes an existing graph and creates a flow of events by enumerating nodes, edges
+ * and attributes of the graph, with the option to specify a [Filter] for [Node]s and [Edge]s. By default, all elements
+ * are enumerated.
+ */
 class FilteredGraphReplay(
     id: String,
     private val nodeFilter: Filter<Node> = Filters.trueFilter(),
