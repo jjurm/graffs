@@ -1,21 +1,30 @@
 package uk.ac.cam.jm2186.partii.graph
 
+import org.graphstream.graph.Edge
 import org.graphstream.graph.Element
 import org.graphstream.graph.Graph
+import org.graphstream.graph.implementations.Graphs
 import org.graphstream.graph.implementations.SingleGraph
 import org.graphstream.util.Filter
 import uk.ac.cam.jm2186.partii.util.FilteredGraphReplay
 import kotlin.random.Random
 
+/**
+ * Generate a graph by taking a [sourceGraph] and randomly removing its edges. From a given graph _G(N, E)_ produces
+ * _G(N, E')_ where _E' = [ e ∈ E | rand() < [deletionRate] ]_, i.e. each edge is removed with probability
+ * [deletionRate].
+ */
 class RemovingEdgesGraphProducer(
     private val sourceGraph: SingleGraph,
-    deletionRate: Double = 0.05,
+    /** A number between 0 and 1, the probability to remove an edge. */
+    private val deletionRate: Double,
     seed: Long
 ) : GraphProducer {
 
+    private val random = Random(seed)
     private val id = sourceGraph.id + "-" + javaClass.name
     private var count = 0
-    private val filteredReplay = FilteredGraphReplay(id, edgeFilter = RandomElementRemoverFilter(deletionRate, seed))
+    private val filteredReplay = FilteredGraphReplay(id, edgeFilter = RandomElementRemoverFilter())
 
     override fun produce(): Graph {
         val graph = SingleGraph("$id-${count++}")
@@ -27,17 +36,23 @@ class RemovingEdgesGraphProducer(
         filteredReplay.replay(sourceGraph)
     }
 
-    class RandomElementRemoverFilter<E : Element>(private val deletionRate: Double, seed: Long) : Filter<E> {
+    override fun produceComputed(): Graph {
+        val cloned = Graphs.clone(sourceGraph)
+        cloned.getEachEdge<Edge>().removeAll { random.nextDouble() < deletionRate }
+        return cloned
+    }
 
-        private val random = Random(seed)
+    private inner class RandomElementRemoverFilter<E : Element> : Filter<E> {
+
         private val removed = HashSet<E>()
 
-        override fun isAvailable(e: E): Boolean {
-            if (removed.contains(e)) return false
-            if (random.nextDouble() < deletionRate) {
+        override fun isAvailable(e: E): Boolean = when {
+            removed.contains(e) -> false
+            random.nextDouble() < deletionRate -> {
                 removed.add(e)
-                return false
-            } else return true
+                false
+            }
+            else -> true
         }
 
     }
