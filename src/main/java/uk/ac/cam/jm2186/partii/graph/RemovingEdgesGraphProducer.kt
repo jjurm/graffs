@@ -15,16 +15,28 @@ import kotlin.random.Random
  * [deletionRate].
  */
 class RemovingEdgesGraphProducer(
-    private val sourceGraph: SingleGraph,
+    private val sourceGraph: Graph,
     /** A number between 0 and 1, the probability to remove an edge. */
     private val deletionRate: Double,
     seed: Long
 ) : GraphProducer {
 
+    class Factory : GraphProducerFactory {
+        override fun createGraphProducer(sourceGraph: Graph, seed: Long, params: List<Number>) =
+            RemovingEdgesGraphProducer(
+                sourceGraph,
+                deletionRate = params[0] as Double,
+                seed = seed
+            )
+    }
+
     private val random = Random(seed)
     private val id = sourceGraph.id + "-" + javaClass.name
     private var count = 0
-    private val filteredReplay = FilteredGraphReplay(id, edgeFilter = RandomElementRemoverFilter())
+    private val filteredReplay = FilteredGraphReplay(
+        id,
+        edgeFilter = RandomElementRemoverFilter()
+    )
 
     override fun produce(): Graph {
         val graph = SingleGraph("$id-${count++}")
