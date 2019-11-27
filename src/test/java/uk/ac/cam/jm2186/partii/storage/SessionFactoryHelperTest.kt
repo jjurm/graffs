@@ -12,9 +12,10 @@ internal class SessionFactoryHelperTest {
 
     companion object {
         private val overrideProperties = Properties().apply {
-            this["javax.persistence.jdbc.url"] = "jdbc:h2:mem:test"
-            this["javax.persistence.jdbc.user"] = ""
-            this["javax.persistence.jdbc.password"] = ""
+            this["hibernate.connection.driver_class"] = "org.h2.Driver"
+            this["hibernate.connection.url"] = "jdbc:h2:mem:test"
+            this["hibernate.connection.username"] = ""
+            this["hibernate.connection.password"] = ""
         }
 
         private lateinit var sessionFactory: SessionFactory

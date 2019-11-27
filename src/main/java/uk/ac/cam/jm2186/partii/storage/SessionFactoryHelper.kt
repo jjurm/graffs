@@ -16,9 +16,9 @@ object SessionFactoryHelper {
 
     private fun getDBProperties(): Properties {
         val properties = Properties()
-        System.getenv("DB_URL")?.also { properties["javax.persistence.jdbc.url"] = it }
-        System.getenv("DB_USER")?.also { properties["javax.persistence.jdbc.user"] = it }
-        System.getenv("DB_PASSWORD")?.also { properties["javax.persistence.jdbc.password"] = it }
+        System.getenv("DB_URL")?.also { properties["hibernate.connection.url"] = it }
+        System.getenv("DB_USER")?.also { properties["hibernate.connection.username"] = it }
+        System.getenv("DB_PASSWORD")?.also { properties["hibernate.connection.password"] = it }
         return properties
     }
 
