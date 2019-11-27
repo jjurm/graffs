@@ -19,7 +19,7 @@ plugins {
 group 'uk.ac.cam.jm2186'
 version '1.0-SNAPSHOT-' + gitVersion()
 
-mainClassName = 'uk.ac.cam.jm2186.partii.JavaSparkPi'
+mainClassName = 'uk.ac.cam.jm2186.partii.cli.ControllerKt'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -86,6 +86,8 @@ dependencies {
     // https://mvnrepository.com/artifact/com.h2database/h2
     compile group: 'com.h2database', name: 'h2', version: '1.4.200'
 
+    // Click
+    implementation("com.github.ajalt:clikt:2.3.0")
 }
 
 noArg {

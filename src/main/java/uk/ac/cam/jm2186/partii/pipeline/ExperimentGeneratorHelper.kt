@@ -1,7 +1,7 @@
 package uk.ac.cam.jm2186.partii.pipeline
 
 import org.hibernate.Session
-import uk.ac.cam.jm2186.partii.graph.RemovingEdgesGraphProducer
+import uk.ac.cam.jm2186.partii.graph.GraphProducerFactory
 import uk.ac.cam.jm2186.partii.metric.AverageDegreeMetric
 import uk.ac.cam.jm2186.partii.metric.MetricFactory
 import uk.ac.cam.jm2186.partii.storage.GraphDataset
@@ -13,23 +13,27 @@ class ExperimentGeneratorHelper {
 
     private val sessionFactory = SessionFactoryHelper.getBaseConfiguration().buildSessionFactory()
 
-    fun generateNGraphsFromDataset(graphDataset: GraphDataset, n: Int, seed: Long? = null) =
-        sessionFactory.openSession().use { session ->
-            val random = Random()
-            if (seed != null) random.setSeed(seed)
+    fun generateNGraphsFromDataset(
+        graphDataset: GraphDataset,
+        n: Int,
+        graphProducerFactory: Class<out GraphProducerFactory>,
+        seed: Long? = null
+    ) = sessionFactory.openSession().use { session ->
+        val random = Random()
+        if (seed != null) random.setSeed(seed)
 
-            session.beginTransaction()
-            (0 until n).forEach { _ ->
-                val generatedGraph = GeneratedGraph(
-                    sourceGraph = graphDataset,
-                    generator = RemovingEdgesGraphProducer.Factory::class.java,
-                    seed = random.nextLong(),
-                    params = emptyList()
-                )
-                session.save(generatedGraph)
-            }
-            session.transaction.commit()
+        session.beginTransaction()
+        (0 until n).forEach { _ ->
+            val generatedGraph = GeneratedGraph(
+                sourceGraph = graphDataset,
+                generator = graphProducerFactory,
+                seed = random.nextLong(),
+                params = emptyList()
+            )
+            session.save(generatedGraph)
         }
+        session.transaction.commit()
+    }
 
     /*fun generateAllNonExistentEvaluations() = sessionFactory.openSession().use { session ->
         val metrics = getAllMetrics()
