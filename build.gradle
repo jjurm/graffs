@@ -20,20 +20,15 @@ plugins {
 group 'uk.ac.cam.jm2186'
 version '1.0-SNAPSHOT-' + gitVersion()
 
-mainClassName = 'uk.ac.cam.jm2186.partii.cli.ControllerKt'
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+mainClassName = "uk.ac.cam.jm2186.partii.cli.ControllerKt"
 
 jar {
     manifest {
         attributes 'Main-Class': mainClassName
     }
     zip64 true
-    // This line of code recursively collects and copies all of a project's files
-    // and adds them to the JAR itself. One can extend this task, to skip certain
-    // files or particular types at will
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
 }
 
 def remoteWorkingDir = "/local/scratch/jm2186/partii-jars"
@@ -88,7 +83,8 @@ dependencies {
     compile group: 'com.h2database', name: 'h2', version: '1.4.200'
 
     // Click
-    implementation("com.github.ajalt:clikt:2.3.0")
+    // https://mvnrepository.com/artifact/com.github.ajalt/clikt
+    compile group: 'com.github.ajalt', name: 'clikt', version: '2.3.0'
 }
 
 noArg {

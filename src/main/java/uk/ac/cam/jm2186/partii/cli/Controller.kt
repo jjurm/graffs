@@ -4,7 +4,6 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.versionOption
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.enum
@@ -27,8 +26,9 @@ class Controller : CliktCommand(printHelpOnEmptyArgs = true) {
         name = "generate-graphs",
         help = "Generate random graphs from source dataset"
     ) {
-        val n by option("-n", help = "number of graphs to generate").int().required()
-        val dataset by option(help = "source dataset to generate graphs from").enum(GraphDataset::id).required()
+        val n by option("-n", help = "number of graphs to generate").int().default(10)
+        val dataset by option(help = "source dataset to generate graphs from").enum(GraphDataset::id)
+            .default(GraphDataset.SocialNetwork)
         val generator by option(help = "algorithm to generate graphs").choice<Class<out GraphProducerFactory>>(
             "removing-edges" to RemovingEdgesGraphProducer.Factory::class.java
         ).default(RemovingEdgesGraphProducer.Factory::class.java)
