@@ -5,10 +5,12 @@ import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
+import com.github.ajalt.clikt.parameters.options.versionOption
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.long
+import uk.ac.cam.jm2186.BuildConfig
 import uk.ac.cam.jm2186.partii.graph.GraphProducerFactory
 import uk.ac.cam.jm2186.partii.graph.RemovingEdgesGraphProducer
 import uk.ac.cam.jm2186.partii.pipeline.ExperimentGeneratorHelper
@@ -18,6 +20,7 @@ class Controller : CliktCommand(printHelpOnEmptyArgs = true) {
 
     init {
         subcommands(GenerateGraphs())
+        versionOption(version = BuildConfig.VERSION, message = { "${BuildConfig.NAME} version $it" })
     }
 
     class GenerateGraphs : CliktCommand(
