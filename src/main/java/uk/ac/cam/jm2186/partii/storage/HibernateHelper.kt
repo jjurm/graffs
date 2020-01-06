@@ -4,7 +4,9 @@ import org.hibernate.cfg.Configuration
 import uk.ac.cam.jm2186.partii.storage.model.entities
 import java.util.*
 
-object SessionFactoryHelper {
+object HibernateHelper {
+
+    fun delegate() = lazy { getBaseConfiguration().buildSessionFactory() }
 
     fun getBaseConfiguration(): Configuration {
         val configuration = Configuration()

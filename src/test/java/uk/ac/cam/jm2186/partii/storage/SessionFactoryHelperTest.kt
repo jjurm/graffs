@@ -23,7 +23,7 @@ internal class SessionFactoryHelperTest {
         @BeforeAll
         @JvmStatic
         fun setUp() {
-            sessionFactory = SessionFactoryHelper
+            sessionFactory = HibernateHelper
                 .getBaseConfiguration()
                 .addProperties(overrideProperties)
                 .addAnnotatedClass(TestEntity::class.java)
