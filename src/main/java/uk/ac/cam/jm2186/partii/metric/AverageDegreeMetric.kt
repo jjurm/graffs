@@ -6,7 +6,7 @@ import org.graphstream.graph.Node
 class AverageDegreeMetric : Metric<Double> {
 
     class Factory : MetricFactory<Double> {
-        override fun createMetric(sourceGraph: Graph, params: List<Number>) = AverageDegreeMetric()
+        override fun createMetric(params: List<Number>) = AverageDegreeMetric()
     }
 
     override fun evaluate(graph: Graph): Double {

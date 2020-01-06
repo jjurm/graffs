@@ -18,11 +18,16 @@ import uk.ac.cam.jm2186.partii.storage.GraphDataset
 class Controller : CliktCommand(printHelpOnEmptyArgs = true) {
 
     init {
-        subcommands(GenerateGraphs())
+        subcommands(
+            LoadDatasetsCommand(),
+
+            GenerateGraphsCommand(),
+            ExecuteExperimentCommand()
+        )
         versionOption(version = BuildConfig.VERSION, message = { "${BuildConfig.NAME} version $it" })
     }
 
-    class GenerateGraphs : CliktCommand(
+    class GenerateGraphsCommand : CliktCommand(
         name = "generate-graphs",
         help = "Generate random graphs from source dataset"
     ) {
@@ -43,4 +48,4 @@ class Controller : CliktCommand(printHelpOnEmptyArgs = true) {
     override fun run() = Unit
 }
 
-fun main(args: Array<String>) = Controller().subcommands().main(args)
+fun main(args: Array<String>) = Controller().main(args)
