@@ -29,7 +29,7 @@ class GraphDataset(val id: String) {
     fun loadGraph(): Graph = loadedGraphs.getOrPut(this) {
         val fileSource = FileSourceEdge2(false)
         val filename = "data/$id/edges.txt"
-        val graph = SingleGraph(id)
+        val graph = SingleGraph(id, false, false)
         fileSource.addSink(graph)
         fileSource.readAll(filename)
         fileSource.removeSink(graph)
