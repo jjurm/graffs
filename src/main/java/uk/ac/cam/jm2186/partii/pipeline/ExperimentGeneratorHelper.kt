@@ -14,6 +14,7 @@ class ExperimentGeneratorHelper {
         graphDataset: GraphDataset,
         n: Int,
         graphProducerFactory: Class<out GraphProducerFactory>,
+        params: List<Number>,
         seed: Long? = null
     ) = sessionFactory.openSession().use { session ->
         val random = Random()
@@ -25,7 +26,7 @@ class ExperimentGeneratorHelper {
                 sourceGraph = graphDataset,
                 generator = graphProducerFactory,
                 seed = random.nextLong(),
-                params = emptyList()
+                params = params
             )
             session.save(generatedGraph)
         }

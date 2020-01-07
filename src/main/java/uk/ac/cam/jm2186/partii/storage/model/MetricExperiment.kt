@@ -6,9 +6,12 @@ import javax.persistence.Entity
 import javax.persistence.FetchType
 import javax.persistence.ManyToOne
 
+typealias MetricType = Class<out MetricFactory<*>>
+
 @Entity
 class MetricExperiment(
-    val metric: Class<out MetricFactory<*>>,
+    val metric: MetricType,
     @ManyToOne(fetch = FetchType.EAGER)
-    val graph: GeneratedGraph
+    val graph: GeneratedGraph,
+    val value: Double
 ) : AbstractJpaPersistable<Long>()
