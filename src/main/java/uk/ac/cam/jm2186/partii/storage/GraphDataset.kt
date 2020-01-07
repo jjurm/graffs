@@ -3,21 +3,31 @@ package uk.ac.cam.jm2186.partii.storage
 import org.graphstream.graph.Graph
 import org.graphstream.graph.implementations.SingleGraph
 import org.graphstream.stream.file.FileSourceEdge
+import uk.ac.cam.jm2186.partii.graph.FileSourceEdge2
+import java.io.File
 
-enum class GraphDataset(val id: String) {
-    SocialNetwork("social-network");
+class GraphDataset(val id: String) {
 
     companion object {
 
-        private val idMap: Map<String, GraphDataset> = values().associateBy(GraphDataset::id)
-        private val loadedGraphs: MutableMap<GraphDataset, Graph> = mutableMapOf()
+        const val DATASET_DIRECTORY = "data"
 
-        fun fromId(id: String) = idMap[id]
+        /**
+         * Returns list of datasets from subdirectories of `data` folder that are not hidden and not starting with ".".
+         * Returns null if the `data` directory doesn't exist.
+         */
+        fun getAvailableDatasets(): List<GraphDataset>? =
+            File(DATASET_DIRECTORY).listFiles { dir, name ->
+                val f = File(dir, name)
+                f.isDirectory && !f.isHidden && !name.startsWith(".")
+            }?.map { GraphDataset(it.name) }
+
+        private val loadedGraphs: MutableMap<GraphDataset, Graph> = mutableMapOf()
 
     }
 
-    fun loadGraph() : Graph = loadedGraphs.getOrPut(this) {
-        val fileSource = FileSourceEdge(false)
+    fun loadGraph(): Graph = loadedGraphs.getOrPut(this) {
+        val fileSource = FileSourceEdge2(false)
         val filename = "data/$id/edges.txt"
         val graph = SingleGraph(id)
         fileSource.addSink(graph)
