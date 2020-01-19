@@ -11,7 +11,7 @@ import uk.ac.cam.jm2186.partii.storage.GraphDataset
 
 class DatasetSubcommand : NoRunCliktCommand(
     name = "dataset",
-    help = "Subcommands for managing datasets"
+    printHelpOnEmptyArgs = true
 ) {
 
     init {

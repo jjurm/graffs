@@ -2,11 +2,11 @@ package uk.ac.cam.jm2186.partii.storage
 
 import org.graphstream.graph.Graph
 import org.graphstream.graph.implementations.SingleGraph
-import org.graphstream.stream.file.FileSourceEdge
 import uk.ac.cam.jm2186.partii.graph.FileSourceEdge2
 import java.io.File
+import java.io.Serializable
 
-class GraphDataset(val id: String) {
+class GraphDataset(val id: String): Serializable {
 
     companion object {
 
