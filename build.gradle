@@ -29,6 +29,13 @@ jar {
     zip64 true
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
+    doLast {
+        copy {
+            from jar
+            into 'build/libs'
+            rename { String filename -> 'partii-last.jar' }
+        }
+    }
 }
 
 def remoteWorkingDir = "/local/scratch/jm2186/partii-jars"
