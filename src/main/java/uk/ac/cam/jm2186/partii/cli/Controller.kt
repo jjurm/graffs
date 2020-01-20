@@ -1,7 +1,6 @@
 package uk.ac.cam.jm2186.partii.cli
 
-import com.github.ajalt.clikt.core.NoRunCliktCommand
-import com.github.ajalt.clikt.core.findObject
+import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
@@ -10,7 +9,7 @@ import uk.ac.cam.jm2186.BuildConfig
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-class Controller : NoRunCliktCommand(
+class Controller : CliktCommand(
     name = "gmr",
     printHelpOnEmptyArgs = true
 ) {
@@ -20,8 +19,7 @@ class Controller : NoRunCliktCommand(
             DatasetSubcommand(),
             MetricSubcommand(),
             GraphSubcommand(),
-
-            ExecuteExperimentCommand()
+            ExperimentSubcommand()
         )
     }
 
@@ -39,8 +37,10 @@ class Controller : NoRunCliktCommand(
             version = BuildConfig.VERSION,
             message = { "${BuildConfig.NAME} version $it\nBuilt ${formatter.format(BuildConfig.BUILD_DATE)}" }
         )
+    }
 
-        findObject { Config(runOnCluster) }
+    override fun run() {
+        context.findObject { Config(runOnCluster) }
     }
 }
 
