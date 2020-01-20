@@ -20,6 +20,16 @@ class Controller : NoRunCliktCommand(
         )
         versionOption(version = BuildConfig.VERSION, message = { "${BuildConfig.NAME} version $it" })
     }
+
+    init {
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+            .withZone( ZoneId.systemDefault() )
+        versionOption(
+            names = setOf("-v", "--version"),
+            version = BuildConfig.VERSION,
+            message = { "${BuildConfig.NAME} version $it\nBuilt ${formatter.format(BuildConfig.BUILD_DATE)}" }
+        )
+    }
 }
 
 fun main(args: Array<String>) = Controller().main(args)
