@@ -19,7 +19,8 @@ class Controller : CliktCommand(
             DatasetSubcommand(),
             MetricSubcommand(),
             GraphSubcommand(),
-            ExperimentSubcommand()
+            ExperimentSubcommand(),
+            DatabaseSubcommand()
         )
     }
 

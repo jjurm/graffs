@@ -21,15 +21,15 @@ class ExperimentSubcommand : NoRunCliktCommand(
 
     init {
         subcommands(
-            SummaryCommand(),
+            ShowCommand(),
             ExecuteCommand()
         )
     }
 
     private val sessionFactory by HibernateHelper.delegate()
 
-    inner class SummaryCommand : CliktCommand(
-        name = "summary",
+    inner class ShowCommand : CliktCommand(
+        name = "show",
         help = "Print summary of experiments in the database"
     ) {
         override fun run() {

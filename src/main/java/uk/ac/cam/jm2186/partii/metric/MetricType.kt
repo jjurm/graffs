@@ -6,7 +6,7 @@ class MetricType<Result : Serializable> private constructor(
     val id: String,
     val metricFactory: MetricFactory<Result>,
     val resultClass: Class<Result>
-) {
+) : Serializable {
     companion object {
         private val metrics = mutableMapOf<String, MetricType<*>>()
 

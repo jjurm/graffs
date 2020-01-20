@@ -17,13 +17,13 @@ import java.util.*
 
 class GraphSubcommand : NoRunCliktCommand(
     name = "graph",
-    help = "Manage generated graphs",
+    help = "Access generated graphs",
     printHelpOnEmptyArgs = true
 ) {
 
     init {
         subcommands(
-            SummaryCommand(),
+            ShowCommand(),
             GenerateGraphsCommand()
         )
     }
@@ -53,8 +53,8 @@ class GraphSubcommand : NoRunCliktCommand(
         session.transaction.commit()
     }
 
-    inner class SummaryCommand() : CliktCommand(
-        name = "summary",
+    inner class ShowCommand : CliktCommand(
+        name = "show",
         help = "Print summary of generated graphs in the database"
     ) {
         override fun run() {
