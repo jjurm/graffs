@@ -1,9 +1,14 @@
 package uk.ac.cam.jm2186.partii.cli
 
 import com.github.ajalt.clikt.core.NoRunCliktCommand
+import com.github.ajalt.clikt.core.findObject
 import com.github.ajalt.clikt.core.subcommands
-import com.github.ajalt.clikt.parameters.options.*
+import com.github.ajalt.clikt.parameters.options.flag
+import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.versionOption
 import uk.ac.cam.jm2186.BuildConfig
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 class Controller : NoRunCliktCommand(
     name = "gmr",
@@ -18,8 +23,13 @@ class Controller : NoRunCliktCommand(
 
             ExecuteExperimentCommand()
         )
-        versionOption(version = BuildConfig.VERSION, message = { "${BuildConfig.NAME} version $it" })
     }
+
+    class Config (
+        val runOnCluster: Boolean
+    )
+
+    val runOnCluster by option("--cluster", help = "Run on cluster. If not specified, runs locally.").flag()
 
     init {
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
@@ -29,6 +39,8 @@ class Controller : NoRunCliktCommand(
             version = BuildConfig.VERSION,
             message = { "${BuildConfig.NAME} version $it\nBuilt ${formatter.format(BuildConfig.BUILD_DATE)}" }
         )
+
+        findObject { Config(runOnCluster) }
     }
 }
 

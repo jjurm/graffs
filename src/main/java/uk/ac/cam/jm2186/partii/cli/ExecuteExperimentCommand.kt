@@ -1,6 +1,7 @@
 package uk.ac.cam.jm2186.partii.cli
 
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.requireObject
 import org.apache.spark.api.java.JavaSparkContext
 import org.hibernate.Session
 import uk.ac.cam.jm2186.partii.SparkHelper
@@ -15,8 +16,9 @@ class ExecuteExperimentCommand : CliktCommand(
     name = "experiment",
     help = "Execute experiment for given <graph, metric>"
 ) {
+    val config by requireObject<Controller.Config>()
 
-    val spark by SparkHelper.delegate()
+    val spark by SparkHelper.delegate { config.runOnCluster }
     val hibernate by HibernateHelper.delegate()
 
     override fun run() {

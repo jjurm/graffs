@@ -7,9 +7,9 @@ import kotlin.reflect.KProperty
 
 object SparkHelper {
 
-    fun delegate() = Delegate()
+    fun delegate(runOnCluster: () -> Boolean) = Delegate(runOnCluster)
 
-    class Delegate internal constructor() {
+    class Delegate internal constructor(val runOnCluster: () -> Boolean) {
         private var value: SparkSession? = null
 
         operator fun getValue(command: CliktCommand, property: KProperty<*>): SparkSession {
@@ -19,7 +19,9 @@ object SparkHelper {
             }
             val v2 = SparkSession.builder()
                 .appName("${BuildConfig.NAME} ${command.commandName}")
-                .master("local")
+                .apply {
+                    if (!runOnCluster()) master("local")
+                }
                 .getOrCreate()
             value = v2
             return v2
