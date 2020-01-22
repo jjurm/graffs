@@ -17,7 +17,7 @@ class MetricSubcommand : NoRunCliktCommand(
     class ListMetricsCommand : CliktCommand(name = "list", help = "List available graph metrics") {
         override fun run() {
             MetricType.values().forEach {
-                println("${it.id} : ${it.resultClass.name}")
+                println("${it.id} : ${it.resultClass.simpleName}")
             }
         }
     }

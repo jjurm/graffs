@@ -11,6 +11,7 @@ import uk.ac.cam.jm2186.partii.metric.MetricType
 import uk.ac.cam.jm2186.partii.storage.HibernateHelper
 import uk.ac.cam.jm2186.partii.storage.model.GeneratedGraph
 import uk.ac.cam.jm2186.partii.storage.model.MetricExperiment
+import uk.ac.cam.jm2186.partii.storage.model.MetricExperimentId
 
 class ExperimentSubcommand : NoRunCliktCommand(
     name = "experiment",
@@ -52,25 +53,35 @@ class ExperimentSubcommand : NoRunCliktCommand(
         val hibernate by HibernateHelper.delegate()
 
         override fun run() {
-            val toCompute = mutableListOf<Pair<MetricType<*>, GeneratedGraph>>()
+            val toCompute = mutableListOf<MetricExperimentId>()
             /*val seq: Seq<Pair<MetricType, GeneratedGraph>> =
                 JavaConverters.iterableAsScalaIterableConverter(toCompute).asScala().toSeq()*/
 
+            println("connecting to database")
             hibernate.openSession().use { hibernate ->
+                println("Generating experiments")
                 MetricType.values().forEach { metric ->
                     hibernate.getAllGeneratedGraphs().forEach { graph ->
-                        toCompute.add(metric to graph)
+                        val id = MetricExperimentId(metric.id, graph)
+                        if (!hibernate.byId(MetricExperiment::class.java).loadOptional(id).isPresent) {
+                            toCompute.add(id)
+                        }
                     }
                 }
             }
+
+            println("Initialising spark")
 
             val jsc = JavaSparkContext(spark.sparkContext())
             val slices = 128
 
             val dataSet = jsc.parallelize(toCompute, slices)
 
-            val future = dataSet.map { (metricType, generatedGraph) ->
+            println("Running computation in parallel")
+
+            val future = dataSet.map { (metricId, generatedGraph) ->
                 // TODO allow specifying metric params
+                val metricType = MetricType.byId(metricId)
                 val metric = metricType.metricFactory.createMetric(emptyList())
                 val graph = generatedGraph.produceGenerated()
                 val result = metric.evaluate(graph)
@@ -80,13 +91,15 @@ class ExperimentSubcommand : NoRunCliktCommand(
             // Compute metrics on the cluster
             val computedExperiments = future.collect()
 
+            println("Storing results in database")
+
             // Store results
             hibernate.openSession().use { hibernate ->
                 println("=== Results:")
                 hibernate.beginTransaction()
                 computedExperiments.forEach { experiment ->
                     println("Experiment. Metric: ${experiment.metricId}. Result: ${"%.3f".format(experiment.value)}")
-                    hibernate.save(experiment)
+                    hibernate.saveOrUpdate(experiment)
                 }
                 hibernate.transaction.commit()
             }
