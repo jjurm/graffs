@@ -11,7 +11,9 @@ class MetricExperiment(
     @Id val metricId: MetricId,
     @Id @ManyToOne(fetch = FetchType.EAGER)
     val graph: GeneratedGraph,
-    val value: Double
+    val value: Double?,
+    @Lob @Column(length = 2147483647)
+    val graphValues: ByteArray?
 ) : Serializable
 
 @IdClassEntity

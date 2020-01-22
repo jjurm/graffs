@@ -57,7 +57,7 @@ class ExperimentSubcommand : NoRunCliktCommand(
             /*val seq: Seq<Pair<MetricType, GeneratedGraph>> =
                 JavaConverters.iterableAsScalaIterableConverter(toCompute).asScala().toSeq()*/
 
-            println("connecting to database")
+            println("Connecting to database")
             hibernate.openSession().use { hibernate ->
                 println("Generating experiments")
                 MetricType.values().forEach { metric ->
@@ -84,8 +84,8 @@ class ExperimentSubcommand : NoRunCliktCommand(
                 val metricType = MetricType.byId(metricId)
                 val metric = metricType.metricFactory.createMetric(emptyList())
                 val graph = generatedGraph.produceGenerated()
-                val result = metric.evaluate(graph)
-                return@map MetricExperiment(metricType.id, generatedGraph, result as Double)
+                val (value, graphValues) = metric.evaluate(graph)
+                return@map MetricExperiment(metricType.id, generatedGraph, value, graphValues)
             }
 
             // Compute metrics on the cluster
