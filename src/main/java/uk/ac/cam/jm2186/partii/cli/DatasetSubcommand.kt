@@ -13,7 +13,12 @@ import uk.ac.cam.jm2186.partii.storage.GraphDataset
 
 class DatasetSubcommand : NoRunCliktCommand(
     name = "dataset",
-    printHelpOnEmptyArgs = true
+    printHelpOnEmptyArgs = true,
+    help = """
+        Access available datasets
+        
+        Datasets are stored in the `${GraphDataset.DATASET_DIRECTORY}` folder
+    """.trimIndent()
 ) {
 
     init {
@@ -38,8 +43,10 @@ class DatasetSubcommand : NoRunCliktCommand(
         help = "List all datasets available in the `${GraphDataset.DATASET_DIRECTORY}` directory"
     ) {
         override fun run() {
-            getAvailableDatasetsWithMessages()?.forEach {
-                println(it.id)
+            getAvailableDatasetsWithMessages()?.forEach { dataset ->
+                println()
+                println("- ${dataset.id}")
+                dataset.loadInfo()?.let { println(it.trimEnd().prependIndent("  ")) }
             }
         }
     }
@@ -62,7 +69,7 @@ class DatasetSubcommand : NoRunCliktCommand(
                 val graph = dataset.loadGraph()
                 val averageDegree = AverageDegreeMetric().evaluate(graph)
                 println(
-                    "Dataset ${dataset.id} has ${graph.nodeCount} nodes with average degree ${"%.${2}f".format(
+                    "- ${dataset.id} has ${graph.nodeCount} nodes with average degree ${"%.${2}f".format(
                         averageDegree
                     )}"
                 )

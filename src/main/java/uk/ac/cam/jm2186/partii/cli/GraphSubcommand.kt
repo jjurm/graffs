@@ -72,10 +72,7 @@ class GraphSubcommand : NoRunCliktCommand(
         }
     }
 
-    inner class GenerateGraphsCommand : CliktCommand(
-        name = "generate",
-        help = "Generate random graphs from a source dataset"
-    ) {
+    class GenerateOptionGroup : OptionGroup() {
         val n by option("-n", help = "number of graphs to generate").int().required()
         val dataset by option(help = "source dataset to generate graphs from").convert { GraphDataset(it) }.required()
         val generator by option(help = "algorithm to generate graphs").choice<Class<out GraphProducerFactory>>(
@@ -83,9 +80,20 @@ class GraphSubcommand : NoRunCliktCommand(
         ).default(RemovingEdgesGraphProducer.Factory::class.java)
         val params by option(help = "parameters to pass to the generator").double().multiple(default = listOf(0.05))
         val seed by option(help = "optional seed to the generator").long()
+    }
+
+    inner class GenerateGraphsCommand : CliktCommand(
+        name = "generate",
+        help = "Generate random graphs from a source dataset"
+    ) {
+
+        val generateOptions by GenerateOptionGroup().cooccurring()
 
         override fun run() {
-            this@GraphSubcommand.generateNGraphsFromDataset(dataset, n, generator, params, seed)
+            (generateOptions ?: throw PrintHelpMessage(this))
+                .apply {
+                    this@GraphSubcommand.generateNGraphsFromDataset(dataset, n, generator, params, seed)
+                }
         }
     }
 

@@ -26,6 +26,22 @@ class GraphDataset(val id: String) : Serializable {
 
     }
 
+    /**
+     * Loads information about the dataset contained in the `info.txt` file
+     */
+    fun loadInfo(): String? {
+        val file = File("${DATASET_DIRECTORY}/$id/info.txt")
+        return if (file.exists()) {
+            file.readText()
+        } else {
+            null
+        }
+    }
+
+    /**
+     * Loads the dataset graph contained in the `edges.txt` file
+     */
+    @Throws(IllegalArgumentException::class)
     fun loadGraph(): Graph = loadedGraphs.getOrPut(this) {
         val fileSource = FileSourceEdge2(false)
         val filename = "${DATASET_DIRECTORY}/$id/edges.txt"

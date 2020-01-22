@@ -7,7 +7,8 @@ import uk.ac.cam.jm2186.partii.metric.MetricType
 
 class MetricSubcommand : NoRunCliktCommand(
     name = "metric",
-    printHelpOnEmptyArgs = true
+    printHelpOnEmptyArgs = true,
+    help = "Access available metrics"
 ) {
 
     init {
@@ -17,7 +18,7 @@ class MetricSubcommand : NoRunCliktCommand(
     class ListMetricsCommand : CliktCommand(name = "list", help = "List available graph metrics") {
         override fun run() {
             MetricType.values().forEach {
-                println("${it.id} : ${it.resultClass.simpleName}")
+                println("- ${it.id} : ${it.resultClass.simpleName}")
             }
         }
     }
