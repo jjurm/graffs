@@ -6,7 +6,7 @@ import uk.ac.cam.jm2186.partii.graph.FileSourceEdge2
 import java.io.File
 import java.io.Serializable
 
-class GraphDataset(val id: String): Serializable {
+class GraphDataset(val id: String) : Serializable {
 
     companion object {
 
@@ -28,11 +28,16 @@ class GraphDataset(val id: String): Serializable {
 
     fun loadGraph(): Graph = loadedGraphs.getOrPut(this) {
         val fileSource = FileSourceEdge2(false)
-        val filename = "data/$id/edges.txt"
-        val graph = SingleGraph(id, false, false)
-        fileSource.addSink(graph)
-        fileSource.readAll(filename)
-        fileSource.removeSink(graph)
-        return@getOrPut graph
+        val filename = "${DATASET_DIRECTORY}/$id/edges.txt"
+        val file = File(filename)
+        if (file.exists()) {
+            val graph = SingleGraph(id, false, false)
+            fileSource.addSink(graph)
+            fileSource.readAll(file.inputStream())
+            fileSource.removeSink(graph)
+            return@getOrPut graph
+        } else {
+            throw IllegalArgumentException("Dataset $id does not exist in the `${DATASET_DIRECTORY}` directory.")
+        }
     }
 }

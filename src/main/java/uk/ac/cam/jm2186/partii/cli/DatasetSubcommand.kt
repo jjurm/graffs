@@ -1,11 +1,13 @@
 package uk.ac.cam.jm2186.partii.cli
 
+import com.github.ajalt.clikt.core.BadParameterValue
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.NoRunCliktCommand
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.convert
 import com.github.ajalt.clikt.parameters.arguments.multiple
+import org.graphstream.graph.Graph
 import uk.ac.cam.jm2186.partii.metric.AverageDegreeMetric
 import uk.ac.cam.jm2186.partii.storage.GraphDataset
 
@@ -17,7 +19,8 @@ class DatasetSubcommand : NoRunCliktCommand(
     init {
         subcommands(
             ListDatasetsCommand(),
-            LoadDatasetsCommand()
+            LoadDatasetsCommand(),
+            Visualise()
         )
     }
 
@@ -66,6 +69,22 @@ class DatasetSubcommand : NoRunCliktCommand(
             }
         }
 
+    }
+
+    inner class Visualise : AbstractVisualiseSubcommand() {
+
+        val dataset by argument(
+            "<dataset>",
+            help = "Dataset to visualise"
+        ).convert { GraphDataset(it) }
+
+        override fun getGraph(): Graph {
+            try {
+                return dataset.loadGraph()
+            } catch (e: IllegalArgumentException) {
+                throw BadParameterValue(e.message ?: "Could not load dataset", Visualise::dataset.name)
+            }
+        }
     }
 
 }

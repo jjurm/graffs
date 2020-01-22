@@ -1,13 +1,16 @@
 package uk.ac.cam.jm2186.partii.cli
 
-import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.core.NoRunCliktCommand
-import com.github.ajalt.clikt.core.subcommands
+import com.github.ajalt.clikt.core.*
+import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.arguments.default
+import com.github.ajalt.clikt.parameters.groups.OptionGroup
+import com.github.ajalt.clikt.parameters.groups.cooccurring
 import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.double
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.long
+import org.graphstream.graph.Graph
 import uk.ac.cam.jm2186.partii.graph.GraphProducerFactory
 import uk.ac.cam.jm2186.partii.graph.RemovingEdgesGraphProducer
 import uk.ac.cam.jm2186.partii.storage.GraphDataset
@@ -24,7 +27,8 @@ class GraphSubcommand : NoRunCliktCommand(
     init {
         subcommands(
             ShowCommand(),
-            GenerateGraphsCommand()
+            GenerateGraphsCommand(),
+            VisualiseCommand()
         )
     }
 
@@ -82,6 +86,27 @@ class GraphSubcommand : NoRunCliktCommand(
 
         override fun run() {
             this@GraphSubcommand.generateNGraphsFromDataset(dataset, n, generator, params, seed)
+        }
+    }
+
+    inner class VisualiseCommand : AbstractVisualiseSubcommand() {
+        val index by argument(
+            "<index>", help = "Index of the generated graph in the database to visualise"
+        ).long().default(1)
+
+        override fun getGraph(): Graph {
+            this@GraphSubcommand.sessionFactory.openSession().use { session ->
+                val graph: GeneratedGraph? = session.find(GeneratedGraph::class.java, index)
+
+                if (graph == null) {
+                    throw BadParameterValue(
+                        "Generated graph with index $index not found",
+                        paramName = VisualiseCommand::index.name
+                    )
+                } else {
+                    return graph.produceGenerated()
+                }
+            }
         }
     }
 
