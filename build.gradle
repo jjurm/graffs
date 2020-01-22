@@ -107,6 +107,7 @@ noArg {
     annotation("javax.persistence.Entity")
     annotation("javax.persistence.Embeddable")
     annotation("javax.persistence.MappedSuperclass")
+    annotation("uk.ac.cam.jm2186.partii.storage.IdClassEntity")
 }
 
 compileKotlin {
