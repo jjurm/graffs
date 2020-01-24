@@ -26,6 +26,6 @@
         <property name="hibernate.dbcp.minIdle">5</property>
         <property name="hibernate.dbcp.maxWaitMillis">-1</property>-->
         <!--<property name="hibernate.archive.autodetection">class, hbm</property>-->
-        <mapping package="uk.ac.cam.jm2186.partii.storage.model"/>
+        <mapping package="uk.ac.cam.jm2186.graffs.storage.model"/>
     </session-factory>
 </hibernate-configuration>

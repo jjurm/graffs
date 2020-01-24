@@ -20,7 +20,7 @@ plugins {
 group 'uk.ac.cam.jm2186'
 version '1.0-SNAPSHOT-' + gitVersion()
 
-mainClassName = "uk.ac.cam.jm2186.partii.cli.ControllerKt"
+mainClassName = "uk.ac.cam.jm2186.graffs.cli.ControllerKt"
 
 buildConfig {
     buildConfigField 'java.time.Instant', 'BUILD_DATE', 'java.time.Instant.ofEpochMilli(' + System.currentTimeMillis() + 'L)'
@@ -37,12 +37,12 @@ jar {
         copy {
             from jar
             into 'build/libs'
-            rename { String filename -> 'partii-last.jar' }
+            rename { String filename -> "${archivesBaseName}-last.jar" }
         }
     }
 }
 
-def remoteWorkingDir = "/local/scratch/jm2186/partii-jars"
+def remoteWorkingDir = "/local/scratch/jm2186/${archivesBaseName}-jars"
 
 task jarUpload(type: Exec, dependsOn: jar) {
     commandLine "scp", "${buildDir}/libs/${archivesBaseName}-${version}.jar", "yellow:${remoteWorkingDir}"
@@ -107,7 +107,7 @@ noArg {
     annotation("javax.persistence.Entity")
     annotation("javax.persistence.Embeddable")
     annotation("javax.persistence.MappedSuperclass")
-    annotation("uk.ac.cam.jm2186.partii.storage.IdClassEntity")
+    annotation("uk.ac.cam.jm2186.graffs.storage.IdClassEntity")
 }
 
 compileKotlin {
