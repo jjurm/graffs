@@ -17,7 +17,7 @@ class DatasetSubcommand : NoRunCliktCommand(
     help = """
         Access available datasets
         
-        Datasets are stored in the `${GraphDataset.DATASET_DIRECTORY}` folder
+        Datasets are stored in the `${GraphDataset.DATASET_DIRECTORY_NAME}` folder
     """.trimIndent()
 ) {
 
@@ -32,15 +32,15 @@ class DatasetSubcommand : NoRunCliktCommand(
     companion object {
         fun getAvailableDatasetsWithMessages() = GraphDataset.getAvailableDatasets().also {
             when {
-                it == null -> println("No `${GraphDataset.DATASET_DIRECTORY}` directory exists in the current path!")
-                it.isEmpty() -> println("The `${GraphDataset.DATASET_DIRECTORY}` directory has no subdirectories.")
+                it == null -> println("No `${GraphDataset.DATASET_DIRECTORY_NAME}` directory exists in the current path!")
+                it.isEmpty() -> println("The `${GraphDataset.DATASET_DIRECTORY_NAME}` directory has no subdirectories.")
             }
         }
     }
 
     class ListDatasetsCommand : CliktCommand(
         name = "list",
-        help = "List all datasets available in the `${GraphDataset.DATASET_DIRECTORY}` directory"
+        help = "List all datasets available in the `${GraphDataset.DATASET_DIRECTORY_NAME}` directory"
     ) {
         override fun run() {
             getAvailableDatasetsWithMessages()?.forEach { dataset ->
@@ -53,7 +53,7 @@ class DatasetSubcommand : NoRunCliktCommand(
 
     class LoadDatasetsCommand : CliktCommand(
         name = "load",
-        help = "Check if the given or all datasets can be loaded from the `${GraphDataset.DATASET_DIRECTORY}` directory"
+        help = "Check if the given or all datasets can be loaded from the `${GraphDataset.DATASET_DIRECTORY_NAME}` directory"
     ) {
 
         val datasets by argument(
