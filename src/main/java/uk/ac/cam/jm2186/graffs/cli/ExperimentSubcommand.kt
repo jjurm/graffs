@@ -6,12 +6,13 @@ import com.github.ajalt.clikt.core.requireObject
 import com.github.ajalt.clikt.core.subcommands
 import org.apache.commons.lang3.StringUtils.leftPad
 import org.apache.commons.lang3.StringUtils.rightPad
+import org.apache.commons.lang3.time.StopWatch
 import org.apache.spark.api.java.JavaSparkContext
 import org.hibernate.Session
 import uk.ac.cam.jm2186.graffs.SparkHelper
 import uk.ac.cam.jm2186.graffs.metric.MetricType
 import uk.ac.cam.jm2186.graffs.storage.HibernateHelper
-import uk.ac.cam.jm2186.graffs.storage.model.GeneratedGraph
+import uk.ac.cam.jm2186.graffs.storage.model.DistortedGraph
 import uk.ac.cam.jm2186.graffs.storage.model.MetricExperiment
 import uk.ac.cam.jm2186.graffs.storage.model.MetricExperimentId
 
@@ -86,19 +87,23 @@ class ExperimentSubcommand : NoRunCliktCommand(
 
             val sMaxGraphLength = graphIds.map { it.length }.max()!!
             val sMaxMetricLength = metrics.map { it.id.length }.max()!!
-            val future = dataSet.map { (metricId, generatedGraph) ->
+            val future = dataSet.map { (metricId, distortedGraph) ->
                 // TODO allow specifying metric params
                 val metricType = MetricType.byId(metricId)
                 val metric = metricType.metricFactory.createMetric(emptyList())
-                val graph = generatedGraph.produceGenerated()
-                val (value, graphValues) = metric.evaluate(graph)
+                val graph = distortedGraph.produceGenerated()
 
-                val sGraph = rightPad(generatedGraph.sourceGraph.id, sMaxGraphLength)
-                val sSeed = leftPad(generatedGraph.seed.toString(16), 17)
+                val stopWatch = StopWatch()
+                stopWatch.start()
+                val (value, graphValues) = metric.evaluate(graph)
+                stopWatch.stop()
+
+                val sGraph = rightPad(distortedGraph.sourceGraph.id, sMaxGraphLength)
+                val sSeed = leftPad(distortedGraph.seed.toString(16), 17)
                 val sMetric = rightPad(metricType.id, sMaxMetricLength)
                 val sResult = if (value == null) "[graph object]" else "%.3f".format(value)
                 println("- $sGraph (seed $sSeed) -> $sMetric = $sResult")
-                return@map MetricExperiment(metricType.id, generatedGraph, value, graphValues)
+                return@map MetricExperiment(metricType.id, distortedGraph, stopWatch.time, value, graphValues)
             }
 
             // Compute metrics on the cluster
@@ -119,11 +124,11 @@ class ExperimentSubcommand : NoRunCliktCommand(
             hibernate.close()
         }
 
-        private fun Session.getAllGeneratedGraphs(): List<GeneratedGraph> {
+        private fun Session.getAllGeneratedGraphs(): List<DistortedGraph> {
             val builder = this.criteriaBuilder
 
-            val criteria = builder.createQuery(GeneratedGraph::class.java)
-            criteria.from(GeneratedGraph::class.java)
+            val criteria = builder.createQuery(DistortedGraph::class.java)
+            criteria.from(DistortedGraph::class.java)
             return this.createQuery(criteria).list()
         }
     }

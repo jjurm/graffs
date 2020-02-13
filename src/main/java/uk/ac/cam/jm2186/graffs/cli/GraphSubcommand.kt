@@ -15,7 +15,7 @@ import uk.ac.cam.jm2186.graffs.graph.GraphProducerFactory
 import uk.ac.cam.jm2186.graffs.graph.RemovingEdgesGraphProducer
 import uk.ac.cam.jm2186.graffs.storage.GraphDataset
 import uk.ac.cam.jm2186.graffs.storage.HibernateHelper
-import uk.ac.cam.jm2186.graffs.storage.model.GeneratedGraph
+import uk.ac.cam.jm2186.graffs.storage.model.DistortedGraph
 import java.util.*
 
 class GraphSubcommand : NoRunCliktCommand(
@@ -46,7 +46,7 @@ class GraphSubcommand : NoRunCliktCommand(
 
         session.beginTransaction()
         (0 until n).forEach { _ ->
-            val generatedGraph = GeneratedGraph(
+            val generatedGraph = DistortedGraph(
                 sourceGraph = graphDataset,
                 generator = graphProducerFactory,
                 seed = random.nextLong(),
@@ -64,8 +64,8 @@ class GraphSubcommand : NoRunCliktCommand(
         override fun run() {
             val count = this@GraphSubcommand.sessionFactory.openSession().use { session ->
                 val builder = session.criteriaBuilder
-                val criteria = builder.createQuery(GeneratedGraph::class.java)
-                criteria.from(GeneratedGraph::class.java)
+                val criteria = builder.createQuery(DistortedGraph::class.java)
+                criteria.from(DistortedGraph::class.java)
                 session.createQuery(criteria).list().size
             }
             println("There are $count generated graphs")
@@ -104,7 +104,7 @@ class GraphSubcommand : NoRunCliktCommand(
 
         override fun getGraph(): Graph {
             this@GraphSubcommand.sessionFactory.openSession().use { session ->
-                val graph: GeneratedGraph? = session.find(GeneratedGraph::class.java, index)
+                val graph: DistortedGraph? = session.find(DistortedGraph::class.java, index)
 
                 if (graph == null) {
                     throw BadParameterValue(

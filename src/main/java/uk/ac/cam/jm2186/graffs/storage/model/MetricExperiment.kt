@@ -10,7 +10,8 @@ import javax.persistence.*
 class MetricExperiment(
     @Id val metricId: MetricId,
     @Id @ManyToOne(fetch = FetchType.EAGER)
-    val graph: GeneratedGraph,
+    val graph: DistortedGraph,
+    val time: Long,
     val value: Double?,
     @Lob @Column(length = 2147483647)
     val graphValues: ByteArray?
@@ -19,5 +20,5 @@ class MetricExperiment(
 @IdClassEntity
 data class MetricExperimentId(
     val metricId: MetricId,
-    val graph: GeneratedGraph
+    val graph: DistortedGraph
 ) : Serializable

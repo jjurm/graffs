@@ -9,7 +9,7 @@ import javax.persistence.Entity
 import javax.persistence.FetchType
 
 @Entity
-class GeneratedGraph(
+class DistortedGraph(
     val sourceGraph: GraphDataset,
     val generator: Class<out GraphProducerFactory>,
     val seed: Long,
