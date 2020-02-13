@@ -12,18 +12,18 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 class Controller : CliktCommand(
-    name = "gmr",
+    name = "graffs",
     printHelpOnEmptyArgs = true,
     help = "Tool for evaluating Graph Metric Robustness",
     epilog = """
         ```
         Examples:
-        > gmr db drop
-        > gmr dataset list
-        > gmr dataset load social-network
-        > gmr graph generate --help
-        > gmr graph generate -n 10 --dataset social-network --generator removing-edges --params 0.05
-        > gmr experiment execute
+        > graffs db drop
+        > graffs dataset list
+        > graffs dataset load social-network
+        > graffs graph generate --help
+        > graffs graph generate -n 10 --dataset social-network --generator removing-edges --params 0.05
+        > graffs experiment execute
         ```
     """.trimIndent()
 ) {
@@ -41,7 +41,8 @@ class Controller : CliktCommand(
             MetricSubcommand(),
             GraphSubcommand(),
             ExperimentSubcommand(),
-            DatabaseSubcommand()
+            DatabaseSubcommand(),
+            TestSubcommand()
         )
     }
 

@@ -77,7 +77,7 @@ class ExperimentSubcommand : NoRunCliktCommand(
 
             val dataSet = jsc.parallelize(toCompute, slices)
 
-            println("Running computation in parallel")
+            println("Running computation in parallel (${toCompute.size} metric evaluations)")
 
             val future = dataSet.map { (metricId, generatedGraph) ->
                 // TODO allow specifying metric params
@@ -85,6 +85,7 @@ class ExperimentSubcommand : NoRunCliktCommand(
                 val metric = metricType.metricFactory.createMetric(emptyList())
                 val graph = generatedGraph.produceGenerated()
                 val (value, graphValues) = metric.evaluate(graph)
+                println("- executed ${metricType.id} on ${generatedGraph.sourceGraph.id} with seed ${generatedGraph.seed}")
                 return@map MetricExperiment(metricType.id, generatedGraph, value, graphValues)
             }
 

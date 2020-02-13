@@ -58,8 +58,12 @@ test {
 }
 
 dokka {
-    outputFormat = 'javadoc'
-    outputDirectory = "$buildDir/dokka"
+    outputFormat = 'html'
+    outputDirectory = "$buildDir/javadoc"
+    
+    configuration {
+        jdkVersion = 8
+    }
 }
 
 repositories {

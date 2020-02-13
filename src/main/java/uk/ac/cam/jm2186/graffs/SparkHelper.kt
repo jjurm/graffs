@@ -20,7 +20,7 @@ object SparkHelper {
             val v2 = SparkSession.builder()
                 .appName("${BuildConfig.NAME} ${command.commandName}")
                 .apply {
-                    if (!runOnCluster()) master("local")
+                    if (!runOnCluster()) master("local[*]")
                 }
                 .getOrCreate()
             value = v2
