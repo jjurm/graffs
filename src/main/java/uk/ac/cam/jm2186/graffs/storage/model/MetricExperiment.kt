@@ -17,10 +17,7 @@ class MetricExperiment(
 ) : Serializable
 
 @IdClassEntity
-class MetricExperimentId(
+data class MetricExperimentId(
     val metricId: MetricId,
     val graph: GeneratedGraph
-) : Serializable {
-    operator fun component1() = metricId
-    operator fun component2() = graph
-}
+) : Serializable
