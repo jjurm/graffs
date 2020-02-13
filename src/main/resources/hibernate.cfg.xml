@@ -19,12 +19,19 @@
         <property name="current_session_context_class">thread</property>
         <!-- Drop and re-create the database schema on startup -->
         <property name="hbm2ddl.auto">update</property>
+
         <!-- dbcp connection pool configuration -->
+        <property name="hibernate.connection.provider_class">org.hibernate.c3p0.internal.C3P0ConnectionProvider</property>
+        <property name="hibernate.c3p0.min_size">1</property>
+        <property name="hibernate.c3p0.max_size">10</property>
+        <property name="hibernate.c3p0.timeout">10</property>
+        <property name="hibernate.c3p0.max_statements">10</property>
         <!--<property name="hibernate.dbcp.initialSize">5</property>
         <property name="hibernate.dbcp.maxTotal">20</property>
         <property name="hibernate.dbcp.maxIdle">10</property>
         <property name="hibernate.dbcp.minIdle">5</property>
         <property name="hibernate.dbcp.maxWaitMillis">-1</property>-->
+
         <!--<property name="hibernate.archive.autodetection">class, hbm</property>-->
         <mapping package="uk.ac.cam.jm2186.graffs.storage.model"/>
     </session-factory>
