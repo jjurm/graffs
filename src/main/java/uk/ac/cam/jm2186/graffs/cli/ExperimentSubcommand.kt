@@ -4,6 +4,8 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.NoRunCliktCommand
 import com.github.ajalt.clikt.core.requireObject
 import com.github.ajalt.clikt.core.subcommands
+import org.apache.commons.lang3.StringUtils.leftPad
+import org.apache.commons.lang3.StringUtils.rightPad
 import org.apache.spark.api.java.JavaSparkContext
 import org.hibernate.Session
 import uk.ac.cam.jm2186.graffs.SparkHelper
@@ -58,16 +60,19 @@ class ExperimentSubcommand : NoRunCliktCommand(
                 JavaConverters.iterableAsScalaIterableConverter(toCompute).asScala().toSeq()*/
 
             println("Connecting to database")
-            hibernate.openSession().use { hibernate ->
+            val metrics = MetricType.values()
+            val graphIds = hibernate.openSession().use { hibernate ->
                 println("Generating experiments")
-                MetricType.values().forEach { metric ->
-                    hibernate.getAllGeneratedGraphs().forEach { graph ->
+                val generatedGraphs = hibernate.getAllGeneratedGraphs()
+                metrics.forEach { metric ->
+                    generatedGraphs.forEach { graph ->
                         val id = MetricExperimentId(metric.id, graph)
                         if (!hibernate.byId(MetricExperiment::class.java).loadOptional(id).isPresent) {
                             toCompute.add(id)
                         }
                     }
                 }
+                return@use generatedGraphs.map { it.sourceGraph.id }.distinct()
             }
 
             println("Initialising spark")
@@ -79,13 +84,20 @@ class ExperimentSubcommand : NoRunCliktCommand(
 
             println("Running computation in parallel (${toCompute.size} metric evaluations)")
 
+            val sMaxGraphLength = graphIds.map { it.length }.max()!!
+            val sMaxMetricLength = metrics.map { it.id.length }.max()!!
             val future = dataSet.map { (metricId, generatedGraph) ->
                 // TODO allow specifying metric params
                 val metricType = MetricType.byId(metricId)
                 val metric = metricType.metricFactory.createMetric(emptyList())
                 val graph = generatedGraph.produceGenerated()
                 val (value, graphValues) = metric.evaluate(graph)
-                println("- executed ${metricType.id} on ${generatedGraph.sourceGraph.id} with seed ${generatedGraph.seed}")
+
+                val sGraph = rightPad(generatedGraph.sourceGraph.id, sMaxGraphLength)
+                val sSeed = leftPad(generatedGraph.seed.toString(16), 17)
+                val sMetric = rightPad(metricType.id, sMaxMetricLength)
+                val sResult = if (value == null) "[graph object]" else "%.3f".format(value)
+                println("- $sGraph (seed $sSeed) -> $sMetric = $sResult")
                 return@map MetricExperiment(metricType.id, generatedGraph, value, graphValues)
             }
 
@@ -96,10 +108,8 @@ class ExperimentSubcommand : NoRunCliktCommand(
 
             // Store results
             hibernate.openSession().use { hibernate ->
-                println("=== Results:")
                 hibernate.beginTransaction()
                 computedExperiments.forEach { experiment ->
-                    println("Experiment. Metric: ${experiment.metricId}. Result: ${"%.3f".format(experiment.value)}")
                     hibernate.saveOrUpdate(experiment)
                 }
                 hibernate.transaction.commit()
@@ -109,7 +119,7 @@ class ExperimentSubcommand : NoRunCliktCommand(
             hibernate.close()
         }
 
-        private fun Session.getAllGeneratedGraphs(): Iterable<GeneratedGraph> {
+        private fun Session.getAllGeneratedGraphs(): List<GeneratedGraph> {
             val builder = this.criteriaBuilder
 
             val criteria = builder.createQuery(GeneratedGraph::class.java)
