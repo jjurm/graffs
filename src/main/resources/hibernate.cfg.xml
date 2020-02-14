@@ -6,7 +6,7 @@
         <!-- JDBC Database connection settings -->
         <property name="connection.driver_class">org.h2.Driver</property>
         <!--<property name="connection.url">jdbc:mysql://localhost:3306/hibernate_db?useSSL=false</property>-->
-        <property name="connection.url">jdbc:h2:file:~/scratch/db</property>
+        <property name="connection.url">jdbc:h2:file:~/scratch/db/graffs</property>
         <property name="connection.username"/>
         <property name="connection.password"/>
         <!-- JDBC connection pool settings ... using built-in test pool -->
