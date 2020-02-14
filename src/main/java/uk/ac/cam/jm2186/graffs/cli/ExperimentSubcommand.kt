@@ -24,6 +24,7 @@ import uk.ac.cam.jm2186.graffs.storage.HibernateHelper
 import uk.ac.cam.jm2186.graffs.storage.model.*
 import uk.ac.cam.jm2186.graffs.util.TimePerf
 import java.util.concurrent.TimeUnit
+import kotlin.math.max
 
 class ExperimentSubcommand : NoRunCliktCommand(
     name = "experiment",
@@ -90,11 +91,10 @@ class ExperimentSubcommand : NoRunCliktCommand(
             println(timePerf.phase("Initialising spark"))
 
             val jsc = JavaSparkContext(spark.sparkContext())
-            val slices = 128
-
+            val slices = jsc.getNumberOfSlices()
             val dataSet = jsc.parallelize(toCompute, slices)
 
-            println(timePerf.phase("Running computation in parallel") + " (${toCompute.size} metric evaluations)")
+            println(timePerf.phase("Running computation in parallel") + " (${toCompute.size} metric evaluations in $slices partitions)")
 
             val sMaxGraphLength = graphIds.map { it.length }.max()!!
             val sMaxMetricLength = Metric.map.keys.map { it.length }.max()!!
@@ -133,7 +133,7 @@ class ExperimentSubcommand : NoRunCliktCommand(
 
             println("Timings:")
             timePerf.finish().forEach {
-                println("  ${rightPad(it.phase,35)} : ${it.humanReadableDuration()}")
+                println("  ${rightPad(it.phase, 35)} : ${it.humanReadableDuration()}")
             }
 
             spark.stop()
@@ -146,6 +146,15 @@ class ExperimentSubcommand : NoRunCliktCommand(
             val criteria = builder.createQuery(DistortedGraph::class.java)
             criteria.from(DistortedGraph::class.java)
             return this.createQuery(criteria).list()
+        }
+
+        private fun JavaSparkContext.getNumberOfSlices(): Int {
+            return max(
+                2, max(
+                    Runtime.getRuntime().availableProcessors(),
+                    sc().executorMemoryStatus.size()
+                )
+            )
         }
     }
 
@@ -184,7 +193,7 @@ class ExperimentSubcommand : NoRunCliktCommand(
             val measure = robustnessMeasure.second.get()
 
             val originalGraph = dataset.loadGraph()
-            val result = measure.evaluate(originalGraph , experiments.map { it.readValuesGraph() })
+            val result = measure.evaluate(originalGraph, experiments.map { it.readValuesGraph() })
 
             println("Robustness of $metric on ${experiments.size} samples from dataset `${dataset.id}` is [$result]")
         }
