@@ -4,13 +4,13 @@ import org.apache.log4j.Logger
 import org.graphstream.graph.Graph
 import org.graphstream.graph.Node
 
-class RiskInstabilityMeasure : RobustnessMeasure {
+class RankInstabilityMeasure : RobustnessMeasure {
 
     class Factory : RobustnessMeasureFactory {
-        override fun get() = RiskInstabilityMeasure()
+        override fun get() = RankInstabilityMeasure()
     }
 
-    val logger = Logger.getLogger(RiskInstabilityMeasure::class.java)
+    val logger = Logger.getLogger(RankInstabilityMeasure::class.java)
 
     override fun evaluate(originalGraph: Graph, distortedGraphs: List<Graph>): Double {
         val n = originalGraph.nodeCount
