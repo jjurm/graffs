@@ -22,6 +22,8 @@ import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasureId
 import uk.ac.cam.jm2186.graffs.storage.GraphDataset
 import uk.ac.cam.jm2186.graffs.storage.HibernateHelper
 import uk.ac.cam.jm2186.graffs.storage.model.*
+import uk.ac.cam.jm2186.graffs.util.TimePerf
+import java.util.concurrent.TimeUnit
 
 class ExperimentSubcommand : NoRunCliktCommand(
     name = "experiment",
@@ -64,13 +66,15 @@ class ExperimentSubcommand : NoRunCliktCommand(
         val hibernate by HibernateHelper.delegate()
 
         override fun run() {
+            val timePerf = TimePerf()
+
             val toCompute = mutableListOf<MetricExperimentId>()
             /*val seq: Seq<Pair<MetricType, GeneratedGraph>> =
                 JavaConverters.iterableAsScalaIterableConverter(toCompute).asScala().toSeq()*/
 
-            println("Connecting to database")
+            println(timePerf.phase("Connecting to database"))
             val graphIds = hibernate.openSession().use { hibernate ->
-                println("Generating experiments")
+                println(timePerf.phase("Generating experiments"))
                 val generatedGraphs = hibernate.getAllGeneratedGraphs()
                 Metric.map.keys.forEach { metricId ->
                     generatedGraphs.forEach { graph ->
@@ -83,14 +87,14 @@ class ExperimentSubcommand : NoRunCliktCommand(
                 return@use generatedGraphs.map { it.datasetId }.distinct()
             }
 
-            println("Initialising spark")
+            println(timePerf.phase("Initialising spark"))
 
             val jsc = JavaSparkContext(spark.sparkContext())
             val slices = 128
 
             val dataSet = jsc.parallelize(toCompute, slices)
 
-            println("Running computation in parallel (${toCompute.size} metric evaluations)")
+            println(timePerf.phase("Running computation in parallel") + " (${toCompute.size} metric evaluations)")
 
             val sMaxGraphLength = graphIds.map { it.length }.max()!!
             val sMaxMetricLength = Metric.map.keys.map { it.length }.max()!!
@@ -107,15 +111,16 @@ class ExperimentSubcommand : NoRunCliktCommand(
                 val sGraph = rightPad(distortedGraph.datasetId, sMaxGraphLength)
                 val sSeed = leftPad(distortedGraph.seed.toString(16), 17)
                 val sMetric = rightPad(metricId, sMaxMetricLength)
-                val sResult = if (value == null) "[graph object]" else "%.3f".format(value)
-                println("- $sGraph (seed $sSeed) -> $sMetric = $sResult")
+                val sResult = rightPad(if (value == null) "[graph object]" else "%.3f".format(value), 14)
+                val sTime = "${stopWatch.getTime(TimeUnit.SECONDS)}s"
+                println("- $sGraph (seed $sSeed) -> $sMetric = $sResult  ($sTime)")
                 return@map MetricExperiment(metricId, distortedGraph, stopWatch.time, value, graphValues)
             }
 
             // Compute metrics on the cluster
             val computedExperiments = future.collect()
 
-            println("Storing results in database")
+            println(timePerf.phase("Storing results in database"))
 
             // Store results
             hibernate.openSession().use { hibernate ->
@@ -124,6 +129,11 @@ class ExperimentSubcommand : NoRunCliktCommand(
                     hibernate.saveOrUpdate(experiment)
                 }
                 hibernate.transaction.commit()
+            }
+
+            println("Timings:")
+            timePerf.finish().forEach {
+                println("  ${rightPad(it.phase,35)} : ${it.humanReadableDuration()}")
             }
 
             spark.stop()
@@ -168,7 +178,6 @@ class ExperimentSubcommand : NoRunCliktCommand(
                 )
             session.createQuery(criteria).resultList
         }
-
 
         override fun run() {
             val experiments: List<MetricExperiment> = filterMetricExperiments()
