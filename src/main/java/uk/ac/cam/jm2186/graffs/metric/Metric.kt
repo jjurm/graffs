@@ -4,15 +4,21 @@ import org.graphstream.graph.Graph
 import org.graphstream.graph.Node
 import java.io.Serializable
 
+typealias MetricId = String
 typealias MetricResult = Pair<Double?, ByteArray?>
 
 interface Metric : Serializable {
-
     fun evaluate(graph: Graph): MetricResult
 
     companion object {
-        fun removeNodeAttributesExceptV(graph: Graph) {
-            graph.getEachNode<Node>().forEach { node->
+        val map = mapOf<MetricId, MetricFactory>(
+            "AverageDegree" to AverageDegreeMetric.Factory(),
+            "BetweennessCentrality" to BetweennessCentralityMetric.Factory(),
+            "AverageBetweennessCentrality" to AverageBetweennessCentralityMetric.Factory()
+        )
+
+        internal fun removeNodeAttributesExceptV(graph: Graph) {
+            graph.getEachNode<Node>().forEach { node ->
                 node.attributeKeyIterator.retainIf { it == "v" }
             }
         }
@@ -24,4 +30,8 @@ interface Metric : Serializable {
         }
     }
 
+}
+
+interface MetricFactory : Serializable {
+    fun createMetric(params: List<Number>): Metric
 }
