@@ -3,7 +3,7 @@ package uk.ac.cam.jm2186.graffs.cli
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.NoRunCliktCommand
 import com.github.ajalt.clikt.core.subcommands
-import uk.ac.cam.jm2186.graffs.metric.MetricType
+import uk.ac.cam.jm2186.graffs.metric.Metric
 
 class MetricSubcommand : NoRunCliktCommand(
     name = "metric",
@@ -17,8 +17,8 @@ class MetricSubcommand : NoRunCliktCommand(
 
     class ListMetricsCommand : CliktCommand(name = "list", help = "List available graph metrics") {
         override fun run() {
-            MetricType.values().forEach {
-                println("- ${it.id}")
+            Metric.map.keys.forEach {
+                println("- ${it}")
             }
         }
     }

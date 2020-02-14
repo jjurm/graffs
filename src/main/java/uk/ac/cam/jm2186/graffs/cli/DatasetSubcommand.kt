@@ -59,7 +59,7 @@ class DatasetSubcommand : NoRunCliktCommand(
         val datasets by argument(
             "datasets",
             help = "Datasets to load. Leave empty to load all present datasets"
-        ).convert { GraphDataset(it) }.multiple(required = false)
+        ).convert { GraphDataset(it, validate = true) }.multiple(required = false)
 
         override fun run() {
             val toLoad: List<GraphDataset>? = if (datasets.isNotEmpty()) datasets
@@ -69,9 +69,7 @@ class DatasetSubcommand : NoRunCliktCommand(
                 val graph = dataset.loadGraph()
                 val averageDegree = AverageDegreeMetric().evaluate(graph)
                 println(
-                    "- ${dataset.id} has ${graph.nodeCount} nodes with average degree ${"%.${2}f".format(
-                        averageDegree
-                    )}"
+                    "- ${dataset.id} has ${graph.nodeCount} nodes with average degree ${"%.${2}f".format(averageDegree.first)}"
                 )
             }
         }

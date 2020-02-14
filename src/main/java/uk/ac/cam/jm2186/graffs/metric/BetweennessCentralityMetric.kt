@@ -2,11 +2,10 @@ package uk.ac.cam.jm2186.graffs.metric
 
 import org.graphstream.algorithm.BetweennessCentrality
 import org.graphstream.graph.Graph
-import org.graphstream.stream.file.FileSinkDGS
 import uk.ac.cam.jm2186.graffs.metric.Metric.Companion.removeNodeAttributesExceptV
-import java.io.ByteArrayOutputStream
+import uk.ac.cam.jm2186.graffs.storage.model.MetricExperiment
 
-class BetweennessCentralityMetric : Metric{
+class BetweennessCentralityMetric : Metric {
 
     class Factory : MetricFactory {
         override fun createMetric(params: List<Number>) = BetweennessCentralityMetric()
@@ -26,10 +25,7 @@ class BetweennessCentralityMetric : Metric{
     override fun evaluate(graph: Graph): MetricResult {
         compute(graph)
 
-        val out = ByteArrayOutputStream()
-        FileSinkDGS().writeAll(graph, out)
-        val byteArray = out.toByteArray()
-        return null to byteArray
+        return null to MetricExperiment.writeValuesGraph(graph)
     }
 }
 

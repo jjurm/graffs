@@ -1,16 +1,17 @@
 package uk.ac.cam.jm2186.graffs.storage
 
 import org.graphstream.graph.Graph
-import org.graphstream.graph.implementations.SingleGraph
 import uk.ac.cam.jm2186.graffs.graph.FileSourceEdge2
+import uk.ac.cam.jm2186.graffs.graph.readGraph
 import java.io.File
-import java.io.Serializable
 
 
-class GraphDataset(val id: String) : Serializable {
+typealias GraphDatasetId = String
+
+class GraphDataset(val id: GraphDatasetId, validate: Boolean = false) {
 
     init {
-        if (!File(datasetDirectory, id).exists()) {
+        if (validate && !File(datasetDirectory, id).exists()) {
             throw IllegalArgumentException("Dataset $id does not exist in the `$DATASET_DIRECTORY_NAME` directory (working dir: $workingDirectory)")
         }
     }
@@ -54,12 +55,7 @@ class GraphDataset(val id: String) : Serializable {
      */
     @Throws(IllegalArgumentException::class)
     fun loadGraph(): Graph = loadedGraphs.getOrPut(this) {
-        val fileSource = FileSourceEdge2(false)
         val file = File(File(datasetDirectory, id), "edges.txt")
-        val graph = SingleGraph(id, false, false)
-        fileSource.addSink(graph)
-        fileSource.readAll(file.inputStream())
-        fileSource.removeSink(graph)
-        return@getOrPut graph
+        return@getOrPut FileSourceEdge2(false).readGraph(file.inputStream(), id)
     }
 }

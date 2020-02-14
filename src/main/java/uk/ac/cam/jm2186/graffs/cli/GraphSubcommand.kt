@@ -47,7 +47,7 @@ class GraphSubcommand : NoRunCliktCommand(
         session.beginTransaction()
         (0 until n).forEach { _ ->
             val generatedGraph = DistortedGraph(
-                sourceGraph = graphDataset,
+                datasetId = graphDataset.id,
                 generator = graphProducerFactory,
                 seed = random.nextLong(),
                 params = params
@@ -74,7 +74,7 @@ class GraphSubcommand : NoRunCliktCommand(
 
     class GenerateOptionGroup : OptionGroup() {
         val n by option("-n", help = "number of graphs to generate").int().required()
-        val dataset by option(help = "source dataset to generate graphs from").convert { GraphDataset(it) }.required()
+        val dataset by option(help = "source dataset to generate graphs from").convert { GraphDataset(it, validate = true) }.required()
         val generator by option(help = "algorithm to generate graphs").choice<Class<out GraphProducerFactory>>(
             "removing-edges" to RemovingEdgesGraphProducer.Factory::class.java
         ).default(RemovingEdgesGraphProducer.Factory::class.java)
