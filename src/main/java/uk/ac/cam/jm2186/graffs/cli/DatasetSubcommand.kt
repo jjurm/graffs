@@ -25,7 +25,7 @@ class DatasetSubcommand : NoRunCliktCommand(
         subcommands(
             ListDatasetsCommand(),
             LoadDatasetsCommand(),
-            Visualise()
+            VisualiseCommand()
         )
     }
 
@@ -76,19 +76,25 @@ class DatasetSubcommand : NoRunCliktCommand(
 
     }
 
-    inner class Visualise : AbstractVisualiseSubcommand() {
+    inner class VisualiseCommand : AbstractCommand(
+        name = "viz", help = "Visualise graph"
+    ) {
 
         val dataset by argument(
             "<dataset>",
             help = "Dataset to visualise"
         ).convert { GraphDataset(it) }
 
-        override fun getGraph(): Graph {
+        fun getGraph(): Graph {
             try {
                 return dataset.loadGraph()
             } catch (e: IllegalArgumentException) {
-                throw BadParameterValue(e.message ?: "Could not load dataset", Visualise::dataset.name)
+                throw BadParameterValue(e.message ?: "Could not load dataset", ::dataset.name)
             }
+        }
+
+        override fun run0() {
+            GraphVisualiser().visualise(getGraph())
         }
     }
 

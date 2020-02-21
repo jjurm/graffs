@@ -1,6 +1,5 @@
 package uk.ac.cam.jm2186.graffs.cli
 
-import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.NoRunCliktCommand
 import com.github.ajalt.clikt.core.requireObject
 import com.github.ajalt.clikt.core.subcommands
@@ -20,7 +19,6 @@ import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasure
 import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasureFactory
 import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasureId
 import uk.ac.cam.jm2186.graffs.storage.GraphDataset
-import uk.ac.cam.jm2186.graffs.storage.HibernateHelper
 import uk.ac.cam.jm2186.graffs.storage.model.*
 import uk.ac.cam.jm2186.graffs.util.TimePerf
 import java.util.concurrent.TimeUnit
@@ -39,54 +37,45 @@ class ExperimentSubcommand : NoRunCliktCommand(
         )
     }
 
-    private val sessionFactory by HibernateHelper.delegate()
-
-    inner class ShowCommand : CliktCommand(
+    inner class ShowCommand : AbstractHibernateCommand(
         name = "show",
         help = "Print summary of experiments in the database"
     ) {
-        override fun run() {
-            val count = this@ExperimentSubcommand.sessionFactory.openSession().use { session ->
-                val builder = session.criteriaBuilder
-                val criteria = builder.createQuery(MetricExperiment::class.java)
-                criteria.from(MetricExperiment::class.java)
-                session.createQuery(criteria).list().size
-            }
+        override fun run0() {
+            val builder = hibernate.criteriaBuilder
+            val criteria = builder.createQuery(MetricExperiment::class.java)
+            criteria.from(MetricExperiment::class.java)
+            val count = hibernate.createQuery(criteria).list().size
             println("There are $count executed experiments")
         }
     }
 
-    inner class ExecuteCommand : CliktCommand(
+    inner class ExecuteCommand : AbstractHibernateCommand(
         name = "execute",
         help = "Execute experiments, i.e. evaluate metrics on generated graphs"
     ) {
 
-        val config by requireObject<Controller.Config>()
+        private val config by requireObject<Controller.Config>()
+        private val spark by SparkHelper.delegate { config.runOnCluster }
 
-        val spark by SparkHelper.delegate { config.runOnCluster }
-        val hibernate by HibernateHelper.delegate()
-
-        override fun run() {
+        override fun run0() {
             val timePerf = TimePerf()
 
             val toCompute = mutableListOf<MetricExperimentId>()
             /*val seq: Seq<Pair<MetricType, GeneratedGraph>> =
                 JavaConverters.iterableAsScalaIterableConverter(toCompute).asScala().toSeq()*/
 
-            println(timePerf.phase("Connecting to database"))
-            val graphIds = hibernate.openSession().use { hibernate ->
-                println(timePerf.phase("Generating experiments"))
-                val generatedGraphs = hibernate.getAllGeneratedGraphs()
-                Metric.map.keys.forEach { metricId ->
-                    generatedGraphs.forEach { graph ->
-                        val id = MetricExperimentId(metricId, graph)
-                        if (!hibernate.byId(MetricExperiment::class.java).loadOptional(id).isPresent) {
-                            toCompute.add(id)
-                        }
+            println(timePerf.phase("Preparing experiments"))
+            val generatedGraphs = hibernate.getAllGeneratedGraphs()
+            Metric.map.keys.forEach { metricId ->
+                generatedGraphs.forEach { graph ->
+                    val id = MetricExperimentId(metricId, graph)
+                    if (!hibernate.byId(MetricExperiment::class.java).loadOptional(id).isPresent) {
+                        toCompute.add(id)
                     }
                 }
-                return@use generatedGraphs.map { it.datasetId }.distinct()
             }
+            val graphIds = generatedGraphs.map { it.datasetId }.distinct()
 
             println(timePerf.phase("Initialising spark"))
 
@@ -123,13 +112,11 @@ class ExperimentSubcommand : NoRunCliktCommand(
             println(timePerf.phase("Storing results in database"))
 
             // Store results
-            hibernate.openSession().use { hibernate ->
-                hibernate.beginTransaction()
-                computedExperiments.forEach { experiment ->
-                    hibernate.saveOrUpdate(experiment)
-                }
-                hibernate.transaction.commit()
+            hibernate.beginTransaction()
+            computedExperiments.forEach { experiment ->
+                hibernate.saveOrUpdate(experiment)
             }
+            hibernate.transaction.commit()
 
             println("Timings:")
             timePerf.finish().forEach {
@@ -137,7 +124,6 @@ class ExperimentSubcommand : NoRunCliktCommand(
             }
 
             spark.stop()
-            hibernate.close()
         }
 
         private fun Session.getAllGeneratedGraphs(): List<DistortedGraph> {
@@ -158,21 +144,21 @@ class ExperimentSubcommand : NoRunCliktCommand(
         }
     }
 
-    inner class RobustnessCommand : CliktCommand(
+    inner class RobustnessCommand : AbstractHibernateCommand(
         name = "robustness",
         help = "Calculate the robustness measure"
     ) {
 
-        val dataset by option("--dataset", help = "Use graphs distorted from this dataset")
+        private val dataset by option("--dataset", help = "Use graphs distorted from this dataset")
             .convert { GraphDataset(it, validate = true) }.required()
-        val metric: MetricId by option("--metric", help = "Metric whose robustness to calculate")
+        private val metric: MetricId by option("--metric", help = "Metric whose robustness to calculate")
             .choice(*Metric.map.keys.toTypedArray()).required()
-        val robustnessMeasure: Pair<RobustnessMeasureId, RobustnessMeasureFactory>
+        private val robustnessMeasure: Pair<RobustnessMeasureId, RobustnessMeasureFactory>
                 by option("--measure", help = "Robustness measure")
                     .choicePairs(RobustnessMeasure.map).required()
 
-        fun filterMetricExperiments() = this@ExperimentSubcommand.sessionFactory.openSession().use { session ->
-            val builder = session.criteriaBuilder
+        private fun filterMetricExperiments(): List<MetricExperiment> {
+            val builder = hibernate.criteriaBuilder
             val criteria = builder.createQuery(MetricExperiment::class.java)
             val root = criteria.from(MetricExperiment::class.java)
             criteria.select(root)
@@ -185,10 +171,10 @@ class ExperimentSubcommand : NoRunCliktCommand(
                         builder.equal(root.get<MetricId>(MetricExperiment_.metricId), metric)
                     )
                 )
-            session.createQuery(criteria).resultList
+            return hibernate.createQuery(criteria).resultList
         }
 
-        override fun run() {
+        override fun run0() {
             val experiments: List<MetricExperiment> = filterMetricExperiments()
             val measure = robustnessMeasure.second.get()
 

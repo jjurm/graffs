@@ -1,6 +1,9 @@
 package uk.ac.cam.jm2186.graffs.cli
 
-import com.github.ajalt.clikt.core.*
+import com.github.ajalt.clikt.core.BadParameterValue
+import com.github.ajalt.clikt.core.NoRunCliktCommand
+import com.github.ajalt.clikt.core.PrintHelpMessage
+import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.default
 import com.github.ajalt.clikt.parameters.groups.OptionGroup
@@ -12,10 +15,12 @@ import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.long
 import org.graphstream.graph.Graph
 import uk.ac.cam.jm2186.graffs.graph.GraphProducerFactory
+import uk.ac.cam.jm2186.graffs.graph.IdentityGraphProducer
 import uk.ac.cam.jm2186.graffs.graph.RemovingEdgesGraphProducer
 import uk.ac.cam.jm2186.graffs.storage.GraphDataset
-import uk.ac.cam.jm2186.graffs.storage.HibernateHelper
+import uk.ac.cam.jm2186.graffs.storage.GraphDatasetId
 import uk.ac.cam.jm2186.graffs.storage.model.DistortedGraph
+import uk.ac.cam.jm2186.graffs.storage.model.DistortedGraph_
 import java.util.*
 
 class GraphSubcommand : NoRunCliktCommand(
@@ -32,49 +37,27 @@ class GraphSubcommand : NoRunCliktCommand(
         )
     }
 
-    private val sessionFactory by HibernateHelper.delegate()
-
-    fun generateNGraphsFromDataset(
-        graphDataset: GraphDataset,
-        n: Int,
-        graphProducerFactory: Class<out GraphProducerFactory>,
-        params: List<Number>,
-        seed: Long? = null
-    ) = sessionFactory.openSession().use { session ->
-        val random = Random()
-        if (seed != null) random.setSeed(seed)
-
-        session.beginTransaction()
-        (0 until n).forEach { _ ->
-            val generatedGraph = DistortedGraph(
-                datasetId = graphDataset.id,
-                generator = graphProducerFactory,
-                seed = random.nextLong(),
-                params = params
-            )
-            session.save(generatedGraph)
-        }
-        session.transaction.commit()
-    }
-
-    inner class ShowCommand : CliktCommand(
+    inner class ShowCommand : AbstractHibernateCommand(
         name = "show",
         help = "Print summary of generated graphs in the database"
     ) {
-        override fun run() {
-            val count = this@GraphSubcommand.sessionFactory.openSession().use { session ->
-                val builder = session.criteriaBuilder
-                val criteria = builder.createQuery(DistortedGraph::class.java)
-                criteria.from(DistortedGraph::class.java)
-                session.createQuery(criteria).list().size
-            }
+        override fun run0() {
+            val builder = hibernate.criteriaBuilder
+            val criteria = builder.createQuery(DistortedGraph::class.java)
+            val root = criteria.from(DistortedGraph::class.java)
+            criteria.select(root).where(
+                builder.notEqual(root.get(DistortedGraph_.generator), IdentityGraphProducer.Factory::class.java)
+            )
+            val count = hibernate.createQuery(criteria).list().size
             println("There are $count generated graphs")
         }
     }
 
     class GenerateOptionGroup : OptionGroup() {
         val n by option("-n", help = "number of graphs to generate").int().required()
-        val dataset by option(help = "source dataset to generate graphs from").convert { GraphDataset(it, validate = true) }.required()
+        val dataset by option(help = "source dataset to generate graphs from").convert {
+            GraphDataset(it, validate = true)
+        }.required()
         val generator by option(help = "algorithm to generate graphs").choice<Class<out GraphProducerFactory>>(
             "removing-edges" to RemovingEdgesGraphProducer.Factory::class.java
         ).default(RemovingEdgesGraphProducer.Factory::class.java)
@@ -82,39 +65,88 @@ class GraphSubcommand : NoRunCliktCommand(
         val seed by option(help = "optional seed to the generator").long()
     }
 
-    inner class GenerateGraphsCommand : CliktCommand(
+    inner class GenerateGraphsCommand : AbstractHibernateCommand(
         name = "generate",
         help = "Generate random graphs from a source dataset"
     ) {
 
         val generateOptions by GenerateOptionGroup().cooccurring()
 
-        override fun run() {
+        override fun run0() {
             (generateOptions ?: throw PrintHelpMessage(this))
                 .apply {
-                    this@GraphSubcommand.generateNGraphsFromDataset(dataset, n, generator, params, seed)
+                    this@GenerateGraphsCommand.generateNGraphsFromDataset(dataset, n, generator, params, seed)
                 }
+        }
+
+        private fun generateNGraphsFromDataset(
+            graphDataset: GraphDataset,
+            n: Int,
+            graphProducerFactory: Class<out GraphProducerFactory>,
+            params: List<Number>,
+            seed: Long? = null
+        ) {
+            val random = Random()
+            if (seed != null) random.setSeed(seed)
+            hibernate.beginTransaction()
+
+            // See if the database contains an identity graph for this dataset
+            val builder = hibernate.criteriaBuilder
+            val criteria = builder.createQuery(DistortedGraph::class.java)
+            val root = criteria.from(DistortedGraph::class.java)
+            criteria.select(root)
+                .where(
+                    builder.equal(
+                        root.get<GraphDatasetId>(DistortedGraph_.datasetId),
+                        graphDataset.id
+                    ),
+                    builder.equal(
+                        root.get<Class<*>>(DistortedGraph_.generator),
+                        IdentityGraphProducer.Factory::class.java
+                    )
+                )
+            if (hibernate.createQuery(criteria).resultList.isEmpty()) {
+                val identityGraph = DistortedGraph(
+                    datasetId = graphDataset.id,
+                    generator = IdentityGraphProducer.Factory::class.java,
+                    seed = 0L,
+                    params = emptyList()
+                )
+                hibernate.save(identityGraph)
+            }
+
+            // Generate n graphs
+            (0 until n).forEach { _ ->
+                val generatedGraph = DistortedGraph(
+                    datasetId = graphDataset.id,
+                    generator = graphProducerFactory,
+                    seed = random.nextLong(),
+                    params = params
+                )
+                hibernate.save(generatedGraph)
+            }
+
+            hibernate.transaction.commit()
         }
     }
 
-    inner class VisualiseCommand : AbstractVisualiseSubcommand() {
-        val index by argument(
+    inner class VisualiseCommand : AbstractHibernateCommand(
+        name = "viz", help = "Visualise graph"
+    ) {
+        private val index by argument(
             "<index>", help = "Index of the generated graph in the database to visualise"
         ).long().default(1)
 
-        override fun getGraph(): Graph {
-            this@GraphSubcommand.sessionFactory.openSession().use { session ->
-                val graph: DistortedGraph? = session.find(DistortedGraph::class.java, index)
+        private fun getGraph(): Graph {
+            val graph = hibernate.find(DistortedGraph::class.java, index) ?: throw BadParameterValue(
+                "Generated graph with index $index not found",
+                paramName = VisualiseCommand::index.name
+            )
+            return graph.produceGenerated()
+        }
 
-                if (graph == null) {
-                    throw BadParameterValue(
-                        "Generated graph with index $index not found",
-                        paramName = VisualiseCommand::index.name
-                    )
-                } else {
-                    return graph.produceGenerated()
-                }
-            }
+        override fun run0() {
+            GraphVisualiser().visualise(getGraph())
         }
     }
 
