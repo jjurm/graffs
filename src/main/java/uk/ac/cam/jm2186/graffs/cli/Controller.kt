@@ -24,6 +24,7 @@ class Controller : CliktCommand(
         > graffs graph generate --help
         > graffs graph generate -n 10 --dataset social-network --generator removing-edges --params 0.05
         > graffs experiment execute
+        > graffs experiment robustness --dataset social-network --metric BetweennessCentrality --measure RankInstability
         ```
     """.trimIndent()
 ) {

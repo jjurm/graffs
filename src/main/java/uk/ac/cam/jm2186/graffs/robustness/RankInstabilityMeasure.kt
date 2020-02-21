@@ -18,7 +18,10 @@ class RankInstabilityMeasure : RobustnessMeasure {
         // filter out up to 1% of highest ranked nodes
         val originalNodes =
             originalGraph.getNodeSet<Node>()
-                .sortedByDescending { node -> node.getAttribute<Double>("v") }
+                .sortedByDescending { node ->
+                    node.getAttribute<Double>("v")
+                        ?: throw IllegalStateException("node ${node.id} contains no attribute `v`")
+                }
         val topNodes = originalNodes.take(originalNodes.size / 100)
 
         if (topNodes.size < 5) {

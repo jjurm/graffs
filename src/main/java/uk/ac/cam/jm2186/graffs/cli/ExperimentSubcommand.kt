@@ -12,7 +12,9 @@ import org.apache.commons.lang3.StringUtils.rightPad
 import org.apache.commons.lang3.time.StopWatch
 import org.apache.spark.api.java.JavaSparkContext
 import org.hibernate.Session
+import org.hibernate.query.Query
 import uk.ac.cam.jm2186.graffs.SparkHelper
+import uk.ac.cam.jm2186.graffs.graph.IdentityGraphProducer
 import uk.ac.cam.jm2186.graffs.metric.Metric
 import uk.ac.cam.jm2186.graffs.metric.MetricId
 import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasure
@@ -157,29 +159,35 @@ class ExperimentSubcommand : NoRunCliktCommand(
                 by option("--measure", help = "Robustness measure")
                     .choicePairs(RobustnessMeasure.map).required()
 
-        private fun filterMetricExperiments(): List<MetricExperiment> {
+        private fun filterMetricExperiments(justIdentityGraph: Boolean): Query<MetricExperiment> {
             val builder = hibernate.criteriaBuilder
             val criteria = builder.createQuery(MetricExperiment::class.java)
             val root = criteria.from(MetricExperiment::class.java)
             criteria.select(root)
                 .where(
-                    builder.and(
-                        builder.equal(
-                            root.get<DistortedGraph>(MetricExperiment_.graph).get(DistortedGraph_.datasetId),
-                            dataset.id
-                        ),
-                        builder.equal(root.get<MetricId>(MetricExperiment_.metricId), metric)
-                    )
+                    builder.equal(root.get(MetricExperiment_.graph).get(DistortedGraph_.datasetId), dataset.id),
+                    builder.equal(root.get(MetricExperiment_.metricId), metric),
+                    builder.equal(
+                        root.get(MetricExperiment_.graph).get(DistortedGraph_.generator),
+                        IdentityGraphProducer.Factory::class.java
+                    ).run { if (justIdentityGraph) this else not() }
                 )
-            return hibernate.createQuery(criteria).resultList
+            return hibernate.createQuery(criteria)
         }
 
+        private fun filterMetricExperimentsOfSource(): MetricExperiment =
+            filterMetricExperiments(true).uniqueResult()
+                ?: throw IllegalStateException("The database contains no entry of evaluated $metric on the source dataset `${dataset.id}`")
+
+        private fun filterMetricExperimentsOfDistorted(): List<MetricExperiment> =
+            filterMetricExperiments(false).resultList
+
         override fun run0() {
-            val experiments: List<MetricExperiment> = filterMetricExperiments()
+            val original = filterMetricExperimentsOfSource()
+            val experiments = filterMetricExperimentsOfDistorted()
             val measure = robustnessMeasure.second.get()
 
-            val originalGraph = dataset.loadGraph()
-            val result = measure.evaluate(originalGraph, experiments.map { it.readValuesGraph() })
+            val result = measure.evaluate(original.readValuesGraph(), experiments.map { it.readValuesGraph() })
 
             println("Robustness of $metric on ${experiments.size} samples from dataset `${dataset.id}` is [$result]")
         }

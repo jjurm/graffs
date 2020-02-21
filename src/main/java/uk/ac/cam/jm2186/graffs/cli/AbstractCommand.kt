@@ -23,9 +23,9 @@ abstract class AbstractCommand(
     abstract fun run0()
 
     final override fun run() {
-        setup.onEach { run() }
+        setup.forEach { it.invoke() }
         run0()
-        cleanup.asReversed().onEach { run() }
+        cleanup.asReversed().forEach { it.invoke() }
     }
 
 }
