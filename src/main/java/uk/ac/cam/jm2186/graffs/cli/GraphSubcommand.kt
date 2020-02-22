@@ -14,9 +14,7 @@ import com.github.ajalt.clikt.parameters.types.double
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.long
 import org.graphstream.graph.Graph
-import uk.ac.cam.jm2186.graffs.graph.GraphProducerFactory
-import uk.ac.cam.jm2186.graffs.graph.IdentityGraphProducer
-import uk.ac.cam.jm2186.graffs.graph.RemovingEdgesGraphProducer
+import uk.ac.cam.jm2186.graffs.graph.*
 import uk.ac.cam.jm2186.graffs.storage.GraphDataset
 import uk.ac.cam.jm2186.graffs.storage.GraphDatasetId
 import uk.ac.cam.jm2186.graffs.storage.model.DistortedGraph
@@ -46,7 +44,7 @@ class GraphSubcommand : NoRunCliktCommand(
             val criteria = builder.createTupleQuery()
             val root = criteria.from(DistortedGraph::class.java)
             criteria.multiselect(root.get(DistortedGraph_.tag), builder.count(root.get(DistortedGraph_.id))).where(
-                builder.notEqual(root.get(DistortedGraph_.generator), IdentityGraphProducer.Factory::class.java)
+                builder.notEqual(root.get<GraphProducerId>(DistortedGraph_.generator), IdentityGenerator.ID)
             ).groupBy(root.get(DistortedGraph_.tag))
             hibernate.createQuery(criteria).list().forEach { tuple ->
                 val tag = tuple.get(0) as String
@@ -61,10 +59,10 @@ class GraphSubcommand : NoRunCliktCommand(
         val dataset by option(help = "source dataset to generate graphs from").convert {
             GraphDataset(it, validate = true)
         }.required()
-        val generator by option(help = "algorithm to generate graphs").choice<Class<out GraphProducerFactory>>(
-            "removing-edges" to RemovingEdgesGraphProducer.Factory::class.java
-        ).default(RemovingEdgesGraphProducer.Factory::class.java)
-        val params by option(help = "parameters to pass to the generator").double().multiple(default = listOf(0.05))
+        val generator by option(help = "algorithm to generate graphs").choice(*GraphProducer.map.keys.toTypedArray())
+            .default(RemovingEdgesGenerator.ID)
+        val params by option(help = "parameters to pass to the generator").double().split(delimiter = ",")
+            .default(listOf(0.05))
         val seed by option(help = "optional seed to the generator").long()
         val tag by option("--tag", help = "Tags are used to refer to graphs later").required()
     }
@@ -86,7 +84,7 @@ class GraphSubcommand : NoRunCliktCommand(
         private fun generateNGraphsFromDataset(
             graphDataset: GraphDataset,
             n: Int,
-            graphProducerFactory: Class<out GraphProducerFactory>,
+            graphProducerFactory: GraphProducerId,
             params: List<Number>,
             seed: Long?,
             tag: String
@@ -101,19 +99,13 @@ class GraphSubcommand : NoRunCliktCommand(
             val root = criteria.from(DistortedGraph::class.java)
             criteria.select(root)
                 .where(
-                    builder.equal(
-                        root.get<GraphDatasetId>(DistortedGraph_.datasetId),
-                        graphDataset.id
-                    ),
-                    builder.equal(
-                        root.get<Class<*>>(DistortedGraph_.generator),
-                        IdentityGraphProducer.Factory::class.java
-                    )
+                    builder.equal(root.get<GraphDatasetId>(DistortedGraph_.datasetId), graphDataset.id),
+                    builder.equal(root.get<GraphProducerId>(DistortedGraph_.generator), IdentityGenerator.ID)
                 )
             if (hibernate.createQuery(criteria).resultList.isEmpty()) {
                 val identityGraph = DistortedGraph(
                     datasetId = graphDataset.id,
-                    generator = IdentityGraphProducer.Factory::class.java,
+                    generator = IdentityGenerator.ID,
                     seed = 0L,
                     params = emptyList(),
                     tag = null

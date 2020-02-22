@@ -5,13 +5,17 @@ import org.graphstream.graph.implementations.Graphs
 import org.graphstream.graph.implementations.SingleGraph
 import org.graphstream.stream.GraphReplay
 
-class IdentityGraphProducer(
+class IdentityGenerator(
     private val sourceGraph: Graph
 ) : GraphProducer {
 
+    companion object {
+        const val ID: GraphProducerId = "identity"
+    }
+
     class Factory : GraphProducerFactory {
         override fun createGraphProducer(sourceGraph: Graph, seed: Long, params: List<Number>) =
-            IdentityGraphProducer(sourceGraph)
+            IdentityGenerator(sourceGraph)
     }
 
     private val id = sourceGraph.id + "-" + javaClass.name

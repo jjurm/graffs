@@ -12,7 +12,8 @@ import org.apache.spark.api.java.JavaSparkContext
 import org.hibernate.Session
 import org.hibernate.query.Query
 import uk.ac.cam.jm2186.graffs.SparkHelper
-import uk.ac.cam.jm2186.graffs.graph.IdentityGraphProducer
+import uk.ac.cam.jm2186.graffs.graph.GraphProducerId
+import uk.ac.cam.jm2186.graffs.graph.IdentityGenerator
 import uk.ac.cam.jm2186.graffs.metric.Metric
 import uk.ac.cam.jm2186.graffs.metric.MetricId
 import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasure
@@ -145,7 +146,7 @@ class ExperimentSubcommand : NoRunCliktCommand(
             val root2 = criteria2.from(DistortedGraph::class.java)
             criteria2.select(root2).where(
                 root2.get(DistortedGraph_.datasetId).`in`(datasets),
-                builder.equal(root2.get(DistortedGraph_.generator), IdentityGraphProducer.Factory::class.java)
+                builder.equal(root2.get<GraphProducerId>(DistortedGraph_.generator), IdentityGenerator.ID)
             )
             val graphs = this.createQuery(criteria2).list()
             graphs.addAll(distortedGraphs)
@@ -185,10 +186,8 @@ class ExperimentSubcommand : NoRunCliktCommand(
                 .where(
                     builder.equal(graph.get(DistortedGraph_.datasetId), dataset.id),
                     builder.equal(root.get(MetricExperiment_.metricId), metric),
-                    builder.equal(
-                        graph.get(DistortedGraph_.generator),
-                        IdentityGraphProducer.Factory::class.java
-                    ).run { if (justIdentityGraph) this else not() },
+                    builder.equal(graph.get<GraphProducerId>(DistortedGraph_.generator), IdentityGenerator.ID)
+                        .run { if (justIdentityGraph) this else not() },
                     if (justIdentityGraph) builder.conjunction()
                     else builder.equal(graph.get(DistortedGraph_.tag), tag)
                 )

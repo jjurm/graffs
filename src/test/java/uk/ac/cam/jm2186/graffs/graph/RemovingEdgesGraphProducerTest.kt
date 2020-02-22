@@ -8,7 +8,7 @@ internal class RemovingEdgesGraphProducerTest {
     @Test
     fun produceAndCompute() {
         val graph = GraphTestUtils.generateSmallGraph()
-        val producer = RemovingEdgesGraphProducer(
+        val producer = RemovingEdgesGenerator(
             graph,
             deletionRate = 0.3,
             seed = 42
@@ -35,7 +35,7 @@ internal class RemovingEdgesGraphProducerTest {
     @Test
     fun produceComputeCombined() {
         val graph = GraphTestUtils.generateSmallGraph()
-        val producer = RemovingEdgesGraphProducer(
+        val producer = RemovingEdgesGenerator(
             graph,
             deletionRate = 0.3,
             seed = 42
