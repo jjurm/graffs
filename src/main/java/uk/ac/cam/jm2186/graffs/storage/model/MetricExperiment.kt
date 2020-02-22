@@ -16,7 +16,7 @@ import javax.persistence.*
 @IdClass(MetricExperimentId::class)
 class MetricExperiment(
     @Id val metricId: MetricId,
-    @Id @ManyToOne(fetch = FetchType.EAGER)
+    @Id @ManyToOne(fetch = FetchType.EAGER) @JoinColumn(nullable = false)
     val graph: DistortedGraph,
     val time: Long,
     val value: Double?,

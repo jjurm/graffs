@@ -1,9 +1,11 @@
 package uk.ac.cam.jm2186.graffs.cli
 
-import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.NoRunCliktCommand
 import com.github.ajalt.clikt.core.subcommands
-import uk.ac.cam.jm2186.graffs.storage.HibernateHelper
+import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.required
+import uk.ac.cam.jm2186.graffs.storage.model.DistortedGraph
+import uk.ac.cam.jm2186.graffs.storage.model.DistortedGraph_
 
 
 class DatabaseSubcommand : NoRunCliktCommand(
@@ -14,6 +16,7 @@ class DatabaseSubcommand : NoRunCliktCommand(
     init {
         subcommands(
             TestCommand(),
+            TruncateCommand(),
             ResetCommand()
         )
     }
@@ -22,6 +25,32 @@ class DatabaseSubcommand : NoRunCliktCommand(
         override fun run0() {
             if (hibernate.isConnected) println("Successfully connected.")
             else System.err.println("Unsuccessful (see logs above)")
+        }
+    }
+
+    inner class TruncateCommand : AbstractHibernateCommand(name = "truncate", help = "Truncate parts of the databse") {
+
+        private val tag by option(
+            "--tag",
+            "--tags",
+            help = "Delete all database entries marked with the specified tag(s), delimited by comma"
+        ).required()
+
+        override fun run0() {
+            hibernate.beginTransaction()
+            val builder = hibernate.criteriaBuilder
+
+            val query = builder.createQuery(DistortedGraph::class.java)
+            val root = query.from(DistortedGraph::class.java)
+            query.where(
+                builder.equal(root.get<String>(DistortedGraph_.tag), tag)
+            )
+            val graphs = hibernate.createQuery(query).list()
+
+            graphs.forEach { hibernate.delete(it) }
+
+            hibernate.transaction.commit()
+            println("Deleted ${graphs.size} generated graphs, and related experiments")
         }
     }
 

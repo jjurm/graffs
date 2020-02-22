@@ -6,9 +6,7 @@ import uk.ac.cam.jm2186.graffs.graph.GraphProducerId
 import uk.ac.cam.jm2186.graffs.storage.AbstractJpaPersistable
 import uk.ac.cam.jm2186.graffs.storage.GraphDataset
 import uk.ac.cam.jm2186.graffs.storage.GraphDatasetId
-import javax.persistence.ElementCollection
-import javax.persistence.Entity
-import javax.persistence.FetchType
+import javax.persistence.*
 
 @Entity
 class DistortedGraph(
@@ -19,6 +17,9 @@ class DistortedGraph(
     val params: List<Number>,
     val tag: String?
 ) : AbstractJpaPersistable<Long>() {
+
+    @OneToMany(mappedBy = "graph", cascade = [CascadeType.REMOVE], orphanRemoval = true, fetch = FetchType.LAZY)
+    protected var metricExperiments: List<MetricExperiment>? = null
 
     fun produceGenerated(): Graph {
         val generatorFactory = GraphProducer.map.getValue(generator).getDeclaredConstructor().newInstance()
