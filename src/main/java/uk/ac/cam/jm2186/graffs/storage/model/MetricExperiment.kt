@@ -18,23 +18,43 @@ class MetricExperiment(
     @Id val metricId: MetricId,
     @Id @ManyToOne(fetch = FetchType.EAGER) @JoinColumn(nullable = false)
     val graph: DistortedGraph,
+
     val time: Long,
-    val value: Double?,
-    @Lob @Column(length = 2147483647)
-    val graphValues: ByteArray?
+    val value: Double?
 ) : Serializable {
 
-    fun readValuesGraph(): SingleGraph {
+    @Lob @Column(length = 2147483647)
+    var graphValues: ByteArray? = null
+
+    fun readGraphValues(): SingleGraph {
         val id = "MetricExperiment-${metricId}-${graph.getId()}"
         return FileSourceDGS().readGraph(ByteArrayInputStream(graphValues), id)
     }
 
-    companion object {
-        fun writeValuesGraph(graph: Graph): ByteArray {
+    fun writeGraphValues(graph: Graph?) {
+        if (graph == null) {
+            graphValues = null
+        } else {
             val out = ByteArrayOutputStream()
             FileSinkDGS().writeAll(graph, out)
-            return out.toByteArray()
+            graphValues = out.toByteArray()
         }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is MetricExperiment) return false
+
+        if (metricId != other.metricId) return false
+        if (graph != other.graph) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = metricId.hashCode()
+        result = 31 * result + graph.hashCode()
+        return result
     }
 
 }
@@ -43,4 +63,21 @@ class MetricExperiment(
 data class MetricExperimentId(
     val metricId: MetricId,
     val graph: DistortedGraph
-) : Serializable
+) : Serializable {
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is MetricExperimentId) return false
+
+        if (metricId != other.metricId) return false
+        if (graph != other.graph) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = metricId.hashCode()
+        result = 31 * result + graph.hashCode()
+        return result
+    }
+}

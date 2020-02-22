@@ -3,7 +3,6 @@ package uk.ac.cam.jm2186.graffs.metric
 import org.graphstream.algorithm.PageRank
 import org.graphstream.graph.Graph
 import uk.ac.cam.jm2186.graffs.graph.ATTRIBUTE_NAME_NODE_VALUE
-import uk.ac.cam.jm2186.graffs.storage.model.MetricExperiment
 
 class PageRankMetric(private val dampingFactor: Double) : Metric {
 
@@ -18,6 +17,6 @@ class PageRankMetric(private val dampingFactor: Double) : Metric {
         alg.init(graph)
         alg.compute()
 
-        return null to MetricExperiment.writeValuesGraph(graph)
+        return null to graph
     }
 }

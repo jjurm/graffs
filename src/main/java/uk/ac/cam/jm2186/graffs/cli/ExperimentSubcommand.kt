@@ -12,8 +12,6 @@ import org.apache.spark.api.java.JavaSparkContext
 import org.hibernate.Session
 import org.hibernate.query.Query
 import uk.ac.cam.jm2186.graffs.SparkHelper
-import uk.ac.cam.jm2186.graffs.graph.GraphProducerId
-import uk.ac.cam.jm2186.graffs.graph.IdentityGenerator
 import uk.ac.cam.jm2186.graffs.metric.Metric
 import uk.ac.cam.jm2186.graffs.metric.MetricId
 import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasure
@@ -88,7 +86,7 @@ class ExperimentSubcommand : NoRunCliktCommand(
 
             println(timePerf.phase("Running computation in parallel") + " (${toCompute.size} metric evaluations in $slices partitions)")
 
-            val sMaxTagLength = generatedGraphs.map { it.tag?.length ?: 0 }.max()!!
+            val sMaxTagLength = generatedGraphs.map { it.tag?.name?.length ?: 0 }.max()!!
             val sMaxGraphLength = generatedGraphs.map { it.datasetId.length }.max()!!
             val sMaxMetricLength = Metric.map.keys.map { it.length }.max()!!
             val future = dataSet.map { (metricId, distortedGraph) ->
@@ -101,14 +99,17 @@ class ExperimentSubcommand : NoRunCliktCommand(
                 val (value, graphValues) = metric.evaluate(graph)
                 stopWatch.stop()
 
-                val sTag = rightPad(distortedGraph.tag?.let { "`$it`" } ?: "*", sMaxTagLength + 2)
+                val sTag = rightPad(distortedGraph.tag?.name?.let { "`$it`" } ?: "*", sMaxTagLength + 2)
                 val sGraph = rightPad(distortedGraph.datasetId, sMaxGraphLength)
                 val sSeed = leftPad(distortedGraph.seed.toString(16), 17)
                 val sMetric = rightPad(metricId, sMaxMetricLength)
                 val sResult = rightPad(if (value == null) "[graph object]" else "%.3f".format(value), 14)
                 val sTime = "${stopWatch.getTime(TimeUnit.SECONDS)}s"
                 println("- $sTag $sGraph (seed $sSeed) -> $sMetric = $sResult  ($sTime)")
-                return@map MetricExperiment(metricId, distortedGraph, stopWatch.time, value, graphValues)
+
+                val metricExperiment = MetricExperiment(metricId, distortedGraph, stopWatch.time, value)
+                metricExperiment.writeGraphValues(graphValues)
+                return@map metricExperiment
             }
 
             // Compute metrics on the cluster
@@ -131,24 +132,22 @@ class ExperimentSubcommand : NoRunCliktCommand(
             spark.stop()
         }
 
-        private fun Session.getAllGeneratedGraphs(tags: List<String>): List<DistortedGraph> {
-            val builder = this.criteriaBuilder
-
-            val criteria = builder.createQuery(DistortedGraph::class.java)
-            val root = criteria.from(DistortedGraph::class.java)
-            criteria.select(root)
-                .where(root.get(DistortedGraph_.tag).`in`(tags))
-            val distortedGraphs = this.createQuery(criteria).list()
+        private fun Session.getAllGeneratedGraphs(tagNames: List<String>): List<DistortedGraph> {
+            val tags = tagNames.mapNotNull { hibernate.get(Tag::class.java, it) }
+            val distortedGraphs = tags.flatMap { tag -> tag.distortedGraphs }
 
             // now we need to collect each dataset's identity graph
             val datasets = distortedGraphs.map { it.datasetId }.distinct()
-            val criteria2 = builder.createQuery(DistortedGraph::class.java)
-            val root2 = criteria2.from(DistortedGraph::class.java)
-            criteria2.select(root2).where(
+
+            val builder = this.criteriaBuilder
+            val criteria = builder.createQuery(DistortedGraph::class.java)
+            val root2 = criteria.from(DistortedGraph::class.java)
+            criteria.select(root2).where(
                 root2.get(DistortedGraph_.datasetId).`in`(datasets),
-                builder.equal(root2.get<GraphProducerId>(DistortedGraph_.generator), IdentityGenerator.ID)
+                builder.isNull(root2.get<Tag?>(DistortedGraph_.tag))
             )
-            val graphs = this.createQuery(criteria2).list()
+            val graphs = this.createQuery(criteria).list()
+
             graphs.addAll(distortedGraphs)
             return graphs
         }
@@ -168,7 +167,7 @@ class ExperimentSubcommand : NoRunCliktCommand(
         help = "Calculate the robustness measure"
     ) {
 
-        private val tag by option("--tag", help = "Filter distorted graphs by the specified tag").required()
+        private val tagName by option("--tag", help = "Filter distorted graphs by the specified tag").required()
         private val dataset by option("--dataset", help = "Use graphs distorted from this dataset")
             .convert { GraphDataset(it, validate = true) }.required()
         private val metric: MetricId by option("--metric", help = "Metric whose robustness to calculate")
@@ -178,18 +177,21 @@ class ExperimentSubcommand : NoRunCliktCommand(
                     .choicePairs(RobustnessMeasure.map).required()
 
         private fun filterMetricExperiments(justIdentityGraph: Boolean): Query<MetricExperiment> {
+            val tag = hibernate.get(Tag::class.java, tagName)
+
             val builder = hibernate.criteriaBuilder
             val criteria = builder.createQuery(MetricExperiment::class.java)
             val root = criteria.from(MetricExperiment::class.java)
             val graph = root.get(MetricExperiment_.graph)
+            val queryTag = graph.get<Tag?>(DistortedGraph_.tag)
             criteria.select(root)
                 .where(
                     builder.equal(graph.get(DistortedGraph_.datasetId), dataset.id),
                     builder.equal(root.get(MetricExperiment_.metricId), metric),
-                    builder.equal(graph.get<GraphProducerId>(DistortedGraph_.generator), IdentityGenerator.ID)
-                        .run { if (justIdentityGraph) this else not() },
-                    if (justIdentityGraph) builder.conjunction()
-                    else builder.equal(graph.get(DistortedGraph_.tag), tag)
+                    when (justIdentityGraph) {
+                        false -> builder.equal(queryTag, tag)
+                        true -> builder.isNull(queryTag)
+                    }
                 )
             return hibernate.createQuery(criteria)
         }
@@ -206,9 +208,9 @@ class ExperimentSubcommand : NoRunCliktCommand(
             val experiments = filterMetricExperimentsOfDistorted()
             val measure = robustnessMeasure.second.get()
 
-            val result = measure.evaluate(original.readValuesGraph(), experiments.map { it.readValuesGraph() })
+            val result = measure.evaluate(original.readGraphValues(), experiments.map { it.readGraphValues() })
 
-            println("Robustness of $metric on ${experiments.size} samples from dataset `${dataset.id}` is [$result]")
+            println("${robustnessMeasure.first} of $metric on ${experiments.size} samples from dataset `${dataset.id}` is [$result]")
         }
     }
 

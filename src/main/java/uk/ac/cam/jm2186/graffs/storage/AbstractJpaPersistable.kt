@@ -19,19 +19,14 @@ abstract class AbstractJpaPersistable<T : Serializable> : Serializable {
     fun getId(): T? = id
 
     override fun equals(other: Any?): Boolean {
-        other ?: return false
-
         if (this === other) return true
-
-        if (javaClass != other.javaClass) return false
-
-        other as AbstractJpaPersistable<*>
-
-        return if (null == this.getId()) false else this.getId() == other.getId()
+        if (other !is AbstractJpaPersistable<*>) return false
+        if (id != other.id) return false
+        return true
     }
 
     override fun hashCode(): Int {
-        return 31
+        return id?.hashCode() ?: 0
     }
 
     override fun toString() = "Entity of type ${this.javaClass.name} with id: $id"

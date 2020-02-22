@@ -19,7 +19,7 @@ class BetweennessCentralityMetric : Metric {
         alg.compute()
         removeNodeAttributesExceptV(graph)
 
-        return null to MetricExperiment.writeValuesGraph(graph)
+        return null to graph
     }
 }
 

@@ -6,7 +6,7 @@ import uk.ac.cam.jm2186.graffs.graph.ATTRIBUTE_NAME_NODE_VALUE
 import java.io.Serializable
 
 typealias MetricId = String
-typealias MetricResult = Pair<Double?, ByteArray?>
+typealias MetricResult = Pair<Double?, Graph?>
 
 interface Metric : Serializable {
     fun evaluate(graph: Graph): MetricResult

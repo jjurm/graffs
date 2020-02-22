@@ -5,7 +5,6 @@ import org.graphstream.algorithm.measure.ClosenessCentrality
 import org.graphstream.graph.Graph
 import uk.ac.cam.jm2186.graffs.graph.ATTRIBUTE_NAME_NODE_VALUE
 import uk.ac.cam.jm2186.graffs.metric.Metric.Companion.removeNodeAttributesExceptV
-import uk.ac.cam.jm2186.graffs.storage.model.MetricExperiment
 
 class ClosenessCentralityMetric(val dangalchev: Boolean) : Metric {
 
@@ -19,6 +18,6 @@ class ClosenessCentralityMetric(val dangalchev: Boolean) : Metric {
         alg.compute()
         removeNodeAttributesExceptV(graph)
 
-        return null to MetricExperiment.writeValuesGraph(graph)
+        return null to graph
     }
 }

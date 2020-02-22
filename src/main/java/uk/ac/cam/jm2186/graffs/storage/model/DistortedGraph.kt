@@ -15,7 +15,8 @@ class DistortedGraph(
     val seed: Long,
     @ElementCollection(fetch = FetchType.EAGER)
     val params: List<Number>,
-    val tag: String?
+    @ManyToOne(fetch = FetchType.EAGER)
+    val tag: Tag?
 ) : AbstractJpaPersistable<Long>() {
 
     @OneToMany(mappedBy = "graph", cascade = [CascadeType.REMOVE], orphanRemoval = true, fetch = FetchType.LAZY)

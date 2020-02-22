@@ -19,6 +19,7 @@ import uk.ac.cam.jm2186.graffs.storage.GraphDataset
 import uk.ac.cam.jm2186.graffs.storage.GraphDatasetId
 import uk.ac.cam.jm2186.graffs.storage.model.DistortedGraph
 import uk.ac.cam.jm2186.graffs.storage.model.DistortedGraph_
+import uk.ac.cam.jm2186.graffs.storage.model.Tag
 import java.util.*
 
 class GraphSubcommand : NoRunCliktCommand(
@@ -92,7 +93,7 @@ class GraphSubcommand : NoRunCliktCommand(
             graphProducerFactory: GraphProducerId,
             params: List<Number>,
             seed: Long?,
-            tag: String
+            tagName: String
         ) {
             val random = Random()
             if (seed != null) random.setSeed(seed)
@@ -117,6 +118,9 @@ class GraphSubcommand : NoRunCliktCommand(
                 )
                 hibernate.save(identityGraph)
             }
+
+            val tag = Tag(tagName)
+            hibernate.saveOrUpdate(tag)
 
             // Generate n graphs
             (0 until n).forEach { _ ->

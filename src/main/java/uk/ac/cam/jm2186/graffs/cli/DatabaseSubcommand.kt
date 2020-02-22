@@ -4,8 +4,7 @@ import com.github.ajalt.clikt.core.NoRunCliktCommand
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
-import uk.ac.cam.jm2186.graffs.storage.model.DistortedGraph
-import uk.ac.cam.jm2186.graffs.storage.model.DistortedGraph_
+import uk.ac.cam.jm2186.graffs.storage.model.Tag
 
 
 class DatabaseSubcommand : NoRunCliktCommand(
@@ -38,7 +37,11 @@ class DatabaseSubcommand : NoRunCliktCommand(
 
         override fun run0() {
             hibernate.beginTransaction()
-            val builder = hibernate.criteriaBuilder
+
+            val tag = hibernate.load(Tag::class.java, tag)
+            hibernate.delete(tag)
+
+            /*val builder = hibernate.criteriaBuilder
 
             val query = builder.createQuery(DistortedGraph::class.java)
             val root = query.from(DistortedGraph::class.java)
@@ -47,10 +50,10 @@ class DatabaseSubcommand : NoRunCliktCommand(
             )
             val graphs = hibernate.createQuery(query).list()
 
-            graphs.forEach { hibernate.delete(it) }
+            graphs.forEach { hibernate.delete(it) }*/
 
             hibernate.transaction.commit()
-            println("Deleted ${graphs.size} generated graphs, and related experiments")
+            //println("Deleted ${graphs.size} generated graphs, and related experiments")
         }
     }
 
