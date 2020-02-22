@@ -11,19 +11,12 @@ class BetweennessCentralityMetric : Metric {
         override fun createMetric(params: List<Number>) = BetweennessCentralityMetric()
     }
 
-    internal companion object {
-        fun compute(graph: Graph) {
-            val alg = BetweennessCentrality("v")
-            alg.computeEdgeCentrality(false)
-            alg.init(graph)
-            alg.compute()
-            removeNodeAttributesExceptV(graph)
-            // graph nodes now contain 'v' attributes
-        }
-    }
-
     override fun evaluate(graph: Graph): MetricResult {
-        compute(graph)
+        val alg = BetweennessCentrality("v")
+        alg.computeEdgeCentrality(false)
+        alg.init(graph)
+        alg.compute()
+        removeNodeAttributesExceptV(graph)
 
         return null to MetricExperiment.writeValuesGraph(graph)
     }
