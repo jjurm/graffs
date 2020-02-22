@@ -14,6 +14,7 @@ interface Metric : Serializable {
     companion object {
         val map = mapOf<MetricId, MetricFactory>(
             "AverageDegree" to AverageDegreeMetric.Factory(),
+            "Degree" to DegreeMetric.Factory(),
             "BetweennessCentrality" to BetweennessCentralityMetric.Factory(),
             "PageRank" to PageRankMetric.Factory(),
             "DangalchevClosenessCentrality" to ClosenessCentralityMetric.DangalchevFactory()
