@@ -2,6 +2,7 @@ package uk.ac.cam.jm2186.graffs.metric
 
 import org.graphstream.graph.Graph
 import org.graphstream.graph.Node
+import uk.ac.cam.jm2186.graffs.graph.ATTRIBUTE_NAME_NODE_VALUE
 import java.io.Serializable
 
 typealias MetricId = String
@@ -20,7 +21,7 @@ interface Metric : Serializable {
 
         internal fun removeNodeAttributesExceptV(graph: Graph) {
             graph.getEachNode<Node>().forEach { node ->
-                node.attributeKeyIterator.retainIf { it == "v" }
+                node.attributeKeyIterator.retainIf { it == ATTRIBUTE_NAME_NODE_VALUE }
             }
         }
 

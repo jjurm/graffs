@@ -7,7 +7,9 @@ import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.convert
 import com.github.ajalt.clikt.parameters.arguments.multiple
+import org.graphstream.graph.Edge
 import org.graphstream.graph.Graph
+import uk.ac.cam.jm2186.graffs.graph.ATTRIBUTE_NAME_EDGE_WEIGHT
 import uk.ac.cam.jm2186.graffs.metric.AverageDegreeMetric
 import uk.ac.cam.jm2186.graffs.storage.GraphDataset
 
@@ -68,8 +70,9 @@ class DatasetSubcommand : NoRunCliktCommand(
             toLoad?.forEach { dataset ->
                 val graph = dataset.loadGraph()
                 val averageDegree = AverageDegreeMetric().evaluate(graph)
+                val hasWeights = graph.getEdgeSet<Edge>().firstOrNull()?.hasAttribute(ATTRIBUTE_NAME_EDGE_WEIGHT) ?: false
                 println(
-                    "- ${dataset.id} has ${graph.nodeCount} nodes with average degree ${"%.${2}f".format(averageDegree.first)}"
+                    "- ${dataset.id} has ${graph.nodeCount} nodes with average degree ${"%.${2}f".format(averageDegree.first)}${if (hasWeights) " (edges have weights)" else ""}"
                 )
             }
         }

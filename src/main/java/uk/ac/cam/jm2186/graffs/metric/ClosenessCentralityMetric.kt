@@ -3,6 +3,7 @@ package uk.ac.cam.jm2186.graffs.metric
 import org.graphstream.algorithm.measure.AbstractCentrality
 import org.graphstream.algorithm.measure.ClosenessCentrality
 import org.graphstream.graph.Graph
+import uk.ac.cam.jm2186.graffs.graph.ATTRIBUTE_NAME_NODE_VALUE
 import uk.ac.cam.jm2186.graffs.metric.Metric.Companion.removeNodeAttributesExceptV
 import uk.ac.cam.jm2186.graffs.storage.model.MetricExperiment
 
@@ -13,7 +14,7 @@ class ClosenessCentralityMetric(val dangalchev: Boolean) : Metric {
     }
 
     override fun evaluate(graph: Graph): MetricResult {
-        val alg = ClosenessCentrality("v", AbstractCentrality.NormalizationMode.NONE, true, dangalchev)
+        val alg = ClosenessCentrality(ATTRIBUTE_NAME_NODE_VALUE, AbstractCentrality.NormalizationMode.NONE, true, dangalchev)
         alg.init(graph)
         alg.compute()
         removeNodeAttributesExceptV(graph)

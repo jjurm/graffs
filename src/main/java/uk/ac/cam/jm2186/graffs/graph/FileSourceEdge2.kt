@@ -43,15 +43,24 @@ class FileSourceEdge2(edgesAreDirected: Boolean) : FileSourceEdge(edgesAreDirect
 
             var id2 = getWordOrNumberOrStringOrEolOrEof()
 
-            if (id1 != id2) {
-                val edgeId = Integer.toString(edgeid++)
-                declareNode(id2)
-                sendEdgeAdded(graphName, edgeId, id1, id2, directed)
-            }
+            if (id2 != "EOL") {
+                if (id1 != id2) {
+                    val edgeId = Integer.toString(edgeid++)
+                    declareNode(id2)
+                    sendEdgeAdded(graphName, edgeId, id1, id2, directed)
 
-            // ignore all other tokens on the line
-            while (id2 != "EOL") {
-                id2 = getWordOrNumberOrStringOrEolOrEof()
+                    // try to read edge weight
+                    id2 = getWordOrNumberOrStringOrEolOrEof()
+                    if (id2 != "EOL") {
+                        val weight = id2.toDouble()
+                        sendEdgeAttributeAdded(graphName, edgeId, ATTRIBUTE_NAME_EDGE_WEIGHT, weight)
+                    }
+                }
+
+                // ignore all other tokens on the line
+                while (id2 != "EOL") {
+                    id2 = getWordOrNumberOrStringOrEolOrEof()
+                }
             }
         }
 

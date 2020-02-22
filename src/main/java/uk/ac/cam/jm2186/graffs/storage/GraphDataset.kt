@@ -19,10 +19,10 @@ class GraphDataset(val id: GraphDatasetId, validate: Boolean = false) {
     companion object {
 
         @JvmStatic
-        val workingDirectory = System.getProperty("user.dir")
+        var workingDirectory = System.getProperty("user.dir")
 
         const val DATASET_DIRECTORY_NAME = "data"
-        val datasetDirectory = File(File(workingDirectory), DATASET_DIRECTORY_NAME)
+        val datasetDirectory get() = File(File(workingDirectory), DATASET_DIRECTORY_NAME)
 
         /**
          * Returns list of datasets from subdirectories of `data` folder that are not hidden and not starting with ".".
