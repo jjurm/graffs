@@ -100,7 +100,7 @@ class ExperimentSubcommand : NoRunCliktCommand(
                 val (value, graphValues) = metric.evaluate(graph)
                 stopWatch.stop()
 
-                val sTag = leftPad(distortedGraph.tag?.let { "`$it`" } ?: "*", sMaxTagLength + 2)
+                val sTag = rightPad(distortedGraph.tag?.let { "`$it`" } ?: "*", sMaxTagLength + 2)
                 val sGraph = rightPad(distortedGraph.datasetId, sMaxGraphLength)
                 val sSeed = leftPad(distortedGraph.seed.toString(16), 17)
                 val sMetric = rightPad(metricId, sMaxMetricLength)

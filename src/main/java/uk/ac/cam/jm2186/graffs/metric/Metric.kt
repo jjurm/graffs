@@ -14,7 +14,8 @@ interface Metric : Serializable {
         val map = mapOf<MetricId, MetricFactory>(
             "AverageDegree" to AverageDegreeMetric.Factory(),
             "BetweennessCentrality" to BetweennessCentralityMetric.Factory(),
-            "PageRank" to PageRankMetric.Factory()
+            "PageRank" to PageRankMetric.Factory(),
+            "DangalchevClosenessCentrality" to ClosenessCentralityMetric.DangalchevFactory()
         )
 
         internal fun removeNodeAttributesExceptV(graph: Graph) {
