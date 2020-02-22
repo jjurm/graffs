@@ -20,7 +20,7 @@ plugins {
 group 'uk.ac.cam.jm2186'
 version '1.0-SNAPSHOT-' + gitVersion()
 
-mainClassName = "uk.ac.cam.jm2186.graffs.cli.ControllerKt"
+mainClassName = "uk.ac.cam.jm2186.graffs.cli.GraffsKt"
 
 buildConfig {
     buildConfigField 'java.time.Instant', 'BUILD_DATE', 'java.time.Instant.ofEpochMilli(' + System.currentTimeMillis() + 'L)'
@@ -51,7 +51,8 @@ task jarUpload(dependsOn: jar) {
             commandLine "scp", "${buildDir}/libs/${archivesBaseName}-${version}.jar", "${serverName}:${jarDir}/${archivesBaseName}-${version}.jar"
         }
         exec {
-            commandLine "ssh", serverName, "echo 'spark-submit ${jarDir}/${archivesBaseName}-${version}.jar \$@' > ~/scratch/${archivesBaseName} ; chmod u+x ~/scratch/${archivesBaseName}"
+            //commandLine "ssh", serverName, "echo 'spark-submit ${jarDir}/${archivesBaseName}-${version}.jar \$@' > ~/scratch/${archivesBaseName} ; chmod u+x ~/scratch/${archivesBaseName}"
+            commandLine "ssh", serverName, "echo 'java -jar ${jarDir}/${archivesBaseName}-${version}.jar \$@' > ~/scratch/${archivesBaseName} ; chmod u+x ~/scratch/${archivesBaseName} ; _GRAFFS_COMPLETE=bash graffs > ./graffs-completion.sh"
         }
     }
 }

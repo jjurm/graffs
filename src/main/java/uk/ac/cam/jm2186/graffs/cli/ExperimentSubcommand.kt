@@ -61,7 +61,7 @@ class ExperimentSubcommand : NoRunCliktCommand(
             help = "Tags of graphs that this experiment should run on, delimited by comma"
         ).split(",").required()
 
-        private val config by requireObject<Controller.Config>()
+        private val config by requireObject<Graffs.Config>()
         private val spark by SparkHelper.delegate { config.runOnCluster }
 
         override fun run0() {

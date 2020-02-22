@@ -46,10 +46,15 @@ class GraphSubcommand : NoRunCliktCommand(
             criteria.multiselect(root.get(DistortedGraph_.tag), builder.count(root.get(DistortedGraph_.id))).where(
                 builder.notEqual(root.get<GraphProducerId>(DistortedGraph_.generator), IdentityGenerator.ID)
             ).groupBy(root.get(DistortedGraph_.tag))
-            hibernate.createQuery(criteria).list().forEach { tuple ->
-                val tag = tuple.get(0) as String
-                val count = tuple.get(1) as Long
-                println("- $count generated graphs for tag `$tag`")
+            val results = hibernate.createQuery(criteria).list()
+            if (results.isNotEmpty()) {
+                results.forEach { tuple ->
+                    val tag = tuple.get(0) as String
+                    val count = tuple.get(1) as Long
+                    println("- $count generated graphs for tag `$tag`")
+                }
+            } else {
+                println("0 generated graphs")
             }
         }
     }
@@ -61,7 +66,7 @@ class GraphSubcommand : NoRunCliktCommand(
         }.required()
         val generator by option(help = "algorithm to generate graphs").choice(*GraphProducer.map.keys.toTypedArray())
             .default(RemovingEdgesGenerator.ID)
-        val params by option(help = "parameters to pass to the generator").double().split(delimiter = ",")
+        val params by option(help = "parameters to pass to the generator, delimited by comma").double().split(delimiter = ",")
             .default(listOf(0.05))
         val seed by option(help = "optional seed to the generator").long()
         val tag by option("--tag", help = "Tags are used to refer to graphs later").required()
@@ -133,7 +138,7 @@ class GraphSubcommand : NoRunCliktCommand(
         name = "viz", help = "Visualise graph"
     ) {
         private val index by argument(
-            "<index>", help = "Index of the generated graph in the database to visualise"
+            help = "Index of the generated graph in the database to visualise"
         ).long().default(1)
 
         private fun getGraph(): Graph {

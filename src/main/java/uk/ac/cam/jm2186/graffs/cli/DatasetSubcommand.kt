@@ -84,7 +84,6 @@ class DatasetSubcommand : NoRunCliktCommand(
     ) {
 
         val dataset by argument(
-            "<dataset>",
             help = "Dataset to visualise"
         ).convert { GraphDataset(it) }
 

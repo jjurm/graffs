@@ -11,10 +11,11 @@ import uk.ac.cam.jm2186.BuildConfig
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-class Controller : CliktCommand(
+class Graffs : CliktCommand(
     name = "graffs",
     printHelpOnEmptyArgs = true,
     help = "Tool for evaluating Graph Metric Robustness",
+    autoCompleteEnvvar = "_GRAFFS_COMPLETE",
     epilog = """
         ```
         Examples:
@@ -68,4 +69,4 @@ class Controller : CliktCommand(
     }
 }
 
-fun main(args: Array<String>) = Controller().main(args)
+fun main(args: Array<String>) = Graffs().main(args)
