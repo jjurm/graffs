@@ -13,6 +13,7 @@ interface GraphProducer {
     companion object {
         val map: Map<GraphProducerId, Class<out GraphProducerFactory>> = mapOf(
             RemovingEdgesGenerator.ID to RemovingEdgesGenerator.Factory::class.java,
+            EdgeThresholdGraphProducer.ID to EdgeThresholdGraphProducer.Factory::class.java,
             IdentityGenerator.ID to IdentityGenerator.Factory::class.java
         )
     }
