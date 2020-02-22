@@ -15,7 +15,8 @@ class DistortedGraph(
     val generator: Class<out GraphProducerFactory>,
     val seed: Long,
     @ElementCollection(fetch = FetchType.EAGER)
-    val params: List<Number>
+    val params: List<Number>,
+    val tag: String?
 ) : AbstractJpaPersistable<Long>() {
 
     fun produceGenerated(): Graph {

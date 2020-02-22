@@ -43,13 +43,16 @@ class GraphSubcommand : NoRunCliktCommand(
     ) {
         override fun run0() {
             val builder = hibernate.criteriaBuilder
-            val criteria = builder.createQuery(DistortedGraph::class.java)
+            val criteria = builder.createTupleQuery()
             val root = criteria.from(DistortedGraph::class.java)
-            criteria.select(root).where(
+            criteria.multiselect(root.get(DistortedGraph_.tag), builder.count(root.get(DistortedGraph_.id))).where(
                 builder.notEqual(root.get(DistortedGraph_.generator), IdentityGraphProducer.Factory::class.java)
-            )
-            val count = hibernate.createQuery(criteria).list().size
-            println("There are $count generated graphs")
+            ).groupBy(root.get(DistortedGraph_.tag))
+            hibernate.createQuery(criteria).list().forEach { tuple ->
+                val tag = tuple.get(0) as String
+                val count = tuple.get(1) as Long
+                println("- $count generated graphs for tag `$tag`")
+            }
         }
     }
 
@@ -63,6 +66,7 @@ class GraphSubcommand : NoRunCliktCommand(
         ).default(RemovingEdgesGraphProducer.Factory::class.java)
         val params by option(help = "parameters to pass to the generator").double().multiple(default = listOf(0.05))
         val seed by option(help = "optional seed to the generator").long()
+        val tag by option("--tag", help = "Tags are used to refer to graphs later").required()
     }
 
     inner class GenerateGraphsCommand : AbstractHibernateCommand(
@@ -75,7 +79,7 @@ class GraphSubcommand : NoRunCliktCommand(
         override fun run0() {
             (generateOptions ?: throw PrintHelpMessage(this))
                 .apply {
-                    this@GenerateGraphsCommand.generateNGraphsFromDataset(dataset, n, generator, params, seed)
+                    this@GenerateGraphsCommand.generateNGraphsFromDataset(dataset, n, generator, params, seed, tag)
                 }
         }
 
@@ -84,7 +88,8 @@ class GraphSubcommand : NoRunCliktCommand(
             n: Int,
             graphProducerFactory: Class<out GraphProducerFactory>,
             params: List<Number>,
-            seed: Long? = null
+            seed: Long?,
+            tag: String
         ) {
             val random = Random()
             if (seed != null) random.setSeed(seed)
@@ -110,7 +115,8 @@ class GraphSubcommand : NoRunCliktCommand(
                     datasetId = graphDataset.id,
                     generator = IdentityGraphProducer.Factory::class.java,
                     seed = 0L,
-                    params = emptyList()
+                    params = emptyList(),
+                    tag = null
                 )
                 hibernate.save(identityGraph)
             }
@@ -121,7 +127,8 @@ class GraphSubcommand : NoRunCliktCommand(
                     datasetId = graphDataset.id,
                     generator = graphProducerFactory,
                     seed = random.nextLong(),
-                    params = params
+                    params = params,
+                    tag = tag
                 )
                 hibernate.save(generatedGraph)
             }

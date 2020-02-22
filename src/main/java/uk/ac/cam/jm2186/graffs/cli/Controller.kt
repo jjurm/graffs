@@ -22,9 +22,9 @@ class Controller : CliktCommand(
         > graffs dataset list
         > graffs dataset load social-network
         > graffs graph generate --help
-        > graffs graph generate -n 10 --dataset social-network --generator removing-edges --params 0.05
-        > graffs experiment execute
-        > graffs experiment robustness --dataset social-network --metric BetweennessCentrality --measure RankInstability
+        > graffs graph generate -n 10 --dataset social-network --generator removing-edges --params 0.05 --tag social1
+        > graffs experiment execute --tags social1
+        > graffs experiment robustness --dataset social-network --tag social1 --metric BetweennessCentrality --measure RankInstability
         ```
     """.trimIndent()
 ) {
