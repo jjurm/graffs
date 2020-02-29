@@ -38,6 +38,12 @@ class FileSourceEdge2(edgesAreDirected: Boolean) : FileSourceEdge(edgesAreDirect
             // Empty line.
         } else if (id1 == "EOF") {
             return false
+        } else if (id1 == "protein1") {
+            // skip whole line
+            var id2 = id1
+            while (id2 != "EOL") {
+                id2 = getWordOrNumberOrStringOrEolOrEof()
+            }
         } else {
             declareNode(id1)
 

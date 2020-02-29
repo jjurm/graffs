@@ -72,7 +72,7 @@ class DatasetSubcommand : NoRunCliktCommand(
                 val averageDegree = AverageDegreeMetric().evaluate(graph)
                 val hasWeights = graph.getEdgeSet<Edge>().firstOrNull()?.hasAttribute(ATTRIBUTE_NAME_EDGE_WEIGHT) ?: false
                 println(
-                    "- ${dataset.id} has ${graph.nodeCount} nodes with average degree ${"%.${2}f".format(averageDegree.first)}${if (hasWeights) " (edges have weights)" else ""}"
+                    "- ${dataset.id} has ${graph.nodeCount} nodes, ${graph.edgeCount} edges, with average degree ${"%.${2}f".format(averageDegree.first)}${if (hasWeights) " (edges have weights)" else ""}"
                 )
             }
         }
