@@ -4,5 +4,7 @@ package uk.ac.cam.jm2186.graffs.storage.model
 internal val entities = listOf(
     DistortedGraph::class,
     MetricExperiment::class,
-    Tag::class
+    Tag::class,
+    Experiment::class,
+    GraphGenerator::class
 )
