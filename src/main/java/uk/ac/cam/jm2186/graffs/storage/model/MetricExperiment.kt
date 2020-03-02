@@ -17,7 +17,7 @@ import javax.persistence.*
 class MetricExperiment(
     @Id val metricId: MetricId,
     @Id @ManyToOne(fetch = FetchType.EAGER) @JoinColumn(nullable = false)
-    val graph: DistortedGraph,
+    val graph: DistortedGraphOld,
 
     val time: Long,
     val value: Double?
@@ -62,7 +62,7 @@ class MetricExperiment(
 @IdClassEntity
 data class MetricExperimentId(
     val metricId: MetricId,
-    val graph: DistortedGraph
+    val graph: DistortedGraphOld
 ) : Serializable {
 
     override fun equals(other: Any?): Boolean {

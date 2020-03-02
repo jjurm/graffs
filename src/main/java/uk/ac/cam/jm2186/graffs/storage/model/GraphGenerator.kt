@@ -9,6 +9,7 @@ import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.double
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.long
+import org.graphstream.graph.Graph
 import uk.ac.cam.jm2186.graffs.graph.GraphProducer
 import uk.ac.cam.jm2186.graffs.graph.GraphProducerId
 import uk.ac.cam.jm2186.graffs.graph.RemovingEdgesGenerator
@@ -17,6 +18,7 @@ import javax.persistence.ElementCollection
 import javax.persistence.Entity
 import javax.persistence.FetchType
 import javax.persistence.Id
+import kotlin.random.Random
 
 @Entity
 class GraphGenerator(
@@ -30,6 +32,16 @@ class GraphGenerator(
     val seed: Long
 ) : Serializable {
 
+    fun produceFromGraph(sourceGraph: Graph): List<Graph> {
+        val generatorFactory = GraphProducer.map.getValue(method).getDeclaredConstructor().newInstance()
+        val seedSource = Random(seed)
+
+        return (0 until n).map { _ ->
+            generatorFactory
+                .createGraphProducer(sourceGraph, seedSource.nextLong(), params)
+                .produceComputed()
+        }
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -49,7 +61,9 @@ class GraphGenerator(
     }
 }
 
-fun CliktCommand.graphGenerator_name() = option("--name", help = "unique name of the graph generator", metavar = "NAME").required()
+fun CliktCommand.graphGenerator_name() =
+    option("--name", help = "unique name of the graph generator", metavar = "NAME").required()
+
 fun CliktCommand.graphGenerator_n() =
     option("-n", help = "Number of graphs to generate from each dataset").int().required()
 

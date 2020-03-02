@@ -10,7 +10,7 @@ class Tag(
 ) : Serializable {
 
     @OneToMany(mappedBy = "tag", cascade = [CascadeType.REMOVE], orphanRemoval = true, fetch = FetchType.LAZY)
-    val distortedGraphs: List<DistortedGraph> = listOf()
+    val distortedGraphs: List<DistortedGraphOld> = listOf()
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

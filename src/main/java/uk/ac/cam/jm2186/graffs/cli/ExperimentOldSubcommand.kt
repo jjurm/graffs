@@ -1,7 +1,6 @@
 package uk.ac.cam.jm2186.graffs.cli
 
 import com.github.ajalt.clikt.core.NoRunCliktCommand
-import com.github.ajalt.clikt.core.requireObject
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.choice
@@ -21,7 +20,6 @@ import uk.ac.cam.jm2186.graffs.storage.GraphDataset
 import uk.ac.cam.jm2186.graffs.storage.model.*
 import uk.ac.cam.jm2186.graffs.util.TimePerf
 import java.util.concurrent.TimeUnit
-import kotlin.math.max
 
 class ExperimentOldSubcommand : NoRunCliktCommand(
     name = "experiment-old",
@@ -126,7 +124,7 @@ class ExperimentOldSubcommand : NoRunCliktCommand(
             spark.stop()
         }
 
-        private fun Session.getAllGeneratedGraphs(tagNames: List<String>): List<DistortedGraph> {
+        private fun Session.getAllGeneratedGraphs(tagNames: List<String>): List<DistortedGraphOld> {
             val tags = tagNames.mapNotNull { hibernate.get(Tag::class.java, it) }
             val distortedGraphs = tags.flatMap { tag -> tag.distortedGraphs }
 
@@ -134,8 +132,8 @@ class ExperimentOldSubcommand : NoRunCliktCommand(
             val datasets = distortedGraphs.map { it.datasetId }.distinct()
 
             val builder = this.criteriaBuilder
-            val criteria = builder.createQuery(DistortedGraph::class.java)
-            val root2 = criteria.from(DistortedGraph::class.java)
+            val criteria = builder.createQuery(DistortedGraphOld::class.java)
+            val root2 = criteria.from(DistortedGraphOld::class.java)
             criteria.select(root2).where(
                 root2.get(DistortedGraph_.datasetId).`in`(datasets),
                 builder.isNull(root2.get<Tag?>(DistortedGraph_.tag))

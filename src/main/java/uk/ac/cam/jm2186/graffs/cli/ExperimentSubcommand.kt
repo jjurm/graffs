@@ -4,6 +4,7 @@ import com.github.ajalt.clikt.core.NoRunCliktCommand
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.types.choice
+import uk.ac.cam.jm2186.graffs.storage.GraphDataset
 import uk.ac.cam.jm2186.graffs.storage.getAllEntities
 import uk.ac.cam.jm2186.graffs.storage.inTransaction
 import uk.ac.cam.jm2186.graffs.storage.model.*
@@ -53,10 +54,12 @@ class ExperimentSubcommand : NoRunCliktCommand(
             val generator = hibernate.get(GraphGenerator::class.java, generatorName)
             val experiment = Experiment(
                 name = name,
-                datasets = datasets.toMutableList(),
                 generator = generator,
                 metrics = metrics.toMutableList(),
                 robustnessMeasures = robustnessMeasures.toMutableList()
+            )
+            experiment.graphCollections.putAll(
+                datasets.map { it to GraphCollection() }
             )
             hibernate.inTransaction { save(experiment) }
         }
@@ -97,7 +100,10 @@ class ExperimentSubcommand : NoRunCliktCommand(
         private val phasesAll = listOf(::generate, ::metrics, ::robustness)
 
         private val experimentName by experiment_name()
-        private val phaseIndex by argument(name = "phase", help = "Run all up to the specified phase (* for all phases)").choice(phasesMap)
+        private val phaseIndex by argument(
+            name = "phase",
+            help = "Run all up to the specified phase (* for all phases)"
+        ).choice(phasesMap)
 
         override fun run0() {
             val experiment = hibernate.get(Experiment::class.java, experimentName)
@@ -107,8 +113,19 @@ class ExperimentSubcommand : NoRunCliktCommand(
             }
         }
 
-        fun generate(experiment: Experiment) {
+        fun generate(experiment: Experiment) = hibernate.inTransaction {
+            experiment.graphCollections.forEach { datasetId, graphCollection ->
+                if (graphCollection.distortedGraphs.isEmpty()) {
 
+                    val sourceGraph = GraphDataset(datasetId).loadGraph()
+                    val generated = experiment.generator.produceFromGraph(sourceGraph)
+                    graphCollection.distortedGraphs.addAll(
+                        generated.map { DistortedGraph(it) }
+                    )
+
+                }
+            }
+            save(experiment)
         }
 
         fun metrics(experiment: Experiment) {

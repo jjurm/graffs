@@ -17,7 +17,7 @@ import org.graphstream.graph.Graph
 import uk.ac.cam.jm2186.graffs.graph.*
 import uk.ac.cam.jm2186.graffs.storage.GraphDataset
 import uk.ac.cam.jm2186.graffs.storage.GraphDatasetId
-import uk.ac.cam.jm2186.graffs.storage.model.DistortedGraph
+import uk.ac.cam.jm2186.graffs.storage.model.DistortedGraphOld
 import uk.ac.cam.jm2186.graffs.storage.model.DistortedGraph_
 import uk.ac.cam.jm2186.graffs.storage.model.Tag
 import java.util.*
@@ -43,7 +43,7 @@ class GraphSubcommand : NoRunCliktCommand(
         override fun run0() {
             val builder = hibernate.criteriaBuilder
             val criteria = builder.createTupleQuery()
-            val root = criteria.from(DistortedGraph::class.java)
+            val root = criteria.from(DistortedGraphOld::class.java)
             criteria.multiselect(root.get(DistortedGraph_.tag), builder.count(root.get(DistortedGraph_.id))).where(
                 builder.notEqual(root.get<GraphProducerId>(DistortedGraph_.generator), IdentityGenerator.ID)
             ).groupBy(root.get(DistortedGraph_.tag))
@@ -101,15 +101,15 @@ class GraphSubcommand : NoRunCliktCommand(
 
             // See if the database contains an identity graph for this dataset
             val builder = hibernate.criteriaBuilder
-            val criteria = builder.createQuery(DistortedGraph::class.java)
-            val root = criteria.from(DistortedGraph::class.java)
+            val criteria = builder.createQuery(DistortedGraphOld::class.java)
+            val root = criteria.from(DistortedGraphOld::class.java)
             criteria.select(root)
                 .where(
                     builder.equal(root.get<GraphDatasetId>(DistortedGraph_.datasetId), graphDataset.id),
                     builder.equal(root.get<GraphProducerId>(DistortedGraph_.generator), IdentityGenerator.ID)
                 )
             if (hibernate.createQuery(criteria).resultList.isEmpty()) {
-                val identityGraph = DistortedGraph(
+                val identityGraph = DistortedGraphOld(
                     datasetId = graphDataset.id,
                     generator = IdentityGenerator.ID,
                     seed = 0L,
@@ -124,7 +124,7 @@ class GraphSubcommand : NoRunCliktCommand(
 
             // Generate n graphs
             (0 until n).forEach { _ ->
-                val generatedGraph = DistortedGraph(
+                val generatedGraph = DistortedGraphOld(
                     datasetId = graphDataset.id,
                     generator = graphProducerFactory,
                     seed = random.nextLong(),
@@ -146,7 +146,7 @@ class GraphSubcommand : NoRunCliktCommand(
         ).long().default(1)
 
         private fun getGraph(): Graph {
-            val graph = hibernate.find(DistortedGraph::class.java, index) ?: throw BadParameterValue(
+            val graph = hibernate.find(DistortedGraphOld::class.java, index) ?: throw BadParameterValue(
                 "Generated graph with index $index not found",
                 paramName = VisualiseCommand::index.name
             )
