@@ -34,8 +34,13 @@ fun <T> Session.getAllEntities(type:Class<T>): List<T> {
     return createQuery(criteria).list()
 }
 
-fun <R> Session.inTransaction(block: Session.() -> R) {
-    beginTransaction()
-    this.block()
-    transaction.commit()
+suspend fun <R> Session.inTransaction(block: suspend Session.() -> R) {
+    try {
+        beginTransaction()
+        this.block()
+        transaction.commit()
+    } catch (e: Exception) {
+        transaction.rollback()
+        throw e
+    }
 }
