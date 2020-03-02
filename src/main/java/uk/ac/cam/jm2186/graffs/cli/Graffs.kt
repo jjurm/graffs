@@ -4,8 +4,6 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.output.CliktHelpFormatter
-import com.github.ajalt.clikt.parameters.options.flag
-import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.versionOption
 import uk.ac.cam.jm2186.BuildConfig
 import java.time.ZoneId
@@ -41,18 +39,15 @@ class Graffs : CliktCommand(
         subcommands(
             DatasetSubcommand(),
             MetricSubcommand(),
-            GraphSubcommand(),
+            GeneratorSubcommand(),
             ExperimentSubcommand(),
+
+            GraphSubcommand(),
+            ExperimentOldSubcommand(),
             DatabaseSubcommand(),
             TestSubcommand()
         )
     }
-
-    class Config(
-        val runOnCluster: Boolean
-    )
-
-    val runOnCluster by option("--cluster", help = "Run on cluster. If not specified, runs locally.").flag()
 
     init {
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
@@ -65,7 +60,6 @@ class Graffs : CliktCommand(
     }
 
     override fun run() {
-        context.findObject { Config(runOnCluster) }
     }
 }
 

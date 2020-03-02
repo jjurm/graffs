@@ -38,7 +38,7 @@ class DatabaseSubcommand : NoRunCliktCommand(
         override fun run0() {
             hibernate.beginTransaction()
 
-            val tag = hibernate.load(Tag::class.java, tag)
+            val tag = hibernate.get(Tag::class.java, tag)
             hibernate.delete(tag)
 
             /*val builder = hibernate.criteriaBuilder
