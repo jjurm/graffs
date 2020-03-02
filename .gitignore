@@ -167,3 +167,5 @@ gradle-app.setting
 .shelf/
 data/
 NOTES.md
+.idea/**/ros.xml
+.idea/**/jarRepositories.xml
