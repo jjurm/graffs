@@ -5,6 +5,8 @@ import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.split
+import org.hibernate.annotations.LazyCollection
+import org.hibernate.annotations.LazyCollectionOption
 import uk.ac.cam.jm2186.graffs.metric.MetricId
 import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasureId
 import uk.ac.cam.jm2186.graffs.storage.GraphDataset
@@ -17,14 +19,19 @@ class Experiment(
     @Id
     val name: String,
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne
+    @LazyCollection(LazyCollectionOption.FALSE)
     val generator: GraphGenerator,
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection
+    @LazyCollection(LazyCollectionOption.FALSE)
     val metrics: MutableList<MetricId> = mutableListOf(),
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection
+    @LazyCollection(LazyCollectionOption.FALSE)
     val robustnessMeasures: MutableList<RobustnessMeasureId> = mutableListOf()
 ) : Serializable {
-    @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
+
+    @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true)
+    @LazyCollection(LazyCollectionOption.FALSE)
     val graphCollections: MutableMap<GraphDatasetId, GraphCollection> = mutableMapOf()
 
     val datasets get() = graphCollections.keys

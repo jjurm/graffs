@@ -60,13 +60,13 @@ class GeneratorSubcommand : NoRunCliktCommand(
         }
     }
 
-    class RemoveSub : AbstractHibernateCommand(
+    class RemoveSub : CoroutineCommand(
         name = "remove",
         help = "Remove a graph generator"
     ) {
         val name by graphGenerator_name()
 
-        override fun run0() {
+        override suspend fun run1() {
             val generator = hibernate.load(GraphGenerator::class.java, name)
             hibernate.inTransaction { delete(generator) }
         }

@@ -5,6 +5,9 @@ internal val entities = listOf(
     DistortedGraphOld::class,
     MetricExperiment::class,
     Tag::class,
+
     Experiment::class,
-    GraphGenerator::class
+    GraphGenerator::class,
+    GraphCollection::class,
+    DistortedGraph::class
 )

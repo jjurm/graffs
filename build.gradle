@@ -31,7 +31,7 @@ jar {
         attributes 'Main-Class': mainClassName
     }
     zip64 true
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
     exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
     doLast {
         copy {
@@ -85,6 +85,9 @@ dependencies {
 
     // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
+
+    // https://mvnrepository.com/artifact/log4j/log4j
+    implementation group: 'log4j', name: 'log4j', version: '1.2.17'
 
     // https://mvnrepository.com/artifact/org.graphstream/gs-core
     implementation group: 'org.graphstream', name: 'gs-core', version: '1.3'

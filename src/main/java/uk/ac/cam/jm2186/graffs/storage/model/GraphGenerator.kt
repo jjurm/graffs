@@ -28,7 +28,7 @@ class GraphGenerator(
     val n: Int,
     val method: GraphProducerId,
     @ElementCollection(fetch = FetchType.EAGER)
-    val params: List<Number>,
+    val params: List<Double>,
     val seed: Long
 ) : Serializable {
 

@@ -42,8 +42,6 @@ class Graffs : CliktCommand(
             GeneratorSubcommand(),
             ExperimentSubcommand(),
 
-            GraphSubcommand(),
-            ExperimentOldSubcommand(),
             DatabaseSubcommand(),
             TestSubcommand()
         )
