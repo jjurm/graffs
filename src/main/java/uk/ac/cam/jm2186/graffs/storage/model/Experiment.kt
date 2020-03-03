@@ -19,11 +19,10 @@ class Experiment(
     val generator: GraphGenerator,
     @ElementCollection
     @LazyCollection(LazyCollectionOption.FALSE)
-    // TODO Change lists to sets
-    val metrics: MutableList<MetricId> = mutableListOf(),
+    val metrics: MutableSet<MetricId> = mutableSetOf(),
     @ElementCollection
     @LazyCollection(LazyCollectionOption.FALSE)
-    val robustnessMeasures: MutableList<RobustnessMeasureId> = mutableListOf()
+    val robustnessMeasures: MutableSet<RobustnessMeasureId> = mutableSetOf()
 ) : NamedEntity(name) {
 
     @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true)

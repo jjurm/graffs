@@ -60,8 +60,8 @@ class ExperimentSubcommand : NoRunCliktCommand(
             val experiment = Experiment(
                 name = name,
                 generator = generator,
-                metrics = metrics.toMutableList(),
-                robustnessMeasures = robustnessMeasures.toMutableList()
+                metrics = metrics.toMutableSet(),
+                robustnessMeasures = robustnessMeasures.toMutableSet()
             )
             experiment.graphCollections.putAll(
                 datasets.map { it to GraphCollection() }
@@ -246,8 +246,8 @@ class ExperimentSubcommand : NoRunCliktCommand(
             val experiment = Experiment(
                 name = name,
                 generator = generator,
-                metrics = metrics?.toMutableList() ?: from.metrics,
-                robustnessMeasures = robustnessMeasures?.toMutableList() ?: from.robustnessMeasures.toMutableList()
+                metrics = metrics?.toMutableSet() ?: from.metrics.toMutableSet(),
+                robustnessMeasures = robustnessMeasures?.toMutableSet() ?: from.robustnessMeasures.toMutableSet()
             )
             val datasets = datasets ?: from.datasets
             experiment.graphCollections.putAll(
