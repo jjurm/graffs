@@ -44,21 +44,8 @@ class GraphGenerator(
         }
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is GraphGenerator) return false
-
-        if (name != other.name) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        return name.hashCode()
-    }
-
     override fun toString(): String {
-        return "GraphGenerator('$name')"
+        return "$name(n=$n, method='$method', params=$params, seed=$seed)"
     }
 }
 

@@ -209,12 +209,13 @@ class ExperimentSubcommand : NoRunCliktCommand(
             val evaluated = evaluate(graph)
             stopWatch.stop()
 
-            if (evaluated) {
+            if (evaluated != null) {
                 val sGraph = rightPad(datasetId, 16)
                 val sHash = leftPad(distortedGraph.getShortHash(), 4)
                 val sMetric = rightPad(id, 20)
+                val sResult = leftPad(evaluated.toString(), 6)
                 val sTime = "${stopWatch.time / 1000}s"
-                println("- $sGraph (seed $sHash) -> $sMetric  ($sTime)")
+                println("- $sGraph (seed $sHash) -> $sMetric = $sResult  ($sTime)")
             }
         }
 
@@ -246,7 +247,7 @@ class ExperimentSubcommand : NoRunCliktCommand(
                 name = name,
                 generator = generator,
                 metrics = metrics?.toMutableList() ?: from.metrics,
-                robustnessMeasures = robustnessMeasures?.toMutableList() ?: from.robustnessMeasures
+                robustnessMeasures = robustnessMeasures?.toMutableList() ?: from.robustnessMeasures.toMutableList()
             )
             val datasets = datasets ?: from.datasets
             experiment.graphCollections.putAll(

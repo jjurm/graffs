@@ -4,6 +4,8 @@ import org.graphstream.graph.implementations.SingleGraph
 import org.graphstream.stream.file.FileSource
 import java.io.InputStream
 
+const val ATTRIBUTE_NAME_EDGE_WEIGHT = "w"
+
 fun FileSource.readGraph(inputStream: InputStream, id: String): SingleGraph {
     val graph = SingleGraph(id, false, false)
     addSink(graph)

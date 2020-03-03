@@ -1,5 +1,7 @@
 package uk.ac.cam.jm2186.graffs.metric
 
+import org.apache.commons.lang3.StringUtils
+import org.apache.commons.lang3.math.NumberUtils
 import org.graphstream.graph.Graph
 import java.io.Serializable
 
@@ -25,21 +27,35 @@ abstract class Metric(val id: MetricId) : Serializable {
     /**
      * Evaluate the metric. Assumes all required metrics have been computed for the graph.
      */
-    suspend fun evaluate(graph: Graph): Boolean {
+    suspend fun evaluate(graph: Graph): MetricResult? {
         return if (graph.hasAttribute(id)) {
             // Avoid calculating this metric if already calculated
-            false
+            null
         } else {
             evaluate0(graph)
-            if (!graph.hasAttribute(id))
+            if (!graph.hasAttribute(id)) {
                 graph.addAttribute(id)
-            true
+                MetricResult.Unit
+            } else {
+                val value = graph.getAttribute<Double>(id)
+                MetricResult.Double(value)
+            }
         }
     }
 
 }
 
 typealias MetricFactory = () -> Metric
+
+sealed class MetricResult {
+    object Unit : MetricResult() {
+        override fun toString() = "[true]"
+    }
+
+    class Double(val value: kotlin.Double) : MetricResult() {
+        override fun toString() = "%.2f".format(value)
+    }
+}
 
 interface MetricInfo {
     val id: MetricId
