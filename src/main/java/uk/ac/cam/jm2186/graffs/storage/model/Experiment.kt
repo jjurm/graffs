@@ -30,7 +30,7 @@ class Experiment(
     @LazyCollection(LazyCollectionOption.FALSE)
     val graphCollections: MutableMap<GraphDatasetId, GraphCollection> = mutableMapOf()
 
-    val datasets get() = graphCollections.keys
+    val datasets get() = graphCollections.keys.toSet()
 }
 
 
@@ -53,5 +53,17 @@ fun CliktCommand.experiment_metrics() =
     option("--metrics", help = "Graph metrics whose robustness should be calculated, delimited by comma")
         .split<String, MetricId>(",")
 
-fun CliktCommand.experiment_robustnessMeasures() = option("--robustnessMeasures", help = "Robustness measures that should be evaluated for each graph metric")
-    .split<String, RobustnessMeasureId>(",")
+fun CliktCommand.experiment_robustnessMeasures() =
+    option("--robustnessMeasures", help = "Robustness measures that should be evaluated for each graph metric")
+        .split<String, RobustnessMeasureId>(",")
+
+fun Experiment.printToConsole() {
+    println(
+        """- $name
+            |  datasets: $datasets
+            |  generator: $generator
+            |  metrics: $metrics
+            |  robustnessMeasures: $robustnessMeasures
+        """.trimMargin()
+    )
+}

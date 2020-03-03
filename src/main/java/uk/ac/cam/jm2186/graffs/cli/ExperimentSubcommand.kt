@@ -40,14 +40,7 @@ class ExperimentSubcommand : NoRunCliktCommand(
     ) {
         override fun run0() {
             hibernate.getAllEntities(Experiment::class.java).forEach {
-                println(
-                    """- ${it.name}
-                        |  datasets: ${it.datasets}
-                        |  generator: ${it.generator.name}
-                        |  metrics: ${it.metrics}
-                        |  robustnessMeasures: ${it.robustnessMeasures}
-                    """.trimMargin()
-                )
+                it.printToConsole()
             }
         }
     }
@@ -74,6 +67,8 @@ class ExperimentSubcommand : NoRunCliktCommand(
                 datasets.map { it to GraphCollection() }
             )
             hibernate.inTransaction { save(experiment) }
+
+            experiment.printToConsole()
         }
     }
 
@@ -258,6 +253,8 @@ class ExperimentSubcommand : NoRunCliktCommand(
                 datasets.map { it to GraphCollection() }
             )
             hibernate.inTransaction { save(experiment) }
+
+            experiment.printToConsole()
         }
     }
 
