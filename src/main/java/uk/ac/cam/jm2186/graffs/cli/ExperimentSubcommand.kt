@@ -157,7 +157,7 @@ class ExperimentSubcommand : NoRunCliktCommand(
             val hibernateMutex = Mutex()
             val metrics = experiment.metrics.map {
                 val info = Metric.map.getValue(it)
-                val metric = info.factory(listOf())
+                val metric = info.factory()
                 info to metric
             }
 
