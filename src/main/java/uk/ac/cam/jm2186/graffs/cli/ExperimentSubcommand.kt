@@ -1,9 +1,9 @@
 package uk.ac.cam.jm2186.graffs.cli
 
-import com.github.ajalt.clikt.core.BadParameterValue
 import com.github.ajalt.clikt.core.NoRunCliktCommand
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.choice
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
@@ -27,6 +27,7 @@ class ExperimentSubcommand : NoRunCliktCommand(
         subcommands(
             ListSub(),
             CreateSub(),
+            CloneSub(),
             RemoveSub(),
             RunSub(),
             PruneSub()
@@ -56,10 +57,10 @@ class ExperimentSubcommand : NoRunCliktCommand(
         help = "Create an experiment"
     ) {
         private val name by experiment_name()
-        private val datasets by experiment_datasets()
-        private val generatorName by experiment_generator()
-        private val metrics by experiment_metrics()
-        private val robustnessMeasures by experiment_robustnessMeasures()
+        private val datasets by experiment_datasets().required()
+        private val generatorName by experiment_generator().required()
+        private val metrics by experiment_metrics().required()
+        private val robustnessMeasures by experiment_robustnessMeasures().required()
 
         override suspend fun run1() {
             val generator = hibernate.getNamedEntity<GraphGenerator>(generatorName)
@@ -224,6 +225,39 @@ class ExperimentSubcommand : NoRunCliktCommand(
 
         private suspend fun robustness(experiment: Experiment) {
 
+        }
+    }
+
+    class CloneSub : CoroutineCommand(
+        name = "clone",
+        help = "Create a new experiment using parameters of existing experiment"
+    ) {
+        val from by experiment_name("--from", help = "Template experiment to copy properties from")
+        val name by experiment_name()
+
+        private val datasets by experiment_datasets()
+        private val generatorName by experiment_generator()
+        private val metrics by experiment_metrics()
+        private val robustnessMeasures by experiment_robustnessMeasures()
+
+        override suspend fun run1() {
+            val from = hibernate.getNamedEntity<Experiment>(from)
+
+            val generator = when (val name = generatorName) {
+                null -> from.generator
+                else -> hibernate.getNamedEntity<GraphGenerator>(name)
+            }
+            val experiment = Experiment(
+                name = name,
+                generator = generator,
+                metrics = metrics?.toMutableList() ?: from.metrics,
+                robustnessMeasures = robustnessMeasures?.toMutableList() ?: from.robustnessMeasures
+            )
+            val datasets = datasets ?: from.datasets
+            experiment.graphCollections.putAll(
+                datasets.map { it to GraphCollection() }
+            )
+            hibernate.inTransaction { save(experiment) }
         }
     }
 

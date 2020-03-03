@@ -1,10 +1,7 @@
 package uk.ac.cam.jm2186.graffs.storage.model
 
 import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.parameters.options.convert
-import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.options.required
-import com.github.ajalt.clikt.parameters.options.split
+import com.github.ajalt.clikt.parameters.options.*
 import org.hibernate.annotations.LazyCollection
 import org.hibernate.annotations.LazyCollectionOption
 import uk.ac.cam.jm2186.graffs.metric.MetricId
@@ -37,21 +34,24 @@ class Experiment(
 }
 
 
-fun CliktCommand.experiment_name() =
-    option("--name", help = "Unique name of the experiment", metavar = "NAME").required()
+fun CliktCommand.experiment_name(
+    vararg names: String = arrayOf("--name"),
+    help: String = "Unique name of the experiment"
+) =
+    option(*names, help = help, metavar = "NAME").required()
 
-fun CliktCommand.experiment_datasets() =
-    option("--datasets", help = "Source dataset(s) to generate graphs from, delimited by comma").convert {
+fun CliktCommand.experiment_datasets(): OptionWithValues<List<GraphDatasetId>?, List<GraphDatasetId>, GraphDatasetId> {
+    return option("--datasets", help = "Source dataset(s) to generate graphs from, delimited by comma").convert {
         GraphDataset(it, validate = true).id
-    }.split(",").required()
+    }.split(",")
+}
 
 fun CliktCommand.experiment_generator() =
     option("--generator", help = "Graph generator used to produce graph from source datasets", metavar = "NAME")
-        .required()
 
 fun CliktCommand.experiment_metrics() =
     option("--metrics", help = "Graph metrics whose robustness should be calculated, delimited by comma")
-        .split<String, MetricId>(",").required()
+        .split<String, MetricId>(",")
 
 fun CliktCommand.experiment_robustnessMeasures() = option("--robustnessMeasures", help = "Robustness measures that should be evaluated for each graph metric")
-    .split<String, RobustnessMeasureId>(",").required()
+    .split<String, RobustnessMeasureId>(",")
