@@ -2,18 +2,17 @@ package uk.ac.cam.jm2186.graffs.metric
 
 import org.graphstream.graph.Graph
 import org.graphstream.graph.Node
-import uk.ac.cam.jm2186.graffs.graph.ATTRIBUTE_NAME_NODE_VALUE
 
-class DegreeMetric : Metric {
+class DegreeMetric(params: MetricParams) : Metric(id) {
 
-    class Factory : MetricFactory {
-        override fun createMetric(params: List<Number>) = DegreeMetric()
+    companion object : MetricInfo() {
+        override val id = "Degree"
+        override val factory = ::DegreeMetric
     }
 
-    override fun evaluate(graph: Graph): MetricResult {
+    override suspend fun evaluate0(graph: Graph) {
         graph.getEachNode<Node>().forEach { node ->
-            node.addAttribute(ATTRIBUTE_NAME_NODE_VALUE, node.degree)
+            node.addAttribute(id, node.degree)
         }
-        return null to graph
     }
 }
