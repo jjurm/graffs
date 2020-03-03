@@ -27,6 +27,7 @@ class Experiment(
 
     @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true)
     @LazyCollection(LazyCollectionOption.FALSE)
+    @JoinColumn
     val graphCollections: MutableMap<GraphDatasetId, GraphCollection> = mutableMapOf()
 
     val datasets get() = graphCollections.keys.toSet()

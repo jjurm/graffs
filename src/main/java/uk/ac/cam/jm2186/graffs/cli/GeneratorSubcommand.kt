@@ -57,6 +57,8 @@ class GeneratorSubcommand : NoRunCliktCommand(
             hibernate.beginTransaction()
             hibernate.save(generator)
             hibernate.transaction.commit()
+
+            println(generator)
         }
     }
 
