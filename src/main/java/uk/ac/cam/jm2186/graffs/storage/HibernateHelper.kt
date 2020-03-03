@@ -1,8 +1,11 @@
 package uk.ac.cam.jm2186.graffs.storage
 
+import com.github.ajalt.clikt.core.BadParameterValue
 import org.hibernate.Session
 import org.hibernate.cfg.Configuration
+import uk.ac.cam.jm2186.graffs.storage.model.NamedEntity
 import uk.ac.cam.jm2186.graffs.storage.model.entities
+import java.io.Serializable
 import java.util.*
 
 object HibernateHelper {
@@ -27,7 +30,12 @@ object HibernateHelper {
 
 }
 
-fun <T> Session.getAllEntities(type:Class<T>): List<T> {
+inline fun <reified T> Session.getNullableEntity(id: Serializable): T? = get(T::class.java, id)
+
+inline fun <reified T : NamedEntity> Session.getNamedEntity(name: String): T = getNullableEntity<T>(name)
+    ?: throw BadParameterValue("${T::class.simpleName} `$name` does not exist")
+
+fun <T> Session.getAllEntities(type: Class<T>): List<T> {
     val builder = criteriaBuilder
     val criteria = builder.createQuery(type)
     criteria.from(type)

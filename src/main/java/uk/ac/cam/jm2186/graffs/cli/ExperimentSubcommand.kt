@@ -14,10 +14,7 @@ import org.apache.commons.lang3.time.StopWatch
 import org.graphstream.graph.Graph
 import uk.ac.cam.jm2186.graffs.metric.Metric
 import uk.ac.cam.jm2186.graffs.metric.MetricInfo
-import uk.ac.cam.jm2186.graffs.storage.GraphDataset
-import uk.ac.cam.jm2186.graffs.storage.GraphDatasetId
-import uk.ac.cam.jm2186.graffs.storage.getAllEntities
-import uk.ac.cam.jm2186.graffs.storage.inTransaction
+import uk.ac.cam.jm2186.graffs.storage.*
 import uk.ac.cam.jm2186.graffs.storage.model.*
 import uk.ac.cam.jm2186.graffs.util.TimePerf
 
@@ -31,7 +28,8 @@ class ExperimentSubcommand : NoRunCliktCommand(
             ListSub(),
             CreateSub(),
             RemoveSub(),
-            RunSub()
+            RunSub(),
+            PruneSub()
         )
     }
 
@@ -64,7 +62,7 @@ class ExperimentSubcommand : NoRunCliktCommand(
         private val robustnessMeasures by experiment_robustnessMeasures()
 
         override suspend fun run1() {
-            val generator = hibernate.get(GraphGenerator::class.java, generatorName)
+            val generator = hibernate.getNamedEntity<GraphGenerator>(generatorName)
             val experiment = Experiment(
                 name = name,
                 generator = generator,
@@ -84,7 +82,7 @@ class ExperimentSubcommand : NoRunCliktCommand(
     ) {
         val name by experiment_name()
         override suspend fun run1() {
-            val experiment = hibernate.get(Experiment::class.java, name)
+            val experiment = hibernate.getNamedEntity<Experiment>(name)
             hibernate.inTransaction { delete(experiment) }
         }
     }
@@ -120,8 +118,7 @@ class ExperimentSubcommand : NoRunCliktCommand(
         private val timer = TimePerf()
 
         override suspend fun run1() {
-            val experiment: Experiment = hibernate.get(Experiment::class.java, experimentName)
-                ?: throw BadParameterValue("Experiment $experimentName does not exist")
+            val experiment: Experiment = hibernate.getNamedEntity<Experiment>(experimentName)
 
             phasesAll.take(phaseIndex).forEach { phase ->
                 phase(experiment)
@@ -227,6 +224,22 @@ class ExperimentSubcommand : NoRunCliktCommand(
 
         private suspend fun robustness(experiment: Experiment) {
 
+        }
+    }
+
+    class PruneSub : CoroutineCommand(
+        name = "prune",
+        help = "Remove all generated graphs of an experiment"
+    ) {
+        val name by experiment_name()
+        override suspend fun run1() {
+            val experiment = hibernate.getNamedEntity<Experiment>(name)
+            hibernate.inTransaction {
+                experiment.graphCollections.values.forEach {
+                    it.distortedGraphs.clear()
+                    save(it)
+                }
+            }
         }
     }
 

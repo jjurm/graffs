@@ -22,15 +22,14 @@ import kotlin.random.Random
 
 @Entity
 class GraphGenerator(
-    @Id
-    val name: String,
+    name: String,
 
     val n: Int,
     val method: GraphProducerId,
     @ElementCollection(fetch = FetchType.EAGER)
     val params: List<Double>,
     val seed: Long
-) : Serializable {
+) : NamedEntity(name) {
 
     fun produceFromGraph(sourceGraph: Graph): List<DistortedGraph> {
         val generatorFactory = GraphProducer.map.getValue(method).getDeclaredConstructor().newInstance()

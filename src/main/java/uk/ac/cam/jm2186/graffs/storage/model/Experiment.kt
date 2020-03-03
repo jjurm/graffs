@@ -11,13 +11,11 @@ import uk.ac.cam.jm2186.graffs.metric.MetricId
 import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasureId
 import uk.ac.cam.jm2186.graffs.storage.GraphDataset
 import uk.ac.cam.jm2186.graffs.storage.GraphDatasetId
-import java.io.Serializable
 import javax.persistence.*
 
 @Entity
 class Experiment(
-    @Id
-    val name: String,
+    name: String,
 
     @ManyToOne
     @LazyCollection(LazyCollectionOption.FALSE)
@@ -29,7 +27,7 @@ class Experiment(
     @ElementCollection
     @LazyCollection(LazyCollectionOption.FALSE)
     val robustnessMeasures: MutableList<RobustnessMeasureId> = mutableListOf()
-) : Serializable {
+) : NamedEntity(name) {
 
     @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true)
     @LazyCollection(LazyCollectionOption.FALSE)
