@@ -24,6 +24,7 @@ class Experiment(
     val generator: GraphGenerator,
     @ElementCollection
     @LazyCollection(LazyCollectionOption.FALSE)
+    // TODO Change lists to sets
     val metrics: MutableList<MetricId> = mutableListOf(),
     @ElementCollection
     @LazyCollection(LazyCollectionOption.FALSE)

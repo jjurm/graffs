@@ -4,41 +4,35 @@ import org.graphstream.graph.Graph
 import org.graphstream.stream.file.FileSinkDGS
 import org.graphstream.stream.file.FileSourceDGS
 import uk.ac.cam.jm2186.graffs.graph.readGraph
+import uk.ac.cam.jm2186.graffs.storage.AbstractJpaPersistable
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.io.Serializable
 import javax.persistence.*
 
-@Embeddable
+@Entity
 class DistortedGraph(
-    graph: Graph?
-) : Serializable {
+    val seed: Long,
+    graph: Graph
+) : AbstractJpaPersistable<Long>() {
 
     @Lob
     @Basic(fetch = FetchType.EAGER)
     @Column(length = 2147483647)
-    private var serialized: ByteArray? = null
-    private var graphstreamId: String? = null
-
-    var graph: Graph?
-        get() = when (val s = serialized) {
-            null -> null
-            else -> {
-                FileSourceDGS().readGraph(ByteArrayInputStream(s), graphstreamId!!)
-            }
-        }
-        set(value) = when(value) {
-            null -> Unit
-            else -> {
-                val out = ByteArrayOutputStream()
-                FileSinkDGS().writeAll(value, out)
-                serialized = out.toByteArray()
-                graphstreamId = value.id
-            }
-        }
+    private lateinit var serialized: ByteArray
+    private lateinit var graphstreamId: String
 
     init {
-        this.graph = graph
+        serialize(graph)
     }
+
+    fun deserialize() = FileSourceDGS().readGraph(ByteArrayInputStream(serialized), graphstreamId)
+    fun serialize(graph: Graph) {
+        val out = ByteArrayOutputStream()
+        FileSinkDGS().writeAll(graph, out)
+        serialized = out.toByteArray()
+        graphstreamId = graph.id
+    }
+
+    fun getShortHash(): String = (seed and 0xffff).toString(16)
 
 }

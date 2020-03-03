@@ -32,14 +32,16 @@ class GraphGenerator(
     val seed: Long
 ) : Serializable {
 
-    fun produceFromGraph(sourceGraph: Graph): List<Graph> {
+    fun produceFromGraph(sourceGraph: Graph): List<DistortedGraph> {
         val generatorFactory = GraphProducer.map.getValue(method).getDeclaredConstructor().newInstance()
         val seedSource = Random(seed)
 
         return (0 until n).map { _ ->
-            generatorFactory
-                .createGraphProducer(sourceGraph, seedSource.nextLong(), params)
+            val graphSeed = seedSource.nextLong()
+            val graph = generatorFactory
+                .createGraphProducer(sourceGraph, graphSeed, params)
                 .produceComputed()
+            DistortedGraph(graphSeed, graph)
         }
     }
 

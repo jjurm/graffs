@@ -3,7 +3,6 @@ package uk.ac.cam.jm2186.graffs.robustness
 import org.apache.log4j.Logger
 import org.graphstream.graph.Graph
 import org.graphstream.graph.Node
-import uk.ac.cam.jm2186.graffs.graph.ATTRIBUTE_NAME_NODE_VALUE
 
 class RankInstabilityMeasure : RobustnessMeasure {
 
@@ -11,7 +10,7 @@ class RankInstabilityMeasure : RobustnessMeasure {
         override fun get() = RankInstabilityMeasure()
     }
 
-    val logger = Logger.getLogger(RankInstabilityMeasure::class.java)
+    private val logger = Logger.getLogger(RankInstabilityMeasure::class.java)
 
     override fun evaluate(originalGraph: Graph, distortedGraphs: List<Graph>): Double {
         val n = originalGraph.nodeCount
@@ -20,7 +19,7 @@ class RankInstabilityMeasure : RobustnessMeasure {
         val originalNodes =
             originalGraph.getNodeSet<Node>()
                 .sortedByDescending { node ->
-                    node.getAttribute<Double>(ATTRIBUTE_NAME_NODE_VALUE)
+                    node.getAttribute<Double>("v")
                         ?: throw IllegalStateException("node ${node.id} contains no attribute `v`")
                 }
         val topNodes = originalNodes.take(originalNodes.size / 100)
@@ -34,7 +33,7 @@ class RankInstabilityMeasure : RobustnessMeasure {
                 // calculate min and max
                 distortedGraphs.fold(MinMaxAcc()) { acc, graph ->
                     val distortedNode = graph.getNode<Node?>(node.id)
-                    val nodeValue = distortedNode?.getAttribute<Double>(ATTRIBUTE_NAME_NODE_VALUE)
+                    val nodeValue = distortedNode?.getAttribute<Double>("v")
                     acc.add(nodeValue)
                 }
             }
