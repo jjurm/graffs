@@ -188,7 +188,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
 
                 experiment.graphCollections.forEach { (datasetId, graphCollection) ->
                     graphCollection.distortedGraphs.forEach { distortedGraph ->
-                        val graph = distortedGraph.deserialize()
+                        val graph = distortedGraph.graph
                         val graphMutex = Mutex()
 
                         val jobs = HashMap<MetricInfo, Deferred<Unit>>()
@@ -210,7 +210,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
                         val graphJob = async(start = CoroutineStart.LAZY) {
                             jobs.values.awaitAll()
                             // store the result
-                            distortedGraph.serialize(graph)
+                            distortedGraph.graph = graph
                             hibernateMutex.withLock {
                                 hibernate.inTransaction { save(distortedGraph) }
                             }
@@ -239,18 +239,56 @@ class ExperimentSubcommand : NoOpCliktCommand(
             stopWatch.stop()
 
             if (evaluated != null) {
-                val sGraph = rightPad(datasetId, 16)
+                val sDataset = rightPad(datasetId, 16)
                 val sHash = leftPad(distortedGraph.getShortHash(), 4)
                 val sMetric = rightPad(id, 20)
                 val sResult = leftPad(evaluated.toString(), 6)
                 val sTime = "${stopWatch.time / 1000}s"
-                println("- $sGraph (seed $sHash) -> $sMetric = $sResult  ($sTime)")
+                println("- $sDataset (seed $sHash) -> $sMetric = $sResult  ($sTime)")
             }
         }
 
         private suspend fun robustness(experiment: Experiment) {
+            val measures = experiment.robustnessMeasures.map {
+                it to RobustnessMeasure.map.getValue(it).get()
+            }
+            val metrics = experiment.metrics.map {
+                Metric.map.getValue(it)
+            }
 
+            coroutineScope {
+                val jobs = experiment.graphCollections.flatMap { (datasetId, graphCollection) ->
+                    metrics.flatMap { metric ->
+                        measures.map { (measureId, measure) ->
+                            async(start = CoroutineStart.LAZY) {
+                                measure.evaluateAndLog(metric, graphCollection, datasetId, measureId)
+                            }
+                        }
+                    }
+                }
+
+                val n = experiment.datasets.size * experiment.metrics.size * experiment.robustnessMeasures.size
+                println("About to compute (at most) $n robustness calculations (${experiment.datasets.size} datasets * ${experiment.metrics.size} metrics * ${experiment.robustnessMeasures.size} robustness measures)")
+                jobs.awaitAll()
+                println("Done.")
+            }
         }
+
+        private fun RobustnessMeasure.evaluateAndLog(
+            metric: MetricInfo,
+            graphCollection: GraphCollection,
+            datasetId: GraphDatasetId,
+            measureId: RobustnessMeasureId
+        ) {
+            val result = evaluate(metric, graphCollection)
+
+            val sDataset = rightPad("`$datasetId`", 18)
+            val sMetric = rightPad(metric.id, 20)
+            val sMeasure = rightPad(measureId, 20)
+            val sResult = leftPad("%.7f".format(result), 10)
+            println("- Dataset $sDataset -> metric $sMetric -> robustnessMeasure $sMeasure = $sResult")
+        }
+
     }
 
     class CloneSub : CoroutineCommand(

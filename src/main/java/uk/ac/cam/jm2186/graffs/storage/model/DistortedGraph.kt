@@ -21,12 +21,31 @@ class DistortedGraph(
     private lateinit var serialized: ByteArray
     private lateinit var graphstreamId: String
 
+    @Transient
+    @kotlin.jvm.Transient
+    private var _graph: Graph? = null
+
+    /** Access the deserialized version of the distorted graph (with underlying cache) */
+    var graph: Graph
+        get() = when (val cached = _graph) {
+            null -> {
+                val deserialized = deserialize()
+                _graph = deserialized
+                deserialized
+            }
+            else -> cached
+        }
+        set(graph) {
+            _graph = graph
+            serialize(graph)
+        }
+
     init {
-        serialize(graph)
+        this.graph = graph
     }
 
-    fun deserialize() = FileSourceDGS().readGraph(ByteArrayInputStream(serialized), graphstreamId)
-    fun serialize(graph: Graph) {
+    private fun deserialize() = FileSourceDGS().readGraph(ByteArrayInputStream(serialized), graphstreamId)
+    private fun serialize(graph: Graph) {
         val out = ByteArrayOutputStream()
         FileSinkDGS().writeAll(graph, out)
         serialized = out.toByteArray()

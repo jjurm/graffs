@@ -1,8 +1,9 @@
 package uk.ac.cam.jm2186.graffs.robustness
 
 import org.apache.log4j.Logger
-import org.graphstream.graph.Graph
-import org.graphstream.graph.Node
+import uk.ac.cam.jm2186.graffs.metric.MetricInfo
+import uk.ac.cam.jm2186.graffs.storage.model.GraphCollection
+import kotlin.math.roundToInt
 
 class RankInstabilityMeasure : RobustnessMeasure {
 
@@ -12,50 +13,47 @@ class RankInstabilityMeasure : RobustnessMeasure {
 
     private val logger = Logger.getLogger(RankInstabilityMeasure::class.java)
 
-    override fun evaluate(originalGraph: Graph, distortedGraphs: List<Graph>): Double {
-        val n = originalGraph.nodeCount
+    override fun evaluate(metric: MetricInfo, graphCollection: GraphCollection): Double {
+        val rankings = graphCollection.distortedGraphs.map {
+            val graph = it.graph
+            AttributeNodeRanking(graph, metric.attributeName)
+        }
+        val overallRanking = OverallNodeRanking(rankings)
+        val n = overallRanking.size
 
-        // filter out up to 1% of highest ranked nodes
-        val originalNodes =
-            originalGraph.getNodeSet<Node>()
-                .sortedByDescending { node ->
-                    node.getAttribute<Double>("v")
-                        ?: throw IllegalStateException("node ${node.id} contains no attribute `v`")
-                }
-        val topNodes = originalNodes.take(originalNodes.size / 100)
+        // Filter out up to 1% of highest ranked nodes
+        val topNodes = overallRanking.takeLast((n * 0.01).roundToInt())
 
         if (topNodes.size < 5) {
-            logger.warn("|Top 1% of nodes|=${topNodes.size} should not be less than 5")
+            logger.warn("|Top 1% of nodes|=${topNodes.size} is less than 5 (results may be based on too few samples)")
         }
 
         val rankInstability = topNodes
-            .map { node ->
-                // calculate min and max
-                distortedGraphs.fold(MinMaxAcc()) { acc, graph ->
-                    val distortedNode = graph.getNode<Node?>(node.id)
-                    val nodeValue = distortedNode?.getAttribute<Double>("v")
-                    acc.add(nodeValue)
+            .map { nodeId ->
+                // Calculate min and max rank
+                rankings.fold(RankRange()) { acc, ranking ->
+                    acc.add(ranking.getRank(nodeId))
                 }
             }
-            .map(MinMaxAcc::range)
-            .sumByDouble { v -> v ?: .0 } / n / topNodes.size
+            .map(RankRange::range)
+            .sumBy { v -> v ?: 0 }.toDouble() / n / topNodes.size
 
         return rankInstability
     }
 
-    private class MinMaxAcc {
-        var min = Acc<Double>(Math::min)
+    private class RankRange {
+        var min = Acc<Int>(Math::min)
             private set
-        var max = Acc<Double>(Math::max)
+        var max = Acc<Int>(Math::max)
             private set
 
-        fun add(value: Double?): MinMaxAcc {
-            min.add(value)
-            max.add(value)
+        fun add(value: Rank): RankRange {
+            min.add(value.rankValue)
+            max.add(value.rankValue)
             return this
         }
 
-        fun range(): Double? {
+        fun range(): Int? {
             val (bottom, top) = min.value to max.value
             return if (bottom != null && top != null) (top - bottom) else null
         }

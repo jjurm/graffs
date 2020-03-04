@@ -1,7 +1,5 @@
 package uk.ac.cam.jm2186.graffs.metric
 
-import org.apache.commons.lang3.StringUtils
-import org.apache.commons.lang3.math.NumberUtils
 import org.graphstream.graph.Graph
 import java.io.Serializable
 
@@ -46,7 +44,6 @@ abstract class Metric(val id: MetricId) : Serializable {
 }
 
 typealias MetricFactory = () -> Metric
-
 sealed class MetricResult {
     object Unit : MetricResult() {
         override fun toString() = "[true]"

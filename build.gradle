@@ -68,7 +68,7 @@ test {
 dokka {
     outputFormat = 'html'
     outputDirectory = "$buildDir/javadoc"
-    
+
     configuration {
         jdkVersion = 8
     }

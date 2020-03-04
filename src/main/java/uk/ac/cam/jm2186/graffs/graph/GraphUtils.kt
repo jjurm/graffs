@@ -15,5 +15,10 @@ fun FileSource.readGraph(inputStream: InputStream, id: String): SingleGraph {
     return graph
 }
 
-fun Element.getDoubleAttribute(attributeName: String) = getAttribute<Double?>(attributeName)
-    ?: throw IllegalStateException("${this::class.simpleName} `${id}` has no attribute `${attributeName}`")
+fun Element.getNumberAttribute(attributeName: String): Double {
+    val number = getNumber(attributeName)
+    if (number.isNaN()) {
+        throw IllegalStateException("${this::class.simpleName} `${id}` has no attribute `${attributeName}`")
+    }
+    return number
+}
