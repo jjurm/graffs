@@ -1,13 +1,16 @@
 package uk.ac.cam.jm2186.graffs.cli
 
-import com.github.ajalt.clikt.core.NoRunCliktCommand
+import com.github.ajalt.clikt.core.BadParameterValue
+import com.github.ajalt.clikt.core.NoOpCliktCommand
+import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.subcommands
-import uk.ac.cam.jm2186.graffs.storage.getAllEntities
+import com.github.ajalt.clikt.parameters.options.eagerOption
+import uk.ac.cam.jm2186.graffs.graph.RemovingEdgesGenerator
+import uk.ac.cam.jm2186.graffs.storage.*
 import uk.ac.cam.jm2186.graffs.storage.model.*
-import uk.ac.cam.jm2186.graffs.storage.inTransaction
 import java.util.*
 
-class GeneratorSubcommand : NoRunCliktCommand(
+class GeneratorSubcommand : NoOpCliktCommand(
     name = "generator",
     help = "Create or list graph generators"
 ) {
@@ -44,6 +47,21 @@ class GeneratorSubcommand : NoRunCliktCommand(
         help = "Create a new graph generator description"
     ) {
 
+        init {
+            eagerOption("--sample", help = "Create a sample generator (overriding all options)") {
+                createGenerator(
+                    GraphGenerator(
+                        name = "sampleGenerator",
+                        n = 10,
+                        method = RemovingEdgesGenerator.ID,
+                        params = listOf(0.05),
+                        seed = 42L
+                    )
+                )
+                throw PrintMessage("")
+            }
+        }
+
         val name by graphGenerator_name()
         val n by graphGenerator_n()
         val method by graphGenerator_method()
@@ -52,8 +70,13 @@ class GeneratorSubcommand : NoRunCliktCommand(
 
         override fun run0() {
             val seed = seed ?: Random().nextLong()
-            val generator = GraphGenerator(name, n = n, method = method, params = params, seed = seed)
+            createGenerator(
+                GraphGenerator(name = name, n = n, method = method, params = params, seed = seed)
+            )
+        }
 
+        fun createGenerator(generator: GraphGenerator) {
+            hibernate.mustNotExist<GraphGenerator>(generator.name)
             hibernate.beginTransaction()
             hibernate.save(generator)
             hibernate.transaction.commit()

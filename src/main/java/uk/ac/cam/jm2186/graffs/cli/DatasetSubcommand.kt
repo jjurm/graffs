@@ -2,7 +2,7 @@ package uk.ac.cam.jm2186.graffs.cli
 
 import com.github.ajalt.clikt.core.BadParameterValue
 import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.core.NoRunCliktCommand
+import com.github.ajalt.clikt.core.NoOpCliktCommand
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.convert
@@ -13,7 +13,7 @@ import uk.ac.cam.jm2186.graffs.graph.ATTRIBUTE_NAME_EDGE_WEIGHT
 import uk.ac.cam.jm2186.graffs.metric.AverageDegreeMetric
 import uk.ac.cam.jm2186.graffs.storage.GraphDataset
 
-class DatasetSubcommand : NoRunCliktCommand(
+class DatasetSubcommand : NoOpCliktCommand(
     name = "dataset",
     printHelpOnEmptyArgs = true,
     help = """

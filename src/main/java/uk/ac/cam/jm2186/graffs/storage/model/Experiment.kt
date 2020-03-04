@@ -22,7 +22,9 @@ class Experiment(
     val metrics: MutableSet<MetricId> = mutableSetOf(),
     @ElementCollection
     @LazyCollection(LazyCollectionOption.FALSE)
-    val robustnessMeasures: MutableSet<RobustnessMeasureId> = mutableSetOf()
+    val robustnessMeasures: MutableSet<RobustnessMeasureId> = mutableSetOf(),
+
+    datasets: Collection<GraphDatasetId> = listOf()
 ) : NamedEntity(name) {
 
     @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true)
@@ -31,6 +33,12 @@ class Experiment(
     val graphCollections: MutableMap<GraphDatasetId, GraphCollection> = mutableMapOf()
 
     val datasets get() = graphCollections.keys.toSet()
+
+    init {
+        graphCollections.putAll(
+            datasets.map { it to GraphCollection() }
+        )
+    }
 }
 
 

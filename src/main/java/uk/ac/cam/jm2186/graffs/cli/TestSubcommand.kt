@@ -1,9 +1,9 @@
 package uk.ac.cam.jm2186.graffs.cli
 
-import com.github.ajalt.clikt.core.NoRunCliktCommand
+import com.github.ajalt.clikt.core.NoOpCliktCommand
 
 class
-TestSubcommand : NoRunCliktCommand(
+TestSubcommand : NoOpCliktCommand(
     name = "test"
 ) {
 

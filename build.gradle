@@ -124,7 +124,7 @@ dependencies {
 
     // Click
     // https://mvnrepository.com/artifact/com.github.ajalt/clikt
-    implementation group: 'com.github.ajalt', name: 'clikt', version: '2.3.0'
+    implementation group: 'com.github.ajalt', name: 'clikt', version: '2.5.0'
 }
 
 noArg {

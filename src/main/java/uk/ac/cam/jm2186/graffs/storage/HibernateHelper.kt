@@ -35,6 +35,14 @@ inline fun <reified T> Session.getNullableEntity(id: Serializable): T? = get(T::
 inline fun <reified T : NamedEntity> Session.getNamedEntity(name: String): T = getNullableEntity<T>(name)
     ?: throw BadParameterValue("${T::class.simpleName} `$name` does not exist")
 
+inline fun <reified T : NamedEntity> Session.hasNamedEntity(name: String): Boolean = getNullableEntity<T>(name) != null
+
+inline fun <reified T : NamedEntity> Session.mustNotExist(name: String) {
+    if (hasNamedEntity<T>(name)) {
+        throw BadParameterValue("${T::class.simpleName} `$name` already exists")
+    }
+}
+
 fun <T> Session.getAllEntities(type: Class<T>): List<T> {
     val builder = criteriaBuilder
     val criteria = builder.createQuery(type)

@@ -1,8 +1,11 @@
 package uk.ac.cam.jm2186.graffs.cli
 
-import com.github.ajalt.clikt.core.NoRunCliktCommand
+import com.github.ajalt.clikt.core.NoOpCliktCommand
+import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.arguments.default
+import com.github.ajalt.clikt.parameters.options.eagerOption
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.choice
 import kotlinx.coroutines.*
@@ -14,11 +17,13 @@ import org.apache.commons.lang3.time.StopWatch
 import org.graphstream.graph.Graph
 import uk.ac.cam.jm2186.graffs.metric.Metric
 import uk.ac.cam.jm2186.graffs.metric.MetricInfo
+import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasure
+import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasureId
 import uk.ac.cam.jm2186.graffs.storage.*
 import uk.ac.cam.jm2186.graffs.storage.model.*
 import uk.ac.cam.jm2186.graffs.util.TimePerf
 
-class ExperimentSubcommand : NoRunCliktCommand(
+class ExperimentSubcommand : NoOpCliktCommand(
     name = "experiment",
     help = "Run experiments (evaluate metrics on generated graphs) and show results"
 ) {
@@ -45,28 +50,51 @@ class ExperimentSubcommand : NoRunCliktCommand(
         }
     }
 
-    class CreateSub : CoroutineCommand(
+    class CreateSub : AbstractHibernateCommand(
         name = "create",
         help = "Create an experiment"
     ) {
+
+        init {
+            eagerOption("--sample", help = "Create a sample experiment (overriding all options)") {
+                val generator = hibernate.getNamedEntity<GraphGenerator>("sampleGenerator")
+                createExperiment(
+                    Experiment(
+                        name = "sampleExperiment",
+                        generator = generator,
+                        metrics = mutableSetOf("Degree", "PageRank", "Betweenness"),
+                        robustnessMeasures = mutableSetOf("RankInstability"),
+                        datasets = listOf("test")
+                    )
+                )
+                throw PrintMessage("")
+            }
+        }
+
         private val name by experiment_name()
         private val datasets by experiment_datasets().required()
         private val generatorName by experiment_generator().required()
         private val metrics by experiment_metrics().required()
         private val robustnessMeasures by experiment_robustnessMeasures().required()
 
-        override suspend fun run1() {
+        override fun run0() {
             val generator = hibernate.getNamedEntity<GraphGenerator>(generatorName)
-            val experiment = Experiment(
-                name = name,
-                generator = generator,
-                metrics = metrics.toMutableSet(),
-                robustnessMeasures = robustnessMeasures.toMutableSet()
+            createExperiment(
+                Experiment(
+                    name = name,
+                    generator = generator,
+                    metrics = metrics.toMutableSet(),
+                    robustnessMeasures = robustnessMeasures.toMutableSet(),
+                    datasets = datasets
+                )
             )
-            experiment.graphCollections.putAll(
-                datasets.map { it to GraphCollection() }
-            )
-            hibernate.inTransaction { save(experiment) }
+        }
+
+        private fun createExperiment(experiment: Experiment) {
+            hibernate.mustNotExist<Experiment>(experiment.name)
+            hibernate.beginTransaction()
+            hibernate.save(experiment)
+            hibernate.transaction.commit()
 
             experiment.printToConsole()
         }
@@ -99,23 +127,24 @@ class ExperimentSubcommand : NoRunCliktCommand(
     ) {
 
         private val phasesMap = mapOf(
-            "generate" to 1, "metrics" to 2, "robustness" to 3,
+            //"generate" to 1, "metrics" to 2, "robustness" to 3,
             "1" to 1, "2" to 2, "3" to 3,
             "all" to 3
         )
         private val phasesAll = listOf(::generate, ::metrics, ::robustness)
 
         private val experimentName by experiment_name()
-        private val phaseIndex by argument(
+        private val phase by argument(
             name = "phase",
-            help = "Run all up to the specified phase (* for all phases)"
-        ).choice(phasesMap)
+            help = "Run only up to the specified phase [1|2|3|all]"
+        ).choice(*phasesMap.keys.toTypedArray()).default("all")
 
         private val timer = TimePerf()
 
         override suspend fun run1() {
             val experiment: Experiment = hibernate.getNamedEntity<Experiment>(experimentName)
 
+            val phaseIndex = phasesMap.getValue(phase)
             phasesAll.take(phaseIndex).forEach { phase ->
                 phase(experiment)
             }
@@ -228,6 +257,7 @@ class ExperimentSubcommand : NoRunCliktCommand(
         name = "clone",
         help = "Create a new experiment using parameters of existing experiment"
     ) {
+
         val from by experiment_name("--from", help = "Template experiment to copy properties from")
         val name by experiment_name()
 
@@ -238,23 +268,23 @@ class ExperimentSubcommand : NoRunCliktCommand(
 
         override suspend fun run1() {
             val from = hibernate.getNamedEntity<Experiment>(from)
-
             val generator = when (val name = generatorName) {
                 null -> from.generator
                 else -> hibernate.getNamedEntity<GraphGenerator>(name)
             }
-            val experiment = Experiment(
-                name = name,
-                generator = generator,
-                metrics = metrics?.toMutableSet() ?: from.metrics.toMutableSet(),
-                robustnessMeasures = robustnessMeasures?.toMutableSet() ?: from.robustnessMeasures.toMutableSet()
+            createExperiment(
+                Experiment(
+                    name = name,
+                    generator = generator,
+                    metrics = metrics?.toMutableSet() ?: from.metrics.toMutableSet(),
+                    robustnessMeasures = robustnessMeasures?.toMutableSet() ?: from.robustnessMeasures.toMutableSet(),
+                    datasets = datasets ?: from.datasets
+                )
             )
-            val datasets = datasets ?: from.datasets
-            experiment.graphCollections.putAll(
-                datasets.map { it to GraphCollection() }
-            )
-            hibernate.inTransaction { save(experiment) }
+        }
 
+        private suspend fun createExperiment(experiment: Experiment) {
+            hibernate.inTransaction { save(experiment) }
             experiment.printToConsole()
         }
     }
