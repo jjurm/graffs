@@ -64,7 +64,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
                         name = "sampleExperiment",
                         generator = generator,
                         metrics = mutableSetOf("Degree", "PageRank", "Betweenness"),
-                        robustnessMeasures = mutableSetOf("RankInstability"),
+                        robustnessMeasures = mutableSetOf("RankIdentifiability", "RankInstability"),
                         datasets = listOf("test")
                     )
                 )
@@ -251,7 +251,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
         private suspend fun robustness(experiment: Experiment) {
             val hibernateMutex = Mutex()
             val measures = experiment.robustnessMeasures.map {
-                it to RobustnessMeasure.map.getValue(it).get()
+                it to RobustnessMeasure.map.getValue(it)()
             }
             val metrics = experiment.metrics.map {
                 Metric.map.getValue(it)

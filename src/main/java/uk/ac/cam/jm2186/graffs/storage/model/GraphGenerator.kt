@@ -1,10 +1,7 @@
 package uk.ac.cam.jm2186.graffs.storage.model
 
 import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.parameters.options.default
-import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.options.required
-import com.github.ajalt.clikt.parameters.options.split
+import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.double
 import com.github.ajalt.clikt.parameters.types.int
@@ -53,15 +50,19 @@ fun CliktCommand.graphGenerator_name() =
     option("--name", help = "unique name of the graph generator", metavar = "NAME").required()
 
 fun CliktCommand.graphGenerator_n() =
-    option("-n", help = "Number of graphs to generate from each dataset").int().required()
+    option("-n", help = "Number of graphs to generate from each dataset").int().required().validate {
+        require(it > 0) { "Value must be >=1" }
+    }
 
 fun CliktCommand.graphGenerator_method() =
     option(help = "Algorithm to generate graphs").choice(*GraphProducer.map.keys.toTypedArray())
         .default(RemovingEdgesGenerator.ID)
 
 fun CliktCommand.graphGenerator_params() =
-    option(help = "Parameters to pass to the generator, delimited by comma",
-        metavar = "FLOAT,...").double().split(delimiter = ",")
+    option(
+        help = "Parameters to pass to the generator, delimited by comma",
+        metavar = "FLOAT,..."
+    ).double().split(delimiter = ",")
         .default(listOf())
 
 fun CliktCommand.graphGenerator_seed() = option(help = "Seed for the generator").long()

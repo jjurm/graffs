@@ -3,7 +3,6 @@ package uk.ac.cam.jm2186.graffs.robustness
 interface NodeRanking : List<String> {
 
     fun getRank(node: String): Rank
-
     fun getNode(rank: Rank) = this[rank.index]
 
 }

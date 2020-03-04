@@ -7,8 +7,8 @@ import kotlin.math.roundToInt
 
 class RankInstabilityMeasure : RobustnessMeasure {
 
-    class Factory : RobustnessMeasureFactory {
-        override fun get() = RankInstabilityMeasure()
+    companion object {
+        val factory: RobustnessMeasureFactory = ::RankInstabilityMeasure
     }
 
     private val logger = Logger.getLogger(RankInstabilityMeasure::class.java)
