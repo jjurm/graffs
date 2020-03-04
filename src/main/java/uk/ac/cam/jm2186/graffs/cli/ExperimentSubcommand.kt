@@ -75,8 +75,8 @@ class ExperimentSubcommand : NoOpCliktCommand(
         private val name by experiment_name()
         private val datasets by experiment_datasets().required()
         private val generatorName by experiment_generator().required()
-        private val metrics by experiment_metrics().required()
-        private val robustnessMeasures by experiment_robustnessMeasures().required()
+        private val metrics by experiment_metrics_required()
+        private val robustnessMeasures by experiment_robustnessMeasures_required()
 
         override fun run0() {
             val generator = hibernate.getNamedEntity<GraphGenerator>(generatorName)

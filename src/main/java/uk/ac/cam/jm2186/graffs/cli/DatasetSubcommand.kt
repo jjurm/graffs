@@ -1,9 +1,6 @@
 package uk.ac.cam.jm2186.graffs.cli
 
-import com.github.ajalt.clikt.core.BadParameterValue
-import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.core.NoOpCliktCommand
-import com.github.ajalt.clikt.core.subcommands
+import com.github.ajalt.clikt.core.*
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.convert
 import com.github.ajalt.clikt.parameters.arguments.multiple
@@ -31,21 +28,12 @@ class DatasetSubcommand : NoOpCliktCommand(
         )
     }
 
-    companion object {
-        fun getAvailableDatasetsWithMessages() = GraphDataset.getAvailableDatasets().also {
-            when {
-                it == null -> println("No `${GraphDataset.DATASET_DIRECTORY_NAME}` directory exists in the current path!")
-                it.isEmpty() -> println("The `${GraphDataset.DATASET_DIRECTORY_NAME}` directory has no subdirectories.")
-            }
-        }
-    }
-
     class ListDatasetsCommand : CliktCommand(
         name = "list",
         help = "List all datasets available in the `${GraphDataset.DATASET_DIRECTORY_NAME}` directory"
     ) {
         override fun run() {
-            getAvailableDatasetsWithMessages()?.forEach { dataset ->
+            GraphDataset.getAvailableDatasetsChecked().forEach { dataset ->
                 println()
                 println("- ${dataset.id}")
                 dataset.loadInfo()?.let { println(it.trimEnd().prependIndent("  ")) }
@@ -65,7 +53,7 @@ class DatasetSubcommand : NoOpCliktCommand(
 
         override fun run() {
             val toLoad: List<GraphDataset>? = if (datasets.isNotEmpty()) datasets
-            else getAvailableDatasetsWithMessages()
+            else GraphDataset.getAvailableDatasetsChecked()
 
             toLoad?.forEach { dataset ->
                 val graph = dataset.loadGraph()

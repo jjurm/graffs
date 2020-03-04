@@ -1,5 +1,6 @@
 package uk.ac.cam.jm2186.graffs.storage
 
+import com.github.ajalt.clikt.core.CliktError
 import org.graphstream.graph.Graph
 import uk.ac.cam.jm2186.graffs.graph.FileSourceEdge2
 import uk.ac.cam.jm2186.graffs.graph.readGraph
@@ -33,6 +34,14 @@ class GraphDataset(val id: GraphDatasetId, validate: Boolean = false) {
                 val f = File(dir, name)
                 f.isDirectory && !f.isHidden && !name.startsWith(".")
             }?.map { GraphDataset(it.name) }
+
+        fun getAvailableDatasetsChecked() = getAvailableDatasets().let {
+            when {
+                it == null -> throw CliktError("No `$DATASET_DIRECTORY_NAME` directory exists in the current path!")
+                it.isEmpty() -> throw CliktError("The `$DATASET_DIRECTORY_NAME` directory has no subdirectories.")
+                else -> it
+            }
+        }
 
         private val loadedGraphs: MutableMap<GraphDataset, Graph> = mutableMapOf()
 

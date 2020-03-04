@@ -64,17 +64,27 @@ fun CliktCommand.experiment_datasets(): OptionWithValues<List<GraphDatasetId>?, 
 fun CliktCommand.experiment_generator() =
     option("--generator", help = "Graph generator used to produce graph from source datasets", metavar = "NAME")
 
-fun CliktCommand.experiment_metrics() =
+private fun CliktCommand.experiment_metrics0() =
     option(
         "--metrics", help = "Graph metrics whose robustness should be calculated, delimited by comma",
         metavar = Metric.map.keys.joinToString(separator = ",")
     ).split<String, MetricId>(",")
 
-fun CliktCommand.experiment_robustnessMeasures() =
+fun CliktCommand.experiment_metrics() = experiment_metrics0().validate { Metric.map.keys.containsAll(it) }
+fun CliktCommand.experiment_metrics_required() =
+    experiment_metrics0().required().validate { Metric.map.keys.containsAll(it) }
+
+private fun CliktCommand.experiment_robustnessMeasures0() =
     option(
         "--robustnessMeasures", help = "Robustness measures that should be evaluated for each graph metric",
         metavar = RobustnessMeasure.map.keys.joinToString(separator = ",")
     ).split<String, RobustnessMeasureId>(",")
+
+fun CliktCommand.experiment_robustnessMeasures() =
+    experiment_robustnessMeasures0().validate { RobustnessMeasure.map.keys.containsAll(it) }
+
+fun CliktCommand.experiment_robustnessMeasures_required() =
+    experiment_robustnessMeasures0().required().validate { RobustnessMeasure.map.keys.containsAll(it) }
 
 fun Experiment.printToConsole() {
     println(
