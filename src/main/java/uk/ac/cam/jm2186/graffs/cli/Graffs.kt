@@ -4,8 +4,6 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.output.CliktHelpFormatter
-import com.github.ajalt.clikt.parameters.options.flag
-import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.versionOption
 import uk.ac.cam.jm2186.BuildConfig
 import java.time.ZoneId
@@ -22,10 +20,11 @@ class Graffs : CliktCommand(
         > graffs db drop
         > graffs dataset list
         > graffs dataset load social-network
-        > graffs graph generate --help
-        > graffs graph generate -n 10 --dataset social-network --generator removing-edges --params 0.05 --tag social1
-        > graffs experiment execute --tags social1
-        > graffs experiment robustness --dataset social-network --tag social1 --metric BetweennessCentrality --measure RankInstability
+        > graffs generator create --help
+        > graffs generator create --name g1 -n 10 --method removing-edges --params 0.05
+        > graffs experiment create --help
+        > graffs experiment create --name e1 --datasets test,social-network --generator g1 --metrics Degree,PageRank,Betweenness --robustnessMeasures RankInstability
+        > graffs experiment run --name e1
         ```
     """.trimIndent()
 ) {
@@ -41,18 +40,13 @@ class Graffs : CliktCommand(
         subcommands(
             DatasetSubcommand(),
             MetricSubcommand(),
-            GraphSubcommand(),
+            GeneratorSubcommand(),
             ExperimentSubcommand(),
+
             DatabaseSubcommand(),
             TestSubcommand()
         )
     }
-
-    class Config(
-        val runOnCluster: Boolean
-    )
-
-    val runOnCluster by option("--cluster", help = "Run on cluster. If not specified, runs locally.").flag()
 
     init {
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
@@ -65,7 +59,6 @@ class Graffs : CliktCommand(
     }
 
     override fun run() {
-        context.findObject { Config(runOnCluster) }
     }
 }
 

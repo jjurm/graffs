@@ -3,14 +3,10 @@ package uk.ac.cam.jm2186.graffs.metric
 import org.graphstream.graph.Graph
 import org.graphstream.graph.Node
 
-class AverageDegreeMetric : Metric {
+object AverageDegreeMetric : Metric("AverageDegree"), MetricInfo {
 
-    class Factory : MetricFactory {
-        override fun createMetric(params: List<Number>) = AverageDegreeMetric()
-    }
-
-    override fun evaluate(graph: Graph): MetricResult {
+    override suspend fun evaluate0(graph: Graph) {
         val average = graph.getNodeSet<Node>().map { it.degree }.average()
-        return average to null
+        graph.setAttribute(id, average)
     }
 }

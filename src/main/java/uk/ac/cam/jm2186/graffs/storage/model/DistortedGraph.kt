@@ -1,32 +1,57 @@
 package uk.ac.cam.jm2186.graffs.storage.model
 
 import org.graphstream.graph.Graph
-import uk.ac.cam.jm2186.graffs.graph.GraphProducer
-import uk.ac.cam.jm2186.graffs.graph.GraphProducerId
+import org.graphstream.stream.file.FileSinkDGS
+import org.graphstream.stream.file.FileSourceDGS
+import uk.ac.cam.jm2186.graffs.graph.readGraph
 import uk.ac.cam.jm2186.graffs.storage.AbstractJpaPersistable
-import uk.ac.cam.jm2186.graffs.storage.GraphDataset
-import uk.ac.cam.jm2186.graffs.storage.GraphDatasetId
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import javax.persistence.*
 
 @Entity
 class DistortedGraph(
-    val datasetId: GraphDatasetId,
-    val generator: GraphProducerId,
     val seed: Long,
-    @ElementCollection(fetch = FetchType.EAGER)
-    val params: List<Number>,
-    @ManyToOne(fetch = FetchType.EAGER)
-    val tag: Tag?
+    graph: Graph
 ) : AbstractJpaPersistable<Long>() {
 
-    @OneToMany(mappedBy = "graph", cascade = [CascadeType.REMOVE], orphanRemoval = true, fetch = FetchType.LAZY)
-    protected var metricExperiments: List<MetricExperiment>? = null
+    @Lob
+    @Basic(fetch = FetchType.EAGER)
+    @Column(length = 2147483647)
+    private lateinit var serialized: ByteArray
+    private lateinit var graphstreamId: String
 
-    fun produceGenerated(): Graph {
-        val generatorFactory = GraphProducer.map.getValue(generator).getDeclaredConstructor().newInstance()
-        val graph = GraphDataset(datasetId).loadGraph()
-        val generator = generatorFactory.createGraphProducer(graph, seed, params)
-        return generator.produceComputed()
+    @Transient
+    @kotlin.jvm.Transient
+    private var _graph: Graph? = null
+
+    /** Access the deserialized version of the distorted graph (with underlying cache) */
+    var graph: Graph
+        get() = when (val cached = _graph) {
+            null -> {
+                val deserialized = deserialize()
+                _graph = deserialized
+                deserialized
+            }
+            else -> cached
+        }
+        set(graph) {
+            _graph = graph
+            serialize(graph)
+        }
+
+    init {
+        this.graph = graph
     }
+
+    private fun deserialize() = FileSourceDGS().readGraph(ByteArrayInputStream(serialized), graphstreamId)
+    private fun serialize(graph: Graph) {
+        val out = ByteArrayOutputStream()
+        FileSinkDGS().writeAll(graph, out)
+        serialized = out.toByteArray()
+        graphstreamId = graph.id
+    }
+
+    fun getShortHash(): String = (seed and 0xffff).toString(16)
 
 }

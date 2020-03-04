@@ -1,216 +1,351 @@
 package uk.ac.cam.jm2186.graffs.cli
 
-import com.github.ajalt.clikt.core.NoRunCliktCommand
-import com.github.ajalt.clikt.core.requireObject
+import com.github.ajalt.clikt.core.NoOpCliktCommand
+import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.subcommands
-import com.github.ajalt.clikt.parameters.options.*
+import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.arguments.default
+import com.github.ajalt.clikt.parameters.options.eagerOption
+import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.choice
+import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.apache.commons.lang3.StringUtils.leftPad
 import org.apache.commons.lang3.StringUtils.rightPad
 import org.apache.commons.lang3.time.StopWatch
-import org.apache.spark.api.java.JavaSparkContext
-import org.hibernate.Session
-import org.hibernate.query.Query
-import uk.ac.cam.jm2186.graffs.SparkHelper
+import org.graphstream.graph.Graph
 import uk.ac.cam.jm2186.graffs.metric.Metric
-import uk.ac.cam.jm2186.graffs.metric.MetricId
+import uk.ac.cam.jm2186.graffs.metric.MetricInfo
 import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasure
-import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasureFactory
 import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasureId
-import uk.ac.cam.jm2186.graffs.storage.GraphDataset
+import uk.ac.cam.jm2186.graffs.storage.*
 import uk.ac.cam.jm2186.graffs.storage.model.*
 import uk.ac.cam.jm2186.graffs.util.TimePerf
-import java.util.concurrent.TimeUnit
-import kotlin.math.max
 
-class ExperimentSubcommand : NoRunCliktCommand(
+class ExperimentSubcommand : NoOpCliktCommand(
     name = "experiment",
-    help = "Execute experiments (evaluating metrics on generated graphs) and show results"
+    help = "Run experiments (evaluate metrics on generated graphs) and show results"
 ) {
 
     init {
         subcommands(
-            ShowCommand(),
-            ExecuteCommand(),
-            RobustnessCommand()
+            ListSub(),
+            CreateSub(),
+            CloneSub(),
+            RemoveSub(),
+            RunSub(),
+            PruneSub()
         )
     }
 
-    inner class ShowCommand : AbstractHibernateCommand(
-        name = "show",
-        help = "Print summary of experiments in the database"
+    class ListSub : AbstractHibernateCommand(
+        name = "list",
+        help = "List created experiments and their properties"
     ) {
         override fun run0() {
-            val builder = hibernate.criteriaBuilder
-            val criteria = builder.createQuery(MetricExperiment::class.java)
-            criteria.from(MetricExperiment::class.java)
-            val count = hibernate.createQuery(criteria).list().size
-            println("There are $count executed experiments")
+            hibernate.getAllEntities(Experiment::class.java).forEach {
+                it.printToConsole()
+            }
         }
     }
 
-    inner class ExecuteCommand : AbstractHibernateCommand(
-        name = "execute",
-        help = "Execute experiments, i.e. evaluate metrics on generated graphs"
+    class CreateSub : AbstractHibernateCommand(
+        name = "create",
+        help = "Create an experiment"
     ) {
 
-        val tags by option(
-            "--tag", "--tags",
-            help = "Tags of graphs that this experiment should run on, delimited by comma"
-        ).split(",").required()
+        init {
+            eagerOption("--sample", help = "Create a sample experiment (overriding all options)") {
+                val generator = hibernate.getNamedEntity<GraphGenerator>("sampleGenerator")
+                createExperiment(
+                    Experiment(
+                        name = "sampleExperiment",
+                        generator = generator,
+                        metrics = mutableSetOf("Degree", "PageRank", "Betweenness"),
+                        robustnessMeasures = mutableSetOf("RankInstability"),
+                        datasets = listOf("test")
+                    )
+                )
+                throw PrintMessage("")
+            }
+        }
 
-        private val config by requireObject<Graffs.Config>()
-        private val spark by SparkHelper.delegate { config.runOnCluster }
+        private val name by experiment_name()
+        private val datasets by experiment_datasets().required()
+        private val generatorName by experiment_generator().required()
+        private val metrics by experiment_metrics().required()
+        private val robustnessMeasures by experiment_robustnessMeasures().required()
 
         override fun run0() {
-            val timePerf = TimePerf()
+            val generator = hibernate.getNamedEntity<GraphGenerator>(generatorName)
+            createExperiment(
+                Experiment(
+                    name = name,
+                    generator = generator,
+                    metrics = metrics.toMutableSet(),
+                    robustnessMeasures = robustnessMeasures.toMutableSet(),
+                    datasets = datasets
+                )
+            )
+        }
 
-            val toCompute = mutableListOf<MetricExperimentId>()
+        private fun createExperiment(experiment: Experiment) {
+            hibernate.mustNotExist<Experiment>(experiment.name)
+            hibernate.beginTransaction()
+            hibernate.save(experiment)
+            hibernate.transaction.commit()
 
-            println(timePerf.phase("Preparing experiments"))
-            val generatedGraphs = hibernate.getAllGeneratedGraphs(tags)
-            Metric.map.keys.forEach { metricId ->
-                generatedGraphs.forEach { graph ->
-                    val id = MetricExperimentId(metricId, graph)
-                    if (!hibernate.byId(MetricExperiment::class.java).loadOptional(id).isPresent) {
-                        toCompute.add(id)
+            experiment.printToConsole()
+        }
+    }
+
+    class RemoveSub : CoroutineCommand(
+        name = "remove",
+        help = "Remove an experiment, all its generated graph and any computed results"
+    ) {
+        val name by experiment_name()
+        override suspend fun run1() {
+            val experiment = hibernate.getNamedEntity<Experiment>(name)
+            hibernate.inTransaction { delete(experiment) }
+        }
+    }
+
+    class RunSub : CoroutineCommand(
+        name = "run",
+        help = """Run an experiment
+            |
+            |```
+            |Running an experiment has 3 phases:
+            |1. Generate graphs
+            |2. Evaluate metrics on graphs
+            |3. Calculate robustness measures of graph metrics
+            |```
+            |
+            |You can run the phases separately, or more/all at once.
+        """.trimMargin()
+    ) {
+
+        private val phasesMap = mapOf(
+            //"generate" to 1, "metrics" to 2, "robustness" to 3,
+            "1" to 1, "2" to 2, "3" to 3,
+            "all" to 3
+        )
+        private val phasesAll = listOf(::generate, ::metrics, ::robustness)
+
+        private val experimentName by experiment_name()
+        private val phase by argument(
+            name = "phase",
+            help = "Run only up to the specified phase [1|2|3|all]"
+        ).choice(*phasesMap.keys.toTypedArray()).default("all")
+
+        private val timer = TimePerf()
+
+        override suspend fun run1() {
+            val experiment: Experiment = hibernate.getNamedEntity<Experiment>(experimentName)
+
+            val phaseIndex = phasesMap.getValue(phase)
+            phasesAll.take(phaseIndex).forEach { phase ->
+                phase(experiment)
+            }
+            println("Done.")
+        }
+
+        private suspend fun generate(experiment: Experiment) {
+            timer.phase("Generate graphs")
+            val hibernateMutex = Mutex()
+            coroutineScope {
+                experiment.graphCollections.forEach { (datasetId, graphCollection) ->
+                    if (graphCollection.distortedGraphs.isEmpty()) {
+                        launch {
+                            val sourceGraph = GraphDataset(datasetId).loadGraph()
+                            // generate graphs
+                            val generated = experiment.generator.produceFromGraph(sourceGraph)
+                            graphCollection.distortedGraphs.addAll(generated)
+                            // store in database
+                            hibernateMutex.withLock {
+                                hibernate.inTransaction {
+                                    save(graphCollection)
+                                    generated.forEach { save(it) }
+                                }
+                            }
+                        }
                     }
                 }
             }
-
-            println(timePerf.phase("Initialising spark"))
-
-            val jsc = JavaSparkContext(spark.sparkContext())
-            val slices = jsc.getNumberOfSlices()
-            val dataSet = jsc.parallelize(toCompute, slices)
-
-            println(timePerf.phase("Running computation in parallel") + " (${toCompute.size} metric evaluations in $slices partitions)")
-
-            val sMaxTagLength = generatedGraphs.map { it.tag?.name?.length ?: 0 }.max()!!
-            val sMaxGraphLength = generatedGraphs.map { it.datasetId.length }.max()!!
-            val sMaxMetricLength = Metric.map.keys.map { it.length }.max()!!
-            val future = dataSet.map { (metricId, distortedGraph) ->
-                // TODO allow specifying metric params
-                val metric = Metric.map.getValue(metricId).createMetric(emptyList())
-                val graph = distortedGraph.produceGenerated()
-
-                val stopWatch = StopWatch()
-                stopWatch.start()
-                val (value, graphValues) = metric.evaluate(graph)
-                stopWatch.stop()
-
-                val sTag = rightPad(distortedGraph.tag?.name?.let { "`$it`" } ?: "*", sMaxTagLength + 2)
-                val sGraph = rightPad(distortedGraph.datasetId, sMaxGraphLength)
-                val sSeed = leftPad(distortedGraph.seed.toString(16), 17)
-                val sMetric = rightPad(metricId, sMaxMetricLength)
-                val sResult = rightPad(if (value == null) "[graph object]" else "%.3f".format(value), 14)
-                val sTime = "${stopWatch.getTime(TimeUnit.SECONDS)}s"
-                println("- $sTag $sGraph (seed $sSeed) -> $sMetric = $sResult  ($sTime)")
-
-                val metricExperiment = MetricExperiment(metricId, distortedGraph, stopWatch.time, value)
-                metricExperiment.writeGraphValues(graphValues)
-                return@map metricExperiment
-            }
-
-            // Compute metrics on the cluster
-            val computedExperiments = future.collect()
-
-            println(timePerf.phase("Storing results in database"))
-
-            // Store results
-            hibernate.beginTransaction()
-            computedExperiments.forEach { experiment ->
-                hibernate.saveOrUpdate(experiment)
-            }
-            hibernate.transaction.commit()
-
-            println("Timings:")
-            timePerf.finish().forEach {
-                println("  ${rightPad(it.phase, 35)} : ${it.humanReadableDuration()}")
-            }
-
-            spark.stop()
         }
 
-        private fun Session.getAllGeneratedGraphs(tagNames: List<String>): List<DistortedGraph> {
-            val tags = tagNames.mapNotNull { hibernate.get(Tag::class.java, it) }
-            val distortedGraphs = tags.flatMap { tag -> tag.distortedGraphs }
+        private suspend fun metrics(experiment: Experiment) {
+            timer.phase("Evaluate metrics")
+            val hibernateMutex = Mutex()
+            val metrics = experiment.metrics.map {
+                val info = Metric.map.getValue(it)
+                val metric = info.factory()
+                info to metric
+            }
 
-            // now we need to collect each dataset's identity graph
-            val datasets = distortedGraphs.map { it.datasetId }.distinct()
+            coroutineScope {
+                val graphJobs = mutableListOf<Deferred<Unit>>()
 
-            val builder = this.criteriaBuilder
-            val criteria = builder.createQuery(DistortedGraph::class.java)
-            val root2 = criteria.from(DistortedGraph::class.java)
-            criteria.select(root2).where(
-                root2.get(DistortedGraph_.datasetId).`in`(datasets),
-                builder.isNull(root2.get<Tag?>(DistortedGraph_.tag))
-            )
-            val graphs = this.createQuery(criteria).list()
+                experiment.graphCollections.forEach { (datasetId, graphCollection) ->
+                    graphCollection.distortedGraphs.forEach { distortedGraph ->
+                        val graph = distortedGraph.graph
+                        val graphMutex = Mutex()
 
-            graphs.addAll(distortedGraphs)
-            return graphs
+                        val jobs = HashMap<MetricInfo, Deferred<Unit>>()
+                        metrics.forEach { (metricInfo, metric) ->
+                            val job = async(start = CoroutineStart.LAZY) {
+                                // make sure that all dependencies are computed first
+                                val dependencies = metricInfo.dependencies.map { jobs.getValue(it) }
+                                dependencies.awaitAll()
+
+                                // now compute the current metric
+                                graphMutex.withLock {
+                                    metric.evaluateAndLog(graph, datasetId, distortedGraph)
+                                }
+                            }
+                            jobs[metricInfo] = job
+                        }
+
+                        // start and wait for all jobs
+                        val graphJob = async(start = CoroutineStart.LAZY) {
+                            jobs.values.awaitAll()
+                            // store the result
+                            distortedGraph.graph = graph
+                            hibernateMutex.withLock {
+                                hibernate.inTransaction { save(distortedGraph) }
+                            }
+                            Unit
+                        }
+                        graphJobs.add(graphJob)
+                    }
+                }
+
+                val n = experiment.datasets.size * experiment.generator.n * experiment.metrics.size
+                println("Running (at most) $n metric evaluations (${experiment.datasets.size} datasets * ${experiment.generator.n} generated * ${experiment.metrics.size} metrics)")
+                graphJobs.awaitAll()
+            }
         }
 
-        private fun JavaSparkContext.getNumberOfSlices(): Int {
-            return max(
-                2, max(
-                    Runtime.getRuntime().availableProcessors(),
-                    sc().executorMemoryStatus.size()
+        private suspend fun Metric.evaluateAndLog(
+            graph: Graph,
+            datasetId: GraphDatasetId,
+            distortedGraph: DistortedGraph
+        ) {
+            val stopWatch = StopWatch()
+            stopWatch.start()
+            val evaluated = evaluate(graph)
+            stopWatch.stop()
+
+            if (evaluated != null) {
+                val sDataset = rightPad(datasetId, 16)
+                val sHash = leftPad(distortedGraph.getShortHash(), 4)
+                val sMetric = rightPad(id, 20)
+                val sResult = leftPad(evaluated.toString(), 6)
+                val sTime = "${stopWatch.time / 1000}s"
+                println("- $sDataset (seed $sHash) -> $sMetric = $sResult  ($sTime)")
+            }
+        }
+
+        private suspend fun robustness(experiment: Experiment) {
+            val hibernateMutex = Mutex()
+            val measures = experiment.robustnessMeasures.map {
+                it to RobustnessMeasure.map.getValue(it).get()
+            }
+            val metrics = experiment.metrics.map {
+                Metric.map.getValue(it)
+            }
+
+            coroutineScope {
+                val jobs = experiment.graphCollections.flatMap { (datasetId, graphCollection) ->
+                    metrics.flatMap { metric ->
+                        measures.map { (measureId, measure) ->
+                            async(start = CoroutineStart.LAZY) {
+                                val result =
+                                    measure.evaluateAndLog(metric, graphCollection, datasetId, measureId)
+                                val robustness = Robustness(experiment, datasetId, metric.id, measureId, result)
+
+                                hibernateMutex.withLock {
+                                    hibernate.inTransaction { saveOrUpdate(robustness) }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                val n = experiment.datasets.size * experiment.metrics.size * experiment.robustnessMeasures.size
+                println("Computing (at most) $n robustness values (${experiment.datasets.size} datasets * ${experiment.metrics.size} metrics * ${experiment.robustnessMeasures.size} robustness measures)")
+                jobs.awaitAll()
+            }
+        }
+
+        private fun RobustnessMeasure.evaluateAndLog(
+            metric: MetricInfo,
+            graphCollection: GraphCollection,
+            datasetId: GraphDatasetId,
+            measureId: RobustnessMeasureId
+        ): Double {
+            val result = evaluate(metric, graphCollection)
+
+            val sDataset = rightPad("`$datasetId`", 18)
+            val sMetric = rightPad(metric.id, 20)
+            val sMeasure = rightPad(measureId, 20)
+            val sResult = leftPad("%.7f".format(result), 10)
+            println("- Dataset $sDataset -> metric $sMetric -> robustnessMeasure $sMeasure = $sResult")
+            return result
+        }
+
+    }
+
+    class CloneSub : CoroutineCommand(
+        name = "clone",
+        help = "Create a new experiment using parameters of existing experiment"
+    ) {
+
+        val from by experiment_name("--from", help = "Template experiment to copy properties from")
+        val name by experiment_name()
+
+        private val datasets by experiment_datasets()
+        private val generatorName by experiment_generator()
+        private val metrics by experiment_metrics()
+        private val robustnessMeasures by experiment_robustnessMeasures()
+
+        override suspend fun run1() {
+            val from = hibernate.getNamedEntity<Experiment>(from)
+            val generator = when (val name = generatorName) {
+                null -> from.generator
+                else -> hibernate.getNamedEntity<GraphGenerator>(name)
+            }
+            createExperiment(
+                Experiment(
+                    name = name,
+                    generator = generator,
+                    metrics = metrics?.toMutableSet() ?: from.metrics.toMutableSet(),
+                    robustnessMeasures = robustnessMeasures?.toMutableSet() ?: from.robustnessMeasures.toMutableSet(),
+                    datasets = datasets ?: from.datasets
                 )
             )
+        }
+
+        private suspend fun createExperiment(experiment: Experiment) {
+            hibernate.inTransaction { save(experiment) }
+            experiment.printToConsole()
         }
     }
 
-    inner class RobustnessCommand : AbstractHibernateCommand(
-        name = "robustness",
-        help = "Calculate the robustness measure"
+    class PruneSub : CoroutineCommand(
+        name = "prune",
+        help = "Remove all generated graphs of an experiment"
     ) {
-
-        private val tagName by option("--tag", help = "Filter distorted graphs by the specified tag").required()
-        private val dataset by option("--dataset", help = "Use graphs distorted from this dataset")
-            .convert { GraphDataset(it, validate = true) }.required()
-        private val metric: MetricId by option("--metric", help = "Metric whose robustness to calculate")
-            .choice(*Metric.map.keys.toTypedArray()).required()
-        private val robustnessMeasure: Pair<RobustnessMeasureId, RobustnessMeasureFactory>
-                by option("--measure", help = "Robustness measure")
-                    .choicePairs(RobustnessMeasure.map).required()
-
-        private fun filterMetricExperiments(justIdentityGraph: Boolean): Query<MetricExperiment> {
-            val tag = hibernate.get(Tag::class.java, tagName)
-
-            val builder = hibernate.criteriaBuilder
-            val criteria = builder.createQuery(MetricExperiment::class.java)
-            val root = criteria.from(MetricExperiment::class.java)
-            val graph = root.get(MetricExperiment_.graph)
-            val queryTag = graph.get<Tag?>(DistortedGraph_.tag)
-            criteria.select(root)
-                .where(
-                    builder.equal(graph.get(DistortedGraph_.datasetId), dataset.id),
-                    builder.equal(root.get(MetricExperiment_.metricId), metric),
-                    when (justIdentityGraph) {
-                        false -> builder.equal(queryTag, tag)
-                        true -> builder.isNull(queryTag)
-                    }
-                )
-            return hibernate.createQuery(criteria)
-        }
-
-        private fun filterMetricExperimentsOfSource(): MetricExperiment =
-            filterMetricExperiments(true).singleResult
-                ?: throw IllegalStateException("The database contains no entry of evaluated $metric on the source dataset `${dataset.id}`")
-
-        private fun filterMetricExperimentsOfDistorted(): List<MetricExperiment> =
-            filterMetricExperiments(false).resultList
-
-        override fun run0() {
-            val original = filterMetricExperimentsOfSource()
-            val experiments = filterMetricExperimentsOfDistorted()
-            val measure = robustnessMeasure.second.get()
-
-            val result = measure.evaluate(original.readGraphValues(), experiments.map { it.readGraphValues() })
-
-            println("${robustnessMeasure.first} of $metric on ${experiments.size} samples from dataset `${dataset.id}` is [$result]")
+        val name by experiment_name()
+        override suspend fun run1() {
+            val experiment = hibernate.getNamedEntity<Experiment>(name)
+            hibernate.inTransaction {
+                experiment.graphCollections.values.forEach {
+                    it.distortedGraphs.clear()
+                    save(it)
+                }
+            }
         }
     }
 

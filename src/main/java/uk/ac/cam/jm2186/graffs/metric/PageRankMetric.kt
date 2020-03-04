@@ -2,21 +2,12 @@ package uk.ac.cam.jm2186.graffs.metric
 
 import org.graphstream.algorithm.PageRank
 import org.graphstream.graph.Graph
-import uk.ac.cam.jm2186.graffs.graph.ATTRIBUTE_NAME_NODE_VALUE
 
-class PageRankMetric(private val dampingFactor: Double) : Metric {
+object PageRankMetric : Metric("PageRank"), MetricInfo {
 
-    class Factory : MetricFactory {
-        override fun createMetric(params: List<Number>) = PageRankMetric(
-            dampingFactor = params.getOrNull(0) as Double? ?: PageRank.DEFAULT_DAMPING_FACTOR
-        )
-    }
-
-    override fun evaluate(graph: Graph): MetricResult {
-        val alg = PageRank(dampingFactor, PageRank.DEFAULT_PRECISION, ATTRIBUTE_NAME_NODE_VALUE)
+    override suspend fun evaluate0(graph: Graph) {
+        val alg = PageRank(PageRank.DEFAULT_DAMPING_FACTOR, PageRank.DEFAULT_PRECISION, id)
         alg.init(graph)
         alg.compute()
-
-        return null to graph
     }
 }
