@@ -338,7 +338,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
 
     class PruneSub : CoroutineCommand(
         name = "prune",
-        help = "Remove all generated graphs of an experiment"
+        help = "Remove all generated graphs and calculated robustness values of an experiment"
     ) {
         val name by experiment_name()
         override suspend fun run1() {
@@ -348,6 +348,8 @@ class ExperimentSubcommand : NoOpCliktCommand(
                     it.distortedGraphs.clear()
                     save(it)
                 }
+                experiment.robustnessMeasures.clear()
+                save(experiment)
             }
         }
     }
