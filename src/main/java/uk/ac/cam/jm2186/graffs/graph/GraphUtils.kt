@@ -1,5 +1,6 @@
 package uk.ac.cam.jm2186.graffs.graph
 
+import org.graphstream.graph.Element
 import org.graphstream.graph.implementations.SingleGraph
 import org.graphstream.stream.file.FileSource
 import java.io.InputStream
@@ -13,3 +14,6 @@ fun FileSource.readGraph(inputStream: InputStream, id: String): SingleGraph {
     removeSink(graph)
     return graph
 }
+
+fun Element.getDoubleAttribute(attributeName: String) = getAttribute<Double?>(attributeName)
+    ?: throw IllegalStateException("${this::class.simpleName} `${id}` has no attribute `${attributeName}`")

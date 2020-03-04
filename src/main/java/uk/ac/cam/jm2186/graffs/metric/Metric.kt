@@ -62,4 +62,5 @@ interface MetricInfo {
     val factory: MetricFactory
 
     val dependencies: Set<MetricInfo> get() = setOf()
+    val attributeName: String get() = id
 }
