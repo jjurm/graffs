@@ -8,7 +8,7 @@ import java.util.function.Supplier
 typealias RobustnessMeasureId = String
 
 interface RobustnessMeasure : Serializable {
-    fun evaluate(metric: MetricInfo, graphCollection: GraphCollection): Double
+    suspend fun evaluate(metric: MetricInfo, graphCollection: GraphCollection, metadata: GraphCollectionMetadata): Double
 
     companion object {
         val map = mapOf<RobustnessMeasureId, RobustnessMeasureFactory>(

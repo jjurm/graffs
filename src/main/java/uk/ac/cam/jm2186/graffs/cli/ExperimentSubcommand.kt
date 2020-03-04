@@ -17,6 +17,7 @@ import org.apache.commons.lang3.time.StopWatch
 import org.graphstream.graph.Graph
 import uk.ac.cam.jm2186.graffs.metric.Metric
 import uk.ac.cam.jm2186.graffs.metric.MetricInfo
+import uk.ac.cam.jm2186.graffs.robustness.GraphCollectionMetadata
 import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasure
 import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasureId
 import uk.ac.cam.jm2186.graffs.storage.*
@@ -259,10 +260,11 @@ class ExperimentSubcommand : NoOpCliktCommand(
             coroutineScope {
                 val jobs = experiment.graphCollections.flatMap { (datasetId, graphCollection) ->
                     metrics.flatMap { metric ->
+                        val metadata = GraphCollectionMetadata(graphCollection, metric, this)
                         measures.map { (measureId, measure) ->
                             async(start = CoroutineStart.LAZY) {
                                 val result =
-                                    measure.evaluateAndLog(metric, graphCollection, datasetId, measureId)
+                                    measure.evaluateAndLog(metric, graphCollection, metadata, datasetId, measureId)
                                 val robustness = Robustness(experiment, datasetId, metric.id, measureId, result)
 
                                 hibernateMutex.withLock {
@@ -279,13 +281,14 @@ class ExperimentSubcommand : NoOpCliktCommand(
             }
         }
 
-        private fun RobustnessMeasure.evaluateAndLog(
+        private suspend fun RobustnessMeasure.evaluateAndLog(
             metric: MetricInfo,
             graphCollection: GraphCollection,
+            metadata: GraphCollectionMetadata,
             datasetId: GraphDatasetId,
             measureId: RobustnessMeasureId
         ): Double {
-            val result = evaluate(metric, graphCollection)
+            val result = evaluate(metric, graphCollection, metadata)
 
             val sDataset = rightPad("`$datasetId`", 18)
             val sMetric = rightPad(metric.id, 20)

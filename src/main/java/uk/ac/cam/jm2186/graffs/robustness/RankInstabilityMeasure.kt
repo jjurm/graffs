@@ -13,12 +13,12 @@ class RankInstabilityMeasure : RobustnessMeasure {
 
     private val logger = Logger.getLogger(RankInstabilityMeasure::class.java)
 
-    override fun evaluate(metric: MetricInfo, graphCollection: GraphCollection): Double {
-        val rankings = graphCollection.distortedGraphs.map {
-            val graph = it.graph
-            AttributeNodeRanking(graph, metric.attributeName)
-        }
-        val overallRanking = OverallNodeRanking(rankings)
+    override suspend fun evaluate(
+        metric: MetricInfo,
+        graphCollection: GraphCollection,
+        metadata: GraphCollectionMetadata
+    ): Double {
+        val overallRanking = metadata.getOverallRanking()
         val n = overallRanking.size
 
         // Filter out up to 1% of highest ranked nodes
@@ -31,7 +31,7 @@ class RankInstabilityMeasure : RobustnessMeasure {
         val rankInstability = topNodes
             .map { nodeId ->
                 // Calculate min and max rank
-                rankings.fold(RankRange()) { acc, ranking ->
+                overallRanking.rankings.fold(RankRange()) { acc, ranking ->
                     acc.add(ranking.getRank(nodeId))
                 }
             }
