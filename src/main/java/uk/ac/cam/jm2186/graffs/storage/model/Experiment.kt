@@ -4,7 +4,9 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.*
 import org.hibernate.annotations.LazyCollection
 import org.hibernate.annotations.LazyCollectionOption
+import uk.ac.cam.jm2186.graffs.metric.Metric
 import uk.ac.cam.jm2186.graffs.metric.MetricId
+import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasure
 import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasureId
 import uk.ac.cam.jm2186.graffs.storage.GraphDataset
 import uk.ac.cam.jm2186.graffs.storage.GraphDatasetId
@@ -51,7 +53,10 @@ fun CliktCommand.experiment_name(
     option(*names, help = help, metavar = "NAME").required()
 
 fun CliktCommand.experiment_datasets(): OptionWithValues<List<GraphDatasetId>?, List<GraphDatasetId>, GraphDatasetId> {
-    return option("--datasets", help = "Source dataset(s) to generate graphs from, delimited by comma").convert {
+    return option(
+        "--datasets", help = "Source dataset(s) to generate graphs from, delimited by comma",
+        metavar = "DATASET,..."
+    ).convert {
         GraphDataset(it, validate = true).id
     }.split(",")
 }
@@ -60,12 +65,16 @@ fun CliktCommand.experiment_generator() =
     option("--generator", help = "Graph generator used to produce graph from source datasets", metavar = "NAME")
 
 fun CliktCommand.experiment_metrics() =
-    option("--metrics", help = "Graph metrics whose robustness should be calculated, delimited by comma")
-        .split<String, MetricId>(",")
+    option(
+        "--metrics", help = "Graph metrics whose robustness should be calculated, delimited by comma",
+        metavar = Metric.map.keys.joinToString(separator = ",")
+    ).split<String, MetricId>(",")
 
 fun CliktCommand.experiment_robustnessMeasures() =
-    option("--robustnessMeasures", help = "Robustness measures that should be evaluated for each graph metric")
-        .split<String, RobustnessMeasureId>(",")
+    option(
+        "--robustnessMeasures", help = "Robustness measures that should be evaluated for each graph metric",
+        metavar = RobustnessMeasure.map.keys.joinToString(separator = ",")
+    ).split<String, RobustnessMeasureId>(",")
 
 fun Experiment.printToConsole() {
     println(

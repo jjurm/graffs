@@ -60,7 +60,8 @@ fun CliktCommand.graphGenerator_method() =
         .default(RemovingEdgesGenerator.ID)
 
 fun CliktCommand.graphGenerator_params() =
-    option(help = "Parameters to pass to the generator, delimited by comma").double().split(delimiter = ",")
+    option(help = "Parameters to pass to the generator, delimited by comma",
+        metavar = "FLOAT,...").double().split(delimiter = ",")
         .default(listOf())
 
 fun CliktCommand.graphGenerator_seed() = option(help = "Seed for the generator").long()

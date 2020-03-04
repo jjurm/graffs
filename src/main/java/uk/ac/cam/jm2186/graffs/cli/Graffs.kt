@@ -20,10 +20,11 @@ class Graffs : CliktCommand(
         > graffs db drop
         > graffs dataset list
         > graffs dataset load social-network
-        > graffs graph generate --help
-        > graffs graph generate -n 10 --dataset social-network --generator removing-edges --params 0.05 --tag social1
-        > graffs experiment execute --tags social1
-        > graffs experiment robustness --dataset social-network --tag social1 --metric BetweennessCentrality --measure RankInstability
+        > graffs generator create --help
+        > graffs generator create --name g1 -n 10 --method removing-edges --params 0.05
+        > graffs experiment create --help
+        > graffs experiment create --name e1 --datasets test,social-network --generator g1 --metrics Degree,PageRank,Betweenness --robustnessMeasures RankInstability
+        > graffs experiment run --name e1
         ```
     """.trimIndent()
 ) {
