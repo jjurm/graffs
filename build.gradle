@@ -27,7 +27,7 @@ buildProperties {
 }
 
 group 'uk.ac.cam.jm2186'
-version '1.0-SNAPSHOT-' + gitVersion()
+version '1.0-' + gitVersion()
 
 mainClassName = "uk.ac.cam.jm2186.graffs.cli.GraffsKt"
 
@@ -60,15 +60,10 @@ task jarUpload(dependsOn: jar) {
             commandLine "scp", "${buildDir}/libs/${archivesBaseName}-${version}.jar", "${serverName}:${jarDir}/${archivesBaseName}-${version}.jar"
         }
         exec {
-            //commandLine "ssh", serverName, "echo 'spark-submit ${jarDir}/${archivesBaseName}-${version}.jar \$@' > ~/scratch/${archivesBaseName} ; chmod u+x ~/scratch/${archivesBaseName}"
             commandLine "ssh", serverName, "echo 'java -jar ${jarDir}/${archivesBaseName}-${version}.jar \$@' > ~/scratch/${archivesBaseName} ; chmod u+x ~/scratch/${archivesBaseName} ; _GRAFFS_COMPLETE=bash graffs > ./graffs-completion.sh"
         }
     }
 }
-
-/*task sparkSubmit(type: Exec, dependsOn: jarUpload) {
-    commandLine "ssh", serverName, "spark-submit --deploy-mode client ${jarDir}/${archivesBaseName}-${version}.jar"
-}*/
 
 test {
     useJUnitPlatform()
@@ -140,14 +135,6 @@ dependencies {
     implementation group: 'org.graphstream', name: 'gs-algo', version: '1.3'
     // https://mvnrepository.com/artifact/org.graphstream/gs-ui
     implementation group: 'org.graphstream', name: 'gs-ui', version: '1.3'
-
-    // https://mvnrepository.com/artifact/org.apache.spark/spark-core
-    //compile group: 'org.apache.spark', name: 'spark-core_2.11', version: '2.4.4'
-    // https://mvnrepository.com/artifact/org.apache.spark/spark-sql
-    //compileOnly group: 'org.apache.spark', name: 'spark-sql_2.11', version: '2.4.4'
-    //compile group: 'org.apache.spark', name: 'spark-sql_2.11', version: '2.4.4'
-    // https://mvnrepository.com/artifact/org.scala-lang/scala-library
-    //compile group: 'org.scala-lang', name: 'scala-library', version: '2.11.12'
 
     // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
     implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: '1.3.3'
