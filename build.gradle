@@ -93,7 +93,7 @@ dokka {
 github {
     owner = 'jjurm'
     repo = 'graffs'
-    token = project.findProperty("gpr.key")
+    token = project.findProperty("gpr.key") ?: ""
     tagName = version
     targetCommitish = 'master'
     name = "v${version}"
