@@ -148,6 +148,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
             phasesAll.take(phaseIndex).forEach { phase ->
                 phase(experiment)
             }
+            println("Done.")
         }
 
         private suspend fun generate(experiment: Experiment) {
@@ -221,10 +222,8 @@ class ExperimentSubcommand : NoOpCliktCommand(
                 }
 
                 val n = experiment.datasets.size * experiment.generator.n * experiment.metrics.size
-                println("About to compute (at most) $n metric evaluations (${experiment.datasets.size} datasets * ${experiment.generator.n} generated * ${experiment.metrics.size} metrics)")
+                println("Running (at most) $n metric evaluations (${experiment.datasets.size} datasets * ${experiment.generator.n} generated * ${experiment.metrics.size} metrics)")
                 graphJobs.awaitAll()
-                println("Done.")
-
             }
         }
 
@@ -249,6 +248,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
         }
 
         private suspend fun robustness(experiment: Experiment) {
+            val hibernateMutex = Mutex()
             val measures = experiment.robustnessMeasures.map {
                 it to RobustnessMeasure.map.getValue(it).get()
             }
@@ -261,16 +261,21 @@ class ExperimentSubcommand : NoOpCliktCommand(
                     metrics.flatMap { metric ->
                         measures.map { (measureId, measure) ->
                             async(start = CoroutineStart.LAZY) {
-                                measure.evaluateAndLog(metric, graphCollection, datasetId, measureId)
+                                val result =
+                                    measure.evaluateAndLog(metric, graphCollection, datasetId, measureId)
+                                val robustness = Robustness(experiment, datasetId, metric.id, measureId, result)
+
+                                hibernateMutex.withLock {
+                                    hibernate.inTransaction { saveOrUpdate(robustness) }
+                                }
                             }
                         }
                     }
                 }
 
                 val n = experiment.datasets.size * experiment.metrics.size * experiment.robustnessMeasures.size
-                println("About to compute (at most) $n robustness calculations (${experiment.datasets.size} datasets * ${experiment.metrics.size} metrics * ${experiment.robustnessMeasures.size} robustness measures)")
+                println("Computing (at most) $n robustness values (${experiment.datasets.size} datasets * ${experiment.metrics.size} metrics * ${experiment.robustnessMeasures.size} robustness measures)")
                 jobs.awaitAll()
-                println("Done.")
             }
         }
 
@@ -279,7 +284,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
             graphCollection: GraphCollection,
             datasetId: GraphDatasetId,
             measureId: RobustnessMeasureId
-        ) {
+        ): Double {
             val result = evaluate(metric, graphCollection)
 
             val sDataset = rightPad("`$datasetId`", 18)
@@ -287,6 +292,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
             val sMeasure = rightPad(measureId, 20)
             val sResult = leftPad("%.7f".format(result), 10)
             println("- Dataset $sDataset -> metric $sMetric -> robustnessMeasure $sMeasure = $sResult")
+            return result
         }
 
     }
