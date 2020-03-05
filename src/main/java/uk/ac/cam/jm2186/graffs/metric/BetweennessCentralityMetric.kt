@@ -4,6 +4,7 @@ import org.graphstream.algorithm.BetweennessCentrality
 import org.graphstream.graph.Graph
 
 object BetweennessCentralityMetric : Metric("Betweenness"), MetricInfo {
+    override val isNodeMetric get() = true
 
     override suspend fun evaluate0(graph: Graph) {
         val alg = BetweennessCentrality(id)

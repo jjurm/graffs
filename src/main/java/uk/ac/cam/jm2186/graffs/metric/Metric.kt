@@ -57,6 +57,7 @@ sealed class MetricResult {
 interface MetricInfo {
     val id: MetricId
     val factory: MetricFactory
+    val isNodeMetric: Boolean
 
     val dependencies: Set<MetricInfo> get() = setOf()
     val attributeName: String get() = id

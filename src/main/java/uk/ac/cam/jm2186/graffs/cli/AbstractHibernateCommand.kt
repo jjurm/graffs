@@ -17,7 +17,11 @@ abstract class AbstractHibernateCommand(
 ) {
 
     private val sessionFactory: SessionFactory by HibernateHelper.delegate()
-    private val sessionLazy: Lazy<Session> = lazy { sessionFactory.openSession() }
+    private val sessionLazy: Lazy<Session> = lazy {
+        val session = sessionFactory.openSession()
+        println("Conntected to database")
+        session
+    }
     protected val hibernate by sessionLazy
 
     init {

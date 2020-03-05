@@ -4,7 +4,7 @@ import com.github.ajalt.clikt.core.NoOpCliktCommand
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.arguments.argument
-import com.github.ajalt.clikt.parameters.arguments.default
+import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.options.eagerOption
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.choice
@@ -127,33 +127,35 @@ class ExperimentSubcommand : NoOpCliktCommand(
         """.trimMargin()
     ) {
 
-        private val phasesMap = mapOf(
+        private val phasesArgMapping = mapOf(
             //"generate" to 1, "metrics" to 2, "robustness" to 3,
-            "1" to 1, "2" to 2, "3" to 3,
-            "all" to 3
+            "1" to listOf(0), "2" to listOf(1), "3" to listOf(2),
+            "all" to listOf(0, 1, 2)
         )
-        private val phasesAll = listOf(::generate, ::metrics, ::robustness)
+        private val phasesAvailable = listOf(::generate, ::metrics, ::robustness)
 
         private val experimentName by experiment_name()
-        private val phase by argument(
+        private val phases by argument(
             name = "phase",
             help = "Run only up to the specified phase [1|2|3|all]"
-        ).choice(*phasesMap.keys.toTypedArray()).default("all")
+        ).choice(*phasesArgMapping.keys.toTypedArray()).multiple(required = false)
 
         private val timer = TimePerf()
 
         override suspend fun run1() {
             val experiment: Experiment = hibernate.getNamedEntity<Experiment>(experimentName)
 
-            val phaseIndex = phasesMap.getValue(phase)
-            phasesAll.take(phaseIndex).forEach { phase ->
-                phase(experiment)
-            }
+            (if (phases.isEmpty()) listOf("all") else phases)
+                .flatMap {
+                    phasesArgMapping.getValue(it).map { phasesAvailable[it] }
+                }.forEach { phase ->
+                    phase(experiment)
+                }
             println("Done.")
         }
 
         private suspend fun generate(experiment: Experiment) {
-            timer.phase("Generate graphs")
+            println(timer.phase("Generate graphs"))
             val hibernateMutex = Mutex()
             coroutineScope {
                 experiment.graphCollections.forEach { (datasetId, graphCollection) ->
@@ -177,7 +179,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
         }
 
         private suspend fun metrics(experiment: Experiment) {
-            timer.phase("Evaluate metrics")
+            println(timer.phase("Evaluate metrics"))
             val hibernateMutex = Mutex()
             val metrics = experiment.metrics.map {
                 val info = Metric.map.getValue(it)
@@ -255,7 +257,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
             }
             val metrics = experiment.metrics.map {
                 Metric.map.getValue(it)
-            }
+            }.filter { it.isNodeMetric }
 
             coroutineScope {
                 val jobs = experiment.graphCollections.flatMap { (datasetId, graphCollection) ->
