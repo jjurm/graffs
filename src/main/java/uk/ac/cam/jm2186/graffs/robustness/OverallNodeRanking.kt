@@ -5,17 +5,17 @@ import org.apache.commons.collections4.multimap.ArrayListValuedHashMap
 import uk.ac.cam.jm2186.graffs.metric.MetricInfo
 import uk.ac.cam.jm2186.graffs.storage.model.GraphCollection
 
-class OverallNodeRanking(
-    val rankings: List<AttributeNodeRanking>
-) : AttributeNodeRanking(overallNodeRanking(rankings)) {
+class OverallNodeRanking internal constructor(
+    val rankings: List<GraphAttributeNodeRanking>
+) : BaseNodeRanking(overallNodeRanking(rankings)) {
 
     constructor(graphCollection: GraphCollection, metric: MetricInfo) : this(graphCollection.distortedGraphs.map {
         val graph = it.graph
-        AttributeNodeRanking(graph, metric.attributeName)
+        GraphAttributeNodeRanking(graph, metric.attributeName)
     })
 
     companion object {
-        private fun overallNodeRanking(rankings: List<AttributeNodeRanking>): NodeRanking {
+        private fun overallNodeRanking(rankings: List<BaseNodeRanking>): List<String> {
             // Accumulate ranks of each node
             val allRanks: MultiValuedMap<String, Rank> = ArrayListValuedHashMap<String, Rank>()
             rankings.forEach { ranking ->
@@ -30,7 +30,7 @@ class OverallNodeRanking(
                 }
                 .sortedBy(Pair<String, Double>::second)
                 .map { it.first }
-            return AttributeNodeRanking(list)
+            return list
         }
     }
 

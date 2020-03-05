@@ -13,7 +13,8 @@ interface RobustnessMeasure : Serializable {
     companion object {
         val map = mapOf<RobustnessMeasureId, RobustnessMeasureFactory>(
             "RankIdentifiability" to RankIdentifiabilityMeasure.factory,
-            "RankInstability" to RankInstabilityMeasure.factory
+            "RankInstability" to RankInstabilityMeasure.factory,
+            "RankContinuity" to RankContinuityMeasure.factory
         )
     }
 }
