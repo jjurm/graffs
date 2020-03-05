@@ -2,37 +2,15 @@ package uk.ac.cam.jm2186.graffs.graph
 
 import org.graphstream.graph.Graph
 import org.graphstream.graph.implementations.Graphs
-import org.graphstream.graph.implementations.SingleGraph
-import org.graphstream.stream.GraphReplay
+import uk.ac.cam.jm2186.graffs.storage.model.DistortedGraph
 
-class IdentityGenerator(
-    private val sourceGraph: Graph
-) : GraphProducer {
+object IdentityGenerator : GraphProducer, GraphProducerInfo {
 
-    companion object {
-        const val ID: GraphProducerId = "identity"
+    override val id: GraphProducerId = "identity"
+    override val factory: GraphProducerFactory = { _, _ -> this }
+
+    override fun produce(sourceGraph: Graph, n: Int): List<DistortedGraph> {
+        return (0 until n).map { DistortedGraph(0L, Graphs.clone(sourceGraph)) }
     }
 
-    class Factory : GraphProducerFactory {
-        override fun createGraphProducer(sourceGraph: Graph, seed: Long, params: List<Number>) =
-            IdentityGenerator(sourceGraph)
-    }
-
-    private val id = sourceGraph.id + "-" + javaClass.name
-    private var count = 0
-    val replay = GraphReplay(id)
-
-    override fun produce(): Graph {
-        val graph = SingleGraph("$id-${count++}")
-        replay.addSink(graph)
-        return graph
-    }
-
-    override fun compute() {
-        replay.replay(sourceGraph)
-    }
-
-    override fun produceComputed(): Graph {
-        return Graphs.clone(sourceGraph)
-    }
 }

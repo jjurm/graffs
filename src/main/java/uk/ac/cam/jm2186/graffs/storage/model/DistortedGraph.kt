@@ -11,7 +11,7 @@ import javax.persistence.*
 
 @Entity
 class DistortedGraph(
-    val seed: Long,
+    val hash: Long,
     graph: Graph
 ) : AbstractJpaPersistable<Long>() {
 
@@ -52,6 +52,10 @@ class DistortedGraph(
         graphstreamId = graph.id
     }
 
-    fun getShortHash(): String = (seed and 0xffff).toString(16)
+    fun getShortHash(): String {
+        val v1 = hash.hashCode()
+        val v2 = (v1 and 0xffff) xor ((v1 shr 32) and 0xffff)
+        return v2.toString(16)
+    }
 
 }

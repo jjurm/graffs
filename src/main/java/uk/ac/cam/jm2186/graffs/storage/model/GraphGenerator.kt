@@ -29,16 +29,9 @@ class GraphGenerator(
 ) : NamedEntity(name) {
 
     fun produceFromGraph(sourceGraph: Graph): List<DistortedGraph> {
-        val generatorFactory = GraphProducer.map.getValue(method).getDeclaredConstructor().newInstance()
-        val seedSource = Random(seed)
-
-        return (0 until n).map { _ ->
-            val graphSeed = seedSource.nextLong()
-            val graph = generatorFactory
-                .createGraphProducer(sourceGraph, graphSeed, params)
-                .produceComputed()
-            DistortedGraph(graphSeed, graph)
-        }
+        val generatorFactory = GraphProducer.map.getValue(method)
+        return generatorFactory(seed, params)
+            .produce(sourceGraph, n)
     }
 
     override fun toString(): String {
@@ -56,7 +49,7 @@ fun CliktCommand.graphGenerator_n() =
 
 fun CliktCommand.graphGenerator_method() =
     option(help = "Algorithm to generate graphs").choice(*GraphProducer.map.keys.toTypedArray())
-        .default(RemovingEdgesGenerator.ID)
+        .default(RemovingEdgesGenerator.id)
 
 fun CliktCommand.graphGenerator_params() =
     option(

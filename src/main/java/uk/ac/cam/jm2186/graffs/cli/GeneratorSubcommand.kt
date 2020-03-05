@@ -1,13 +1,14 @@
 package uk.ac.cam.jm2186.graffs.cli
 
-import com.github.ajalt.clikt.core.BadParameterValue
 import com.github.ajalt.clikt.core.NoOpCliktCommand
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.options.eagerOption
 import uk.ac.cam.jm2186.graffs.graph.RemovingEdgesGenerator
-import uk.ac.cam.jm2186.graffs.storage.*
+import uk.ac.cam.jm2186.graffs.storage.getAllEntities
+import uk.ac.cam.jm2186.graffs.storage.inTransaction
 import uk.ac.cam.jm2186.graffs.storage.model.*
+import uk.ac.cam.jm2186.graffs.storage.mustNotExist
 import java.util.*
 
 class GeneratorSubcommand : NoOpCliktCommand(
@@ -53,7 +54,7 @@ class GeneratorSubcommand : NoOpCliktCommand(
                     GraphGenerator(
                         name = "sampleGenerator",
                         n = 10,
-                        method = RemovingEdgesGenerator.ID,
+                        method = RemovingEdgesGenerator.id,
                         params = listOf(0.05),
                         seed = 42L
                     )
