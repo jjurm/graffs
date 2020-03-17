@@ -1,4 +1,4 @@
-package uk.ac.cam.jm2186.graffs.storage.model
+package uk.ac.cam.jm2186.graffs.db.model
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.*
@@ -8,8 +8,8 @@ import uk.ac.cam.jm2186.graffs.metric.Metric
 import uk.ac.cam.jm2186.graffs.metric.MetricId
 import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasure
 import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasureId
-import uk.ac.cam.jm2186.graffs.storage.GraphDataset
-import uk.ac.cam.jm2186.graffs.storage.GraphDatasetId
+import uk.ac.cam.jm2186.graffs.graph.storage.GraphDataset
+import uk.ac.cam.jm2186.graffs.graph.storage.GraphDatasetId
 import javax.persistence.*
 
 @Entity

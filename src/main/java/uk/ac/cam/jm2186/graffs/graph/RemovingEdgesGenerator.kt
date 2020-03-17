@@ -4,7 +4,7 @@ import org.graphstream.graph.Element
 import org.graphstream.graph.Graph
 import org.graphstream.graph.implementations.SingleGraph
 import org.graphstream.util.Filter
-import uk.ac.cam.jm2186.graffs.storage.model.DistortedGraph
+import uk.ac.cam.jm2186.graffs.db.model.DistortedGraph
 import uk.ac.cam.jm2186.graffs.util.FilteredGraphReplay
 import kotlin.random.Random
 

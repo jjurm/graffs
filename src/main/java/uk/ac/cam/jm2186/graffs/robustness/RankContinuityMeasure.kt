@@ -3,7 +3,7 @@ package uk.ac.cam.jm2186.graffs.robustness
 import uk.ac.cam.jm2186.graffs.graph.AbstractEdgeThresholdGraphProducer
 import uk.ac.cam.jm2186.graffs.graph.getNumberAttribute
 import uk.ac.cam.jm2186.graffs.metric.MetricInfo
-import uk.ac.cam.jm2186.graffs.storage.model.GraphCollection
+import uk.ac.cam.jm2186.graffs.db.model.GraphCollection
 
 class RankContinuityMeasure : RobustnessMeasure {
 

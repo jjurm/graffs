@@ -1,10 +1,10 @@
-package uk.ac.cam.jm2186.graffs.storage.model
+package uk.ac.cam.jm2186.graffs.db.model
 
 import org.graphstream.graph.Graph
 import org.graphstream.stream.file.FileSinkDGS
 import org.graphstream.stream.file.FileSourceDGS
 import uk.ac.cam.jm2186.graffs.graph.readGraph
-import uk.ac.cam.jm2186.graffs.storage.AbstractJpaPersistable
+import uk.ac.cam.jm2186.graffs.db.AbstractJpaPersistable
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import javax.persistence.*

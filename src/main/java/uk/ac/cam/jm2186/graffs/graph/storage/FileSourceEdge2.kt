@@ -1,6 +1,7 @@
-package uk.ac.cam.jm2186.graffs.graph
+package uk.ac.cam.jm2186.graffs.graph.storage
 
 import org.graphstream.stream.file.FileSourceEdge
+import uk.ac.cam.jm2186.graffs.graph.ATTRIBUTE_NAME_EDGE_WEIGHT
 import java.io.StreamTokenizer
 
 /**
@@ -59,7 +60,8 @@ class FileSourceEdge2(edgesAreDirected: Boolean) : FileSourceEdge(edgesAreDirect
                     id2 = getWordOrNumberOrStringOrEolOrEof()
                     if (id2 != "EOL") {
                         val weight = id2.toDouble()
-                        sendEdgeAttributeAdded(graphName, edgeId, ATTRIBUTE_NAME_EDGE_WEIGHT, weight)
+                        sendEdgeAttributeAdded(graphName, edgeId,
+                            ATTRIBUTE_NAME_EDGE_WEIGHT, weight)
                     }
                 }
 

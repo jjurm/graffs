@@ -2,7 +2,7 @@ package uk.ac.cam.jm2186.graffs.robustness
 
 import org.apache.log4j.Logger
 import uk.ac.cam.jm2186.graffs.metric.MetricInfo
-import uk.ac.cam.jm2186.graffs.storage.model.GraphCollection
+import uk.ac.cam.jm2186.graffs.db.model.GraphCollection
 import kotlin.math.roundToInt
 
 class RankInstabilityMeasure : RobustnessMeasure {

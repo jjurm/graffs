@@ -1,4 +1,4 @@
-package uk.ac.cam.jm2186.graffs.storage.model
+package uk.ac.cam.jm2186.graffs.db.model
 
 import java.io.Serializable
 import javax.persistence.Id

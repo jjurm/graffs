@@ -1,11 +1,11 @@
-package uk.ac.cam.jm2186.graffs.storage
+package uk.ac.cam.jm2186.graffs.db
 
 import org.hibernate.SessionFactory
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import uk.ac.cam.jm2186.graffs.storage.model.TestEntity
-import uk.ac.cam.jm2186.graffs.storage.model.TestEntity_
+import uk.ac.cam.jm2186.graffs.db.model.TestEntity
+import uk.ac.cam.jm2186.graffs.db.model.TestEntity_
 import java.util.*
 
 internal class SessionFactoryHelperTest {

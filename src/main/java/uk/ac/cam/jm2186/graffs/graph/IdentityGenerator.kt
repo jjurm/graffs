@@ -2,7 +2,7 @@ package uk.ac.cam.jm2186.graffs.graph
 
 import org.graphstream.graph.Graph
 import org.graphstream.graph.implementations.Graphs
-import uk.ac.cam.jm2186.graffs.storage.model.DistortedGraph
+import uk.ac.cam.jm2186.graffs.db.model.DistortedGraph
 
 object IdentityGenerator : GraphProducer, GraphProducerInfo {
 

@@ -1,6 +1,6 @@
-package uk.ac.cam.jm2186.graffs.storage.model
+package uk.ac.cam.jm2186.graffs.db.model
 
-import uk.ac.cam.jm2186.graffs.storage.AbstractJpaPersistable
+import uk.ac.cam.jm2186.graffs.db.AbstractJpaPersistable
 import javax.persistence.Entity
 
 @Entity

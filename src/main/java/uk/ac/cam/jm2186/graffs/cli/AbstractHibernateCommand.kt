@@ -2,7 +2,7 @@ package uk.ac.cam.jm2186.graffs.cli
 
 import org.hibernate.Session
 import org.hibernate.SessionFactory
-import uk.ac.cam.jm2186.graffs.storage.HibernateHelper
+import uk.ac.cam.jm2186.graffs.db.HibernateHelper
 
 abstract class AbstractHibernateCommand(
     help: String = "",

@@ -1,8 +1,8 @@
-package uk.ac.cam.jm2186.graffs.storage.model
+package uk.ac.cam.jm2186.graffs.db.model
 
 import org.hibernate.annotations.LazyCollection
 import org.hibernate.annotations.LazyCollectionOption
-import uk.ac.cam.jm2186.graffs.storage.AbstractJpaPersistable
+import uk.ac.cam.jm2186.graffs.db.AbstractJpaPersistable
 import javax.persistence.CascadeType
 import javax.persistence.Entity
 import javax.persistence.JoinColumn

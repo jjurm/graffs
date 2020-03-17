@@ -1,10 +1,10 @@
-package uk.ac.cam.jm2186.graffs.storage
+package uk.ac.cam.jm2186.graffs.db
 
 import com.github.ajalt.clikt.core.BadParameterValue
 import org.hibernate.Session
 import org.hibernate.cfg.Configuration
-import uk.ac.cam.jm2186.graffs.storage.model.NamedEntity
-import uk.ac.cam.jm2186.graffs.storage.model.entities
+import uk.ac.cam.jm2186.graffs.db.model.NamedEntity
+import uk.ac.cam.jm2186.graffs.db.model.entities
 import java.io.Serializable
 import java.util.*
 

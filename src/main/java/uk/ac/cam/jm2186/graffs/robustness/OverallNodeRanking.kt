@@ -3,7 +3,7 @@ package uk.ac.cam.jm2186.graffs.robustness
 import org.apache.commons.collections4.MultiValuedMap
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap
 import uk.ac.cam.jm2186.graffs.metric.MetricInfo
-import uk.ac.cam.jm2186.graffs.storage.model.GraphCollection
+import uk.ac.cam.jm2186.graffs.db.model.GraphCollection
 
 class OverallNodeRanking internal constructor(
     val rankings: List<GraphAttributeNodeRanking>

@@ -1,4 +1,4 @@
-package uk.ac.cam.jm2186.graffs.storage.model
+package uk.ac.cam.jm2186.graffs.db.model
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.*
@@ -10,12 +10,9 @@ import org.graphstream.graph.Graph
 import uk.ac.cam.jm2186.graffs.graph.GraphProducer
 import uk.ac.cam.jm2186.graffs.graph.GraphProducerId
 import uk.ac.cam.jm2186.graffs.graph.RemovingEdgesGenerator
-import java.io.Serializable
 import javax.persistence.ElementCollection
 import javax.persistence.Entity
 import javax.persistence.FetchType
-import javax.persistence.Id
-import kotlin.random.Random
 
 @Entity
 class GraphGenerator(

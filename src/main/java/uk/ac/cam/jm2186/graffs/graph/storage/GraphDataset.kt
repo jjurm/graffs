@@ -1,8 +1,7 @@
-package uk.ac.cam.jm2186.graffs.storage
+package uk.ac.cam.jm2186.graffs.graph.storage
 
 import com.github.ajalt.clikt.core.CliktError
 import org.graphstream.graph.Graph
-import uk.ac.cam.jm2186.graffs.graph.FileSourceEdge2
 import uk.ac.cam.jm2186.graffs.graph.readGraph
 import java.io.File
 
@@ -23,7 +22,9 @@ class GraphDataset(val id: GraphDatasetId, validate: Boolean = false) {
         var workingDirectory = System.getProperty("user.dir")
 
         const val DATASET_DIRECTORY_NAME = "data"
-        val datasetDirectory get() = File(File(workingDirectory), DATASET_DIRECTORY_NAME)
+        val datasetDirectory get() = File(File(workingDirectory),
+            DATASET_DIRECTORY_NAME
+        )
 
         /**
          * Returns list of datasets from subdirectories of `data` folder that are not hidden and not starting with ".".
@@ -35,7 +36,8 @@ class GraphDataset(val id: GraphDatasetId, validate: Boolean = false) {
                 f.isDirectory && !f.isHidden && !name.startsWith(".")
             }?.map { GraphDataset(it.name) }
 
-        fun getAvailableDatasetsChecked() = getAvailableDatasets().let {
+        fun getAvailableDatasetsChecked() = getAvailableDatasets()
+            .let {
             when {
                 it == null -> throw CliktError("No `$DATASET_DIRECTORY_NAME` directory exists in the current path!")
                 it.isEmpty() -> throw CliktError("The `$DATASET_DIRECTORY_NAME` directory has no subdirectories.")
@@ -65,7 +67,8 @@ class GraphDataset(val id: GraphDatasetId, validate: Boolean = false) {
     @Throws(IllegalArgumentException::class)
     fun loadGraph(): Graph = loadedGraphs.getOrPut(this) {
         val file = File(File(datasetDirectory, id), "edges.txt")
-        return@getOrPut FileSourceEdge2(false).readGraph(file.inputStream(), id)
+        return@getOrPut FileSourceEdge2(false)
+            .readGraph(file.inputStream(), id)
     }
 
 

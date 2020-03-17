@@ -1,9 +1,9 @@
-package uk.ac.cam.jm2186.graffs.storage.model
+package uk.ac.cam.jm2186.graffs.db.model
 
 import uk.ac.cam.jm2186.graffs.metric.MetricId
 import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasureId
-import uk.ac.cam.jm2186.graffs.storage.GraphDatasetId
-import uk.ac.cam.jm2186.graffs.storage.IdClassEntity
+import uk.ac.cam.jm2186.graffs.graph.storage.GraphDatasetId
+import uk.ac.cam.jm2186.graffs.db.IdClassEntity
 import java.io.Serializable
 import javax.persistence.*
 

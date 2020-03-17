@@ -2,7 +2,7 @@ package uk.ac.cam.jm2186.graffs.robustness
 
 import kotlinx.coroutines.*
 import uk.ac.cam.jm2186.graffs.metric.MetricInfo
-import uk.ac.cam.jm2186.graffs.storage.model.GraphCollection
+import uk.ac.cam.jm2186.graffs.db.model.GraphCollection
 
 /**
  * Lazily computes and caches intermediate results that may be used by multiple robustness calculations.

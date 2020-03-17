@@ -15,13 +15,15 @@ import org.apache.commons.lang3.StringUtils.leftPad
 import org.apache.commons.lang3.StringUtils.rightPad
 import org.apache.commons.lang3.time.StopWatch
 import org.graphstream.graph.Graph
+import uk.ac.cam.jm2186.graffs.graph.storage.GraphDataset
+import uk.ac.cam.jm2186.graffs.graph.storage.GraphDatasetId
 import uk.ac.cam.jm2186.graffs.metric.Metric
 import uk.ac.cam.jm2186.graffs.metric.MetricInfo
 import uk.ac.cam.jm2186.graffs.robustness.GraphCollectionMetadata
 import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasure
 import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasureId
-import uk.ac.cam.jm2186.graffs.storage.*
-import uk.ac.cam.jm2186.graffs.storage.model.*
+import uk.ac.cam.jm2186.graffs.db.*
+import uk.ac.cam.jm2186.graffs.db.model.*
 import uk.ac.cam.jm2186.graffs.util.TimePerf
 
 class ExperimentSubcommand : NoOpCliktCommand(
@@ -161,7 +163,9 @@ class ExperimentSubcommand : NoOpCliktCommand(
                 experiment.graphCollections.forEach { (datasetId, graphCollection) ->
                     if (graphCollection.distortedGraphs.isEmpty()) {
                         launch {
-                            val sourceGraph = GraphDataset(datasetId).loadGraph()
+                            val sourceGraph = GraphDataset(
+                                datasetId
+                            ).loadGraph()
                             // generate graphs
                             val generated = experiment.generator.produceFromGraph(sourceGraph)
                             graphCollection.distortedGraphs.addAll(generated)

@@ -7,8 +7,7 @@ import com.github.ajalt.clikt.parameters.arguments.multiple
 import org.graphstream.graph.Edge
 import org.graphstream.graph.Graph
 import uk.ac.cam.jm2186.graffs.graph.ATTRIBUTE_NAME_EDGE_WEIGHT
-import uk.ac.cam.jm2186.graffs.metric.AverageDegreeMetric
-import uk.ac.cam.jm2186.graffs.storage.GraphDataset
+import uk.ac.cam.jm2186.graffs.graph.storage.GraphDataset
 
 class DatasetSubcommand : NoOpCliktCommand(
     name = "dataset",
