@@ -22,8 +22,16 @@ class GraphDataset(val id: GraphDatasetId, validate: Boolean = false) {
         var workingDirectory = System.getProperty("user.dir")
 
         const val DATASET_DIRECTORY_NAME = "data"
-        val datasetDirectory get() = File(File(workingDirectory),
-            DATASET_DIRECTORY_NAME
+        val datasetDirectory
+            get() = File(
+                File(workingDirectory),
+                DATASET_DIRECTORY_NAME
+            )
+
+        private val loaders = listOf(
+            RDataGraphLoader { name.endsWith(".RData") },
+            EdgesGraphLoader { name == "edges.txt" },
+            EdgesGraphLoader { name.endsWith(".txt") }
         )
 
         /**
@@ -38,12 +46,12 @@ class GraphDataset(val id: GraphDatasetId, validate: Boolean = false) {
 
         fun getAvailableDatasetsChecked() = getAvailableDatasets()
             .let {
-            when {
-                it == null -> throw CliktError("No `$DATASET_DIRECTORY_NAME` directory exists in the current path!")
-                it.isEmpty() -> throw CliktError("The `$DATASET_DIRECTORY_NAME` directory has no subdirectories.")
-                else -> it
+                when {
+                    it == null -> throw CliktError("No `$DATASET_DIRECTORY_NAME` directory exists in the current path!")
+                    it.isEmpty() -> throw CliktError("The `$DATASET_DIRECTORY_NAME` directory has no subdirectories.")
+                    else -> it
+                }
             }
-        }
 
         private val loadedGraphs: MutableMap<GraphDataset, Graph> = mutableMapOf()
 
@@ -61,16 +69,22 @@ class GraphDataset(val id: GraphDatasetId, validate: Boolean = false) {
         }
     }
 
+    fun getFileCandidates(): Array<File> = File(datasetDirectory, id).listFiles { file -> file.name != "info.txt" }
+        ?: throw CliktError("`$DATASET_DIRECTORY_NAME/$id` is not a directory!")
+
     /**
      * Loads the dataset graph contained in the `edges.txt` file
      */
     @Throws(IllegalArgumentException::class)
     fun loadGraph(): Graph = loadedGraphs.getOrPut(this) {
-        val file = File(File(datasetDirectory, id), "edges.txt")
-        return@getOrPut FileSourceEdge2(false)
-            .readGraph(file.inputStream(), id)
+        val fileCandidates = getFileCandidates()
+        loaders.flatMap { loader ->
+            fileCandidates
+                .filter { loader.supportsFile(it) }
+                .map { { loader.load(it, id) } }
+        }.firstOrNull()?.invoke()
+            ?: throw CliktError("Could not load dataset `$id` - no suitable graph file found.")
     }
-
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

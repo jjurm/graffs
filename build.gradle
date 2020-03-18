@@ -109,6 +109,7 @@ github {
 repositories {
     mavenCentral()
     jcenter()
+    maven { url "https://nexus.bedatadriven.com/content/groups/public" }
 }
 
 dependencies {
@@ -149,6 +150,10 @@ dependencies {
     // Click
     // https://mvnrepository.com/artifact/com.github.ajalt/clikt
     implementation group: 'com.github.ajalt', name: 'clikt', version: '2.5.0'
+
+    implementation "org.renjin:renjin-script-engine:3.5-beta43"
+    //implementation "org.renjin.cran:ggplot2:3.2.0-b8"
+    //implementation "org.renjin.cran:igraph:1.2.4.1-b1"
 }
 
 noArg {
