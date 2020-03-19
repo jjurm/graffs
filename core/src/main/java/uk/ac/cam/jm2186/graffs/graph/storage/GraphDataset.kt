@@ -2,7 +2,6 @@ package uk.ac.cam.jm2186.graffs.graph.storage
 
 import com.github.ajalt.clikt.core.CliktError
 import org.graphstream.graph.Graph
-import uk.ac.cam.jm2186.graffs.graph.readGraph
 import java.io.File
 
 
