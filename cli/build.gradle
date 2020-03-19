@@ -46,5 +46,7 @@ dependencies {
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
 
     implementation group: 'com.github.ajalt', name: 'clikt', version: '2.5.0'
-    implementation group: 'org.hibernate', name: 'hibernate-core', version: '5.4.9.Final'
+    implementation group: 'org.hibernate', name: 'hibernate-core', version: '5.4.11.Final'
+    implementation group: 'org.hibernate', name: 'hibernate-c3p0', version: '5.4.11.Final'
+    implementation group: 'com.h2database', name: 'h2', version: '1.4.200'
 }
