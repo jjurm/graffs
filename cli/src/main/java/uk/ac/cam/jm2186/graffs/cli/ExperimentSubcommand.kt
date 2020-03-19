@@ -357,6 +357,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
                 experiment.robustnessMeasures.clear()
                 save(experiment)
             }
+            println("Done.")
         }
     }
 
