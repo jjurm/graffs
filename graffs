@@ -1,1 +1,1 @@
-java -jar build/libs/graffs-last.jar "$@"
+java -jar cli/build/libs/graffs-last.jar "$@"

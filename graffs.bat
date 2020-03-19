@@ -1,2 +1,2 @@
 ::@gradlew -q run --args="%*"
-@java -jar build/libs/graffs-last.jar %*
+@java -jar cli/build/libs/graffs-last.jar %*
