@@ -1,2 +1,3 @@
 rootProject.name = 'graffs'
-
+include 'core'
+include 'cli'
