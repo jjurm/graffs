@@ -1,9 +1,25 @@
-apply plugin: 'java'
-
-repositories {
-    mavenCentral()
+plugins {
+    id 'application'
 }
 
 dependencies {
-    testCompile 'junit:junit:4.11'
+    testImplementation "org.junit.jupiter:junit-jupiter:5.5.2"
+}
+
+mainClassName = "uk.ac.cam.jm2186.graffs.cli.GraffsKt"
+
+jar {
+    manifest {
+        attributes 'Main-Class': mainClassName
+    }
+    zip64 true
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
+    doLast {
+        copy {
+            from jar
+            into 'build/libs'
+            rename { String filename -> "${archivesBaseName}-last.jar" }
+        }
+    }
 }
