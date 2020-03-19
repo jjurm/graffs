@@ -1,6 +1,5 @@
 package uk.ac.cam.jm2186.graffs.db
 
-import com.github.ajalt.clikt.core.BadParameterValue
 import org.hibernate.Session
 import org.hibernate.cfg.Configuration
 import uk.ac.cam.jm2186.graffs.db.model.NamedEntity
@@ -33,13 +32,13 @@ object HibernateHelper {
 inline fun <reified T> Session.getNullableEntity(id: Serializable): T? = get(T::class.java, id)
 
 inline fun <reified T : NamedEntity> Session.getNamedEntity(name: String): T = getNullableEntity<T>(name)
-    ?: throw BadParameterValue("${T::class.simpleName} `$name` does not exist")
+    ?: throw IllegalArgumentException("${T::class.simpleName} `$name` does not exist")
 
 inline fun <reified T : NamedEntity> Session.hasNamedEntity(name: String): Boolean = getNullableEntity<T>(name) != null
 
 inline fun <reified T : NamedEntity> Session.mustNotExist(name: String) {
     if (hasNamedEntity<T>(name)) {
-        throw BadParameterValue("${T::class.simpleName} `$name` already exists")
+        throw IllegalArgumentException("${T::class.simpleName} `$name` already exists")
     }
 }
 

@@ -1,8 +1,8 @@
 package uk.ac.cam.jm2186.graffs.graph.storage
 
-import com.github.ajalt.clikt.core.CliktError
 import org.graphstream.graph.Graph
 import java.io.File
+import java.io.IOException
 
 
 typealias GraphDatasetId = String
@@ -43,17 +43,20 @@ class GraphDataset(val id: GraphDatasetId, validate: Boolean = false) {
                 f.isDirectory && !f.isHidden && !name.startsWith(".")
             }?.map { GraphDataset(it.name) }
 
-        fun getAvailableDatasetsChecked() = getAvailableDatasets()
-            .let {
-                when {
-                    it == null -> throw CliktError("No `$DATASET_DIRECTORY_NAME` directory exists in the current path!")
-                    it.isEmpty() -> throw CliktError("The `$DATASET_DIRECTORY_NAME` directory has no subdirectories.")
-                    else -> it
-                }
-            }
-
         private val loadedGraphs: MutableMap<GraphDataset, Graph> = mutableMapOf()
+    }
 
+    fun getFileCandidates(): Array<File> = File(datasetDirectory, id).listFiles { file -> file.name != "info.txt" }
+        ?: throw IOException("`$DATASET_DIRECTORY_NAME/$id` is not a directory!")
+
+    fun loadGraph(): Graph = loadedGraphs.getOrPut(this) {
+        val fileCandidates = getFileCandidates()
+        loaders.flatMap { loader ->
+            fileCandidates
+                .filter { loader.supportsFile(it) }
+                .map { { loader.load(it, id) } }
+        }.firstOrNull()?.invoke()
+            ?: throw IOException("Could not load dataset `$id` - no suitable graph file found.")
     }
 
     /**
@@ -66,23 +69,6 @@ class GraphDataset(val id: GraphDatasetId, validate: Boolean = false) {
         } else {
             null
         }
-    }
-
-    fun getFileCandidates(): Array<File> = File(datasetDirectory, id).listFiles { file -> file.name != "info.txt" }
-        ?: throw CliktError("`$DATASET_DIRECTORY_NAME/$id` is not a directory!")
-
-    /**
-     * Loads the dataset graph contained in the `edges.txt` file
-     */
-    @Throws(IllegalArgumentException::class)
-    fun loadGraph(): Graph = loadedGraphs.getOrPut(this) {
-        val fileCandidates = getFileCandidates()
-        loaders.flatMap { loader ->
-            fileCandidates
-                .filter { loader.supportsFile(it) }
-                .map { { loader.load(it, id) } }
-        }.firstOrNull()?.invoke()
-            ?: throw CliktError("Could not load dataset `$id` - no suitable graph file found.")
     }
 
     override fun equals(other: Any?): Boolean {

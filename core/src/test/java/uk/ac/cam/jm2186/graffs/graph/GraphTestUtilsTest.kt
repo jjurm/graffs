@@ -10,13 +10,13 @@ internal class GraphTestUtilsTest {
     @Test
     fun createGraphId() {
         val id = GraphTestUtils.createGraphId()
-        assertEquals("GraphTestUtilsTest.createGraphId:12", id)
+        assertEquals("uk.ac.cam.jm2186.graffs.graph.GraphTestUtilsTest.createGraphId:12", id)
     }
 
     @Test
     fun createGraphId_ofParent() {
         val id = createGraphId_ofParent_createId()
-        assertEquals("GraphTestUtilsTest.createGraphId_ofParent:18", id)
+        assertEquals("uk.ac.cam.jm2186.graffs.graph.GraphTestUtilsTest.createGraphId_ofParent:18", id)
     }
 
     private fun createGraphId_ofParent_createId() = GraphTestUtils.createGraphId(1)
@@ -24,7 +24,7 @@ internal class GraphTestUtilsTest {
     @Test
     fun createGraphId_withIndex() {
         val id = GraphTestUtils.createGraphId(0, 7)
-        assertEquals("GraphTestUtilsTest.createGraphId_withIndex:26-7", id)
+        assertEquals("uk.ac.cam.jm2186.graffs.graph.GraphTestUtilsTest.createGraphId_withIndex:26-7", id)
     }
 
     @Test
