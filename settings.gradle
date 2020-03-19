@@ -1,3 +1,2 @@
 rootProject.name = 'graffs'
-include 'core'
-include 'cli'
+include ':core', ':cli'

@@ -7,6 +7,7 @@ dependencies {
 }
 
 mainClassName = "uk.ac.cam.jm2186.graffs.cli.GraffsKt"
+archivesBaseName = rootProject.name
 
 jar {
     manifest {
@@ -22,4 +23,28 @@ jar {
             rename { String filename -> "${archivesBaseName}-last.jar" }
         }
     }
+}
+
+def serverName = "rio"
+def jarDir = "~/scratch/jars"
+
+task jarUpload(dependsOn: jar) {
+    doLast {
+        exec {
+            commandLine "scp", "${buildDir}/libs/${archivesBaseName}-${version}.jar", "${serverName}:${jarDir}/${archivesBaseName}-${version}.jar"
+        }
+        exec {
+            commandLine "ssh", serverName, "echo 'java -jar ${jarDir}/${archivesBaseName}-${version}.jar \$@' > ~/scratch/${archivesBaseName} ; chmod u+x ~/scratch/${archivesBaseName} ; _GRAFFS_COMPLETE=bash graffs > ./graffs-completion.sh"
+        }
+    }
+}
+
+dependencies {
+    api project(':')
+    api project(':core')
+
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
+
+    implementation group: 'com.github.ajalt', name: 'clikt', version: '2.5.0'
+    implementation group: 'org.hibernate', name: 'hibernate-core', version: '5.4.9.Final'
 }
