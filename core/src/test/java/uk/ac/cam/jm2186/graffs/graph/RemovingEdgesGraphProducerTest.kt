@@ -1,5 +1,7 @@
 package uk.ac.cam.jm2186.graffs.graph
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import uk.ac.cam.jm2186.graffs.GraphAssert
 
@@ -12,7 +14,9 @@ internal class RemovingEdgesGraphProducerTest {
             deletionRate = 0.3,
             seed = 42
         )
-        val generated = producer.produce(graph, 1)[0]
+        val generated = runBlocking(Dispatchers.Default) {
+            producer.produce(graph, 1, this)[0].await()
+        }
 
         GraphAssert.assertGraphEquals(
             """
