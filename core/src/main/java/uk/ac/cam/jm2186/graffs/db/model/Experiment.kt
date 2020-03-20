@@ -26,7 +26,7 @@ class Experiment(
 
     @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true)
     @LazyCollection(LazyCollectionOption.FALSE)
-    @JoinColumn
+    @JoinColumn(name = "experiment")
     val graphCollections: MutableMap<GraphDatasetId, GraphCollection> = mutableMapOf()
     @OneToMany(mappedBy = "experiment", cascade = [CascadeType.REMOVE], orphanRemoval = true)
     val robustnessResults: MutableList<Robustness> = mutableListOf()

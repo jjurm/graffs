@@ -354,7 +354,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
                     it.distortedGraphs.clear()
                     save(it)
                 }
-                experiment.robustnessMeasures.clear()
+                experiment.robustnessResults.clear()
                 save(experiment)
             }
             println("Done.")

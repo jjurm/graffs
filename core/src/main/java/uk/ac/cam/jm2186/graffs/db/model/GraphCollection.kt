@@ -13,7 +13,7 @@ class GraphCollection : AbstractJpaPersistable<Long>() {
 
     @OneToMany(cascade = [CascadeType.REMOVE], orphanRemoval = true /*, fetch = FetchType.LAZY*/)
     @LazyCollection(LazyCollectionOption.EXTRA) // Allow querying size without initialising
-    @JoinColumn
+    @JoinColumn(name = "graphcollection")
     val distortedGraphs: MutableList<DistortedGraph> = mutableListOf()
 
 }
