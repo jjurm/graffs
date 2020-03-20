@@ -1,12 +1,15 @@
 package uk.ac.cam.jm2186.graffs.db.model
 
 import org.graphstream.graph.Graph
+import org.graphstream.graph.implementations.SingleGraph
 import org.graphstream.stream.file.FileSinkDGS
 import org.graphstream.stream.file.FileSourceDGS
 import uk.ac.cam.jm2186.graffs.graph.readGraph
 import uk.ac.cam.jm2186.graffs.db.AbstractJpaPersistable
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.util.zip.DeflaterOutputStream
+import java.util.zip.InflaterInputStream
 import javax.persistence.*
 
 @Entity
@@ -37,19 +40,25 @@ class DistortedGraph(
         }
         set(graph) {
             _graph = graph
-            serialize(graph)
         }
 
     init {
         this.graph = graph
     }
 
-    private fun deserialize() = FileSourceDGS().readGraph(ByteArrayInputStream(serialized), graphstreamId)
-    private fun serialize(graph: Graph) {
-        val out = ByteArrayOutputStream()
-        FileSinkDGS().writeAll(graph, out)
-        serialized = out.toByteArray()
-        graphstreamId = graph.id
+    private fun deserialize(): SingleGraph {
+        return FileSourceDGS().readGraph(InflaterInputStream(ByteArrayInputStream(serialized)), graphstreamId)
+    }
+
+    @PrePersist
+    private fun serialize() {
+        val graph = _graph
+        if (graph != null) {
+            val bytes = ByteArrayOutputStream()
+            FileSinkDGS().writeAll(graph, DeflaterOutputStream(bytes))
+            serialized = bytes.toByteArray()
+            graphstreamId = graph.id
+        }
     }
 
     fun getShortHash(): String {
