@@ -1,5 +1,6 @@
 package uk.ac.cam.jm2186.graffs.util
 
+import org.apache.commons.lang3.StringUtils.rightPad
 import org.apache.commons.lang3.time.StopWatch
 import java.time.Duration
 
@@ -29,6 +30,14 @@ class TimePerf {
         measurements.last().duration = Duration.ofMillis(stopWatch.time - acc)
 
         return measurements
+    }
+
+    fun printToConsole() {
+        println("Timings:")
+        val padSize = measurements.map { it.phase.length }.max() ?: 10
+        measurements.forEach {
+            println("  ${rightPad(it.phase, padSize)} : ${it.humanReadableDuration()}")
+        }
     }
 
     data class Measurement(val phase: String) {

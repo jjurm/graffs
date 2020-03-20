@@ -146,6 +146,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
 
         override suspend fun run1() {
             val experiment: Experiment = hibernate.getNamedEntity<Experiment>(experimentName)
+            experiment.printToConsole()
 
             (if (phases.isEmpty()) listOf("all") else phases)
                 .flatMap {
@@ -154,10 +155,12 @@ class ExperimentSubcommand : NoOpCliktCommand(
                     phase(experiment)
                 }
             println("Done.")
+            timer.finish()
+            timer.printToConsole()
         }
 
         private suspend fun generate(experiment: Experiment) {
-            println(timer.phase("Generate graphs"))
+            print(timer.phase("Generate graphs"))
             val hibernateMutex = Mutex()
             coroutineScope {
                 experiment.graphCollections.forEach { (datasetId, graphCollection) ->
@@ -173,17 +176,22 @@ class ExperimentSubcommand : NoOpCliktCommand(
                             hibernateMutex.withLock {
                                 hibernate.inTransaction {
                                     save(graphCollection)
-                                    generated.forEach { save(it) }
+                                    generated.forEach {
+                                        save(it)
+                                        print(".")
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
+            println()
         }
 
         private suspend fun metrics(experiment: Experiment) {
-            println(timer.phase("Evaluate metrics"))
+            println("Evaluate metrics")
+            timer.phase("Evaluate metrics - prepare")
             val hibernateMutex = Mutex()
             val metrics = experiment.metrics.map {
                 val info = Metric.map.getValue(it)
@@ -230,6 +238,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
 
                 val n = experiment.datasets.size * experiment.generator.n * experiment.metrics.size
                 println("Running (at most) $n metric evaluations (${experiment.datasets.size} datasets * ${experiment.generator.n} generated * ${experiment.metrics.size} metrics)")
+                timer.phase("Evaluate metrics - run")
                 graphJobs.awaitAll()
             }
         }
@@ -255,6 +264,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
         }
 
         private suspend fun robustness(experiment: Experiment) {
+            timer.phase("Robustness - prepare")
             val hibernateMutex = Mutex()
             val measures = experiment.robustnessMeasures.map {
                 it to RobustnessMeasure.map.getValue(it)()
@@ -283,6 +293,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
 
                 val n = experiment.datasets.size * experiment.metrics.size * experiment.robustnessMeasures.size
                 println("Computing (at most) $n robustness values (${experiment.datasets.size} datasets * ${experiment.metrics.size} metrics * ${experiment.robustnessMeasures.size} robustness measures)")
+                timer.phase("Robustness - compute")
                 jobs.awaitAll()
             }
         }
