@@ -147,6 +147,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
         override suspend fun run1() {
             val experiment: Experiment = hibernate.getNamedEntity<Experiment>(experimentName)
             experiment.printToConsole()
+            println()
 
             (if (phases.isEmpty()) listOf("all") else phases)
                 .flatMap {
@@ -169,18 +170,22 @@ class ExperimentSubcommand : NoOpCliktCommand(
                             val sourceGraph = GraphDataset(
                                 datasetId
                             ).loadGraph()
-                            // generate graphs
-                            val generated = experiment.generator.produceFromGraph(sourceGraph)
-                            graphCollection.distortedGraphs.addAll(generated)
-                            // store in database
-                            hibernateMutex.withLock {
-                                hibernate.inTransaction {
-                                    save(graphCollection)
-                                    generated.forEach {
-                                        save(it)
+                            // Generate graphs
+                            val generated = experiment.generator
+                                .produceFromGraph(sourceGraph, this)
+
+                            hibernate.inTransaction {
+                                val savedGraphs = generated.map {
+                                    // Store each graph in the database as soon as it is generated and serialized
+                                    async {
+                                        val graph = it.await()
+                                        hibernateMutex.withLock { save(graph) }
                                         print(".")
+                                        graph
                                     }
                                 }
+                                graphCollection.distortedGraphs.addAll(savedGraphs.awaitAll())
+                                hibernateMutex.withLock { save(graphCollection) }
                             }
                         }
                     }

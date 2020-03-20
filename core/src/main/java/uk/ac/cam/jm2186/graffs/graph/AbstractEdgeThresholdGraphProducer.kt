@@ -1,5 +1,8 @@
 package uk.ac.cam.jm2186.graffs.graph
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
 import org.graphstream.graph.Edge
 import org.graphstream.graph.Graph
 import org.graphstream.graph.implementations.SingleGraph
@@ -15,17 +18,23 @@ abstract class AbstractEdgeThresholdGraphProducer(
         const val ATTRIBUTE_EDGE_THRESHOLD = "edgeThreshold"
     }
 
-    override fun produce(sourceGraph: Graph, n: Int): List<DistortedGraph> {
+    override fun produce(
+        sourceGraph: Graph,
+        n: Int,
+        coroutineScope: CoroutineScope
+    ): List<Deferred<DistortedGraph>> {
         val thresholds = getThresholds(n)
         val baseId = sourceGraph.id + "-" + this::class.simpleName
 
         return thresholds.mapIndexed { i, threshold ->
-            val replay = FilteredGraphReplay("$baseId-$i-replay", edgeFilter = EdgeThresholdFilter(threshold))
-            val graph = SingleGraph("$baseId-$i")
-            replay.addSink(graph)
-            replay.replay(sourceGraph)
-            graph.setAttribute(ATTRIBUTE_EDGE_THRESHOLD, threshold)
-            DistortedGraph(threshold.hashCode().toLong(), graph)
+            coroutineScope.async {
+                val replay = FilteredGraphReplay("$baseId-$i-replay", edgeFilter = EdgeThresholdFilter(threshold))
+                val graph = SingleGraph("$baseId-$i")
+                replay.addSink(graph)
+                replay.replay(sourceGraph)
+                graph.setAttribute(ATTRIBUTE_EDGE_THRESHOLD, threshold)
+                DistortedGraph(threshold.hashCode().toLong(), graph)
+            }
         }
     }
 

@@ -1,5 +1,7 @@
 package uk.ac.cam.jm2186.graffs.graph
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import org.graphstream.graph.Graph
 import uk.ac.cam.jm2186.graffs.db.model.DistortedGraph
 
@@ -22,7 +24,7 @@ interface GraphProducer {
 
     val id: GraphProducerId
 
-    fun produce(sourceGraph: Graph, n: Int): List<DistortedGraph>
+    fun produce(sourceGraph: Graph, n: Int, coroutineScope: CoroutineScope): List<Deferred<DistortedGraph>>
 
 }
 

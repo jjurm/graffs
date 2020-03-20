@@ -40,6 +40,7 @@ class DistortedGraph(
         }
         set(graph) {
             _graph = graph
+            serialize(graph)
         }
 
     init {
@@ -50,15 +51,11 @@ class DistortedGraph(
         return FileSourceDGS().readGraph(InflaterInputStream(ByteArrayInputStream(serialized)), graphstreamId)
     }
 
-    @PrePersist
-    private fun serialize() {
-        val graph = _graph
-        if (graph != null) {
-            val bytes = ByteArrayOutputStream()
-            FileSinkDGS().writeAll(graph, DeflaterOutputStream(bytes))
-            serialized = bytes.toByteArray()
-            graphstreamId = graph.id
-        }
+    private fun serialize(graph: Graph) {
+        val bytes = ByteArrayOutputStream()
+        FileSinkDGS().writeAll(graph, DeflaterOutputStream(bytes))
+        serialized = bytes.toByteArray()
+        graphstreamId = graph.id
     }
 
     fun getShortHash(): String {

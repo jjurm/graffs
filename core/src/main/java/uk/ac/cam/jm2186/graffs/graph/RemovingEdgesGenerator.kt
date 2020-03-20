@@ -1,5 +1,8 @@
 package uk.ac.cam.jm2186.graffs.graph
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
 import org.graphstream.graph.Element
 import org.graphstream.graph.Graph
 import org.graphstream.graph.implementations.SingleGraph
@@ -31,13 +34,15 @@ class RemovingEdgesGenerator(
 
     override val id get() = RemovingEdgesGenerator.id
 
-    override fun produce(sourceGraph: Graph, n: Int): List<DistortedGraph> {
+    override fun produce(sourceGraph: Graph, n: Int, coroutineScope: CoroutineScope): List<Deferred<DistortedGraph>> {
         val baseId = sourceGraph.id + "-" + this::class.simpleName
         val random = Random(seed)
-        return List(n) { i ->
-            val graphSeed = random.nextLong()
-            val id = "$baseId-$i"
-            produceSingle(sourceGraph, graphSeed, id)
+        return (0 until n).map { i ->
+            coroutineScope.async {
+                val graphSeed = random.nextLong()
+                val id = "$baseId-$i"
+                produceSingle(sourceGraph, graphSeed, id)
+            }
         }
     }
 

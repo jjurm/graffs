@@ -1,5 +1,7 @@
 package uk.ac.cam.jm2186.graffs.db.model
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import org.graphstream.graph.Graph
 import uk.ac.cam.jm2186.graffs.graph.GraphProducer
 import uk.ac.cam.jm2186.graffs.graph.GraphProducerId
@@ -18,10 +20,10 @@ class GraphGenerator(
     val seed: Long
 ) : NamedEntity(name) {
 
-    fun produceFromGraph(sourceGraph: Graph): List<DistortedGraph> {
+    fun produceFromGraph(sourceGraph: Graph, coroutineScope: CoroutineScope): List<Deferred<DistortedGraph>> {
         val generatorFactory = GraphProducer.map.getValue(method)
         return generatorFactory(seed, params)
-            .produce(sourceGraph, n)
+            .produce(sourceGraph, n, coroutineScope)
     }
 
     override fun toString(): String {
