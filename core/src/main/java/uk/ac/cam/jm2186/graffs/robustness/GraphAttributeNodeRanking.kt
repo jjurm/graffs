@@ -8,5 +8,4 @@ class GraphAttributeNodeRanking(val graph: Graph, attributeName: String) :
         orderedNodes = graph.sortedBy { node ->
             node.getNumberAttribute(attributeName)
         }.map { it.id }
-    ) {
-}
+    )
