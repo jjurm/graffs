@@ -19,7 +19,7 @@ class DistortedGraph(
 ) : AbstractJpaPersistable<Long>() {
 
     @Lob
-    @Basic(fetch = FetchType.EAGER)
+    @Basic(fetch = FetchType.LAZY)
     @Column(length = 2147483647)
     private lateinit var serialized: ByteArray
     private lateinit var graphstreamId: String

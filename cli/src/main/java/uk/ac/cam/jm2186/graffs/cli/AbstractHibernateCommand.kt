@@ -17,7 +17,7 @@ abstract class AbstractHibernateCommand(
     help, epilog, name, invokeWithoutSubcommand, printHelpOnEmptyArgs, helpTags, autoCompleteEnvvar
 ) {
 
-    private val sessionFactory: SessionFactory by HibernateHelper.delegate()
+    protected val sessionFactory: SessionFactory by HibernateHelper.delegate()
     private val sessionLazy: Lazy<Session> = lazy {
         val session = sessionFactory.openSession()
         val url = sessionFactory.properties["hibernate.connection.url"]

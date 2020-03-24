@@ -90,25 +90,33 @@ class PlotSubcommand : NoOpCliktCommand(
             coroutineScope {
                 experiment.graphCollections.forEach { (graphDataset, graphCollection) ->
                     launch {
-                        val overallRanking = GraphCollectionMetadata(graphCollection, metric, this).getOverallRanking()
-                        val consecutiveRankingPairs = rankContinuity.consecutiveRankingPairs(overallRanking)
-                        // k chosen according to https://github.com/lbozhilova/measuring_rank_robustness/blob/master/figure_generation.R#L28
-                        val k = 0.01
 
-                        val kSimilarities = consecutiveRankingPairs
-                            .map { (ranking1, ranking2) ->
-                                async {
-                                    val kSimilarity = kSimilarity(k, overallRanking, ranking1, ranking2)
-                                    ranking1.threshold() / 1000 to kSimilarity
+                        sessionFactory.openSession().use { session ->
+                            hibernate.detach(graphCollection)
+                            session.update(graphCollection)
+
+                            val overallRanking =
+                                GraphCollectionMetadata(graphCollection, metric, this).getOverallRanking()
+                            val consecutiveRankingPairs = rankContinuity.consecutiveRankingPairs(overallRanking)
+                            // k chosen according to https://github.com/lbozhilova/measuring_rank_robustness/blob/master/figure_generation.R#L28
+                            val k = 0.01
+
+                            val kSimilarities = consecutiveRankingPairs
+                                .map { (ranking1, ranking2) ->
+                                    async {
+                                        val kSimilarity = kSimilarity(k, overallRanking, ranking1, ranking2)
+                                        ranking1.threshold() / 1000 to kSimilarity
+                                    }
+                                }
+                                .awaitAll()
+                            tableMutex.withLock {
+                                kSimilarities.forEach { (threshold, kSimilarity) ->
+                                    colThreshold.append(threshold)
+                                    colKSimilarity.append(kSimilarity)
+                                    colDataset.append(graphDataset)
                                 }
                             }
-                            .awaitAll()
-                        tableMutex.withLock {
-                            kSimilarities.forEach { (threshold, kSimilarity) ->
-                                colThreshold.append(threshold)
-                                colKSimilarity.append(kSimilarity)
-                                colDataset.append(graphDataset)
-                            }
+
                         }
                     }
                 }
