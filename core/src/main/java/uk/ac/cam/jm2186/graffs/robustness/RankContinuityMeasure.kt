@@ -24,32 +24,39 @@ class RankContinuityMeasure : RobustnessMeasure {
         const val DEFAULT_K_SIMILARITY_THRESHOLD = 0.9
     }
 
+    fun consecutiveRankingPairs(overallRanking: OverallNodeRanking): List<Pair<GraphAttributeNodeRanking, GraphAttributeNodeRanking>> {
+        fun GraphAttributeNodeRanking.threshold() = graph.getNumberAttribute(
+            AbstractEdgeThresholdGraphProducer.ATTRIBUTE_EDGE_THRESHOLD
+        )
+
+        return overallRanking
+            .rankings
+            .sortedBy { it.threshold() }
+            .zipWithNext()
+    }
+
+    suspend fun consecutiveRankSimilarity(
+        metadata: GraphCollectionMetadata,
+        kValues: Sequence<Double>
+    ): Sequence<Double> {
+        val overallRanking = metadata.getOverallRanking()
+        return consecutiveRankingPairs(overallRanking).asSequence()
+            .map { (ranking1, ranking2) ->
+                kValues.map { k ->
+                    kSimilarity(k, overallRanking, ranking1, ranking2)
+                }.average()
+            }
+    }
+
     override suspend fun evaluate(
         metric: MetricInfo,
         graphCollection: GraphCollection,
         metadata: GraphCollectionMetadata
     ): Double {
-
-        val overallRanking = metadata.getOverallRanking()
-        val rankingPairs = overallRanking.rankings
-            .map { ranking ->
-                val threshold = ranking.graph.getNumberAttribute(
-                    AbstractEdgeThresholdGraphProducer.ATTRIBUTE_EDGE_THRESHOLD
-                )
-                threshold to ranking
-            }
-            .sortedBy(Pair<Double, GraphAttributeNodeRanking>::first)
-            .map(Pair<Double, GraphAttributeNodeRanking>::second)
-            .zipWithNext()
         val kValues = DEFAULT_K_VALUES
         val kThreshold = DEFAULT_K_SIMILARITY_THRESHOLD
 
-        val rankContinuity = rankingPairs.asSequence()
-            .flatMap { (ranking1, ranking2) ->
-                kValues.map { k ->
-                    kSimilarity(k, overallRanking, ranking1, ranking2)
-                }
-            }
+        val rankContinuity = consecutiveRankSimilarity(metadata, kValues)
             .map { kSimilarity ->
                 when (kSimilarity >= kThreshold) {
                     true -> 1

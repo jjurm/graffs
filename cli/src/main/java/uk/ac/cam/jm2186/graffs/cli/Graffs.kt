@@ -42,6 +42,7 @@ class Graffs : CliktCommand(
             MetricSubcommand(),
             GeneratorSubcommand(),
             ExperimentSubcommand(),
+            PlotSubcommand(),
 
             DatabaseSubcommand(),
             TestSubcommand()

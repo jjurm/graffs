@@ -79,3 +79,10 @@ fun CliktCommand.experiment_robustnessMeasures() =
 
 fun CliktCommand.experiment_robustnessMeasures_required() =
     experiment_robustnessMeasures0().required().validate { RobustnessMeasure.map.keys.containsAll(it) }
+
+/* Plots */
+
+fun CliktCommand.metric_name() =
+    option(
+        "--metric", help = "Graph metric to plot", metavar = Metric.map.keys.joinToString(separator = ",")
+    ).required().validate { Metric.map.keys.contains(it) }
