@@ -1,5 +1,6 @@
 plugins {
     id 'application'
+    id 'com.github.johnrengelman.shadow' version '5.2.0'
 }
 
 dependencies {
@@ -13,12 +14,14 @@ jar {
     manifest {
         attributes 'Main-Class': mainClassName
     }
-    zip64 true
-    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
-    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
+}
+
+shadowJar {
+    minimize()
+    archiveClassifier.set('')
     doLast {
         copy {
-            from jar
+            from shadowJar
             into 'build/libs'
             rename { String filename -> "${archivesBaseName}-last.jar" }
         }
@@ -28,7 +31,7 @@ jar {
 def serverName = "rio"
 def jarDir = "~/scratch/jars"
 
-task jarUpload(dependsOn: jar) {
+task jarUpload(dependsOn: shadowJar) {
     doLast {
         exec {
             commandLine "scp", "${buildDir}/libs/${archivesBaseName}-${version}.jar", "${serverName}:${jarDir}/${archivesBaseName}-${version}.jar"
