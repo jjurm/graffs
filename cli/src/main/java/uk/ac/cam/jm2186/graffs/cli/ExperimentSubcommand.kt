@@ -165,12 +165,10 @@ class ExperimentSubcommand : NoOpCliktCommand(
             print(timer.phase("Generate graphs"))
             val hibernateMutex = Mutex()
             coroutineScope {
-                experiment.graphCollections.forEach { (datasetId, graphCollection) ->
+                experiment.graphCollections.forEach { graphCollection ->
                     if (graphCollection.distortedGraphs.isEmpty()) {
                         launch {
-                            val sourceGraph = GraphDataset(
-                                datasetId
-                            ).loadGraph()
+                            val sourceGraph = GraphDataset(graphCollection.dataset).loadGraph()
                             // Generate graphs
                             val generated = experiment.generator
                                 .produceFromGraph(sourceGraph, this)
@@ -237,7 +235,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
             coroutineScope {
                 val graphJobs = mutableListOf<Deferred<Unit>>()
 
-                experiment.graphCollections.forEach { (datasetId, graphCollection) ->
+                experiment.graphCollections.forEach { graphCollection ->
                     graphCollection.distortedGraphs.forEach { distortedGraph ->
                         val graphDeferred = async { distortedGraph.graph }
                         val graphMutex = Mutex()
@@ -252,7 +250,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
                                 // now compute the current metric
                                 val graph = graphDeferred.await()
                                 graphMutex.withLock {
-                                    metric.evaluateAndLog(graph, datasetId, distortedGraph)
+                                    metric.evaluateAndLog(graph, graphCollection.dataset, distortedGraph)
                                 }
                             }
                             jobs[metricInfo] = job
@@ -289,14 +287,16 @@ class ExperimentSubcommand : NoOpCliktCommand(
             }.filter { it.isNodeMetric }
 
             coroutineScope {
-                val jobs = experiment.graphCollections.flatMap { (datasetId, graphCollection) ->
+                val jobs = experiment.graphCollections.flatMap { graphCollection ->
                     metrics.flatMap { metric ->
                         val metadata = GraphCollectionMetadata(graphCollection, metric, this)
                         measures.map { (measureId, measure) ->
                             async(start = CoroutineStart.LAZY) {
-                                val result =
-                                    measure.evaluateAndLog(metric, graphCollection, metadata, datasetId, measureId)
-                                val robustness = Robustness(experiment, datasetId, metric.id, measureId, result)
+                                val result = measure.evaluateAndLog(
+                                    metric, graphCollection, metadata, graphCollection.dataset, measureId
+                                )
+                                val robustness =
+                                    Robustness(experiment, graphCollection.dataset, metric.id, measureId, result)
 
                                 hibernateMutex.withLock {
                                     hibernate.inTransaction { saveOrUpdate(robustness) }
@@ -376,7 +376,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
         override suspend fun run1() {
             val experiment = hibernate.getNamedEntity<Experiment>(name)
             hibernate.inTransaction {
-                experiment.graphCollections.values.forEach {
+                experiment.graphCollections.forEach {
                     it.distortedGraphs.clear()
                     save(it)
                 }

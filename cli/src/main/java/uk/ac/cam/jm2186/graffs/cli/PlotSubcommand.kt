@@ -88,7 +88,7 @@ class PlotSubcommand : NoOpCliktCommand(
 
             val color = colors.iterator()
             val traces = coroutineScope {
-                experiment.graphCollections.map { (graphDataset, graphCollection) ->
+                experiment.graphCollections.map { graphCollection ->
                     async {
 
                         sessionFactory.openSession().use { session ->
@@ -118,7 +118,7 @@ class PlotSubcommand : NoOpCliktCommand(
                             }
 
                             val trace = ScatterTrace.builder(colThreshold, colKSimilarity)
-                                .name(graphDataset)
+                                .name(graphCollection.dataset)
                                 .mode(ScatterTrace.Mode.LINE)
                                 .line(Line.builder().color(color.next()).build())
                                 .showLegend(true)

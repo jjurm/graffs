@@ -24,20 +24,17 @@ class Experiment(
     datasets: Collection<GraphDatasetId> = listOf()
 ) : NamedEntity(name) {
 
-    // TODO turn map into a list
     @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true)
-    @LazyCollection(LazyCollectionOption.FALSE)
     @JoinColumn(name = "experiment")
-    @MapKeyColumn(name = "dataset")
-    val graphCollections: MutableMap<GraphDatasetId, GraphCollection> = mutableMapOf()
+    val graphCollections: MutableList<GraphCollection> = mutableListOf()
     @OneToMany(mappedBy = "experiment", cascade = [CascadeType.REMOVE], orphanRemoval = true)
     val robustnessResults: MutableList<Robustness> = mutableListOf()
 
-    val datasets get() = graphCollections.keys.toSet()
+    val datasets get() = graphCollections.map { it.dataset }
 
     init {
-        graphCollections.putAll(
-            datasets.map { it to GraphCollection() }
+        graphCollections.addAll(
+            datasets.map { GraphCollection(it) }
         )
     }
 }
