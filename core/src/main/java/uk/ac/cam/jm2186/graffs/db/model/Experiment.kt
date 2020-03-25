@@ -24,6 +24,7 @@ class Experiment(
     datasets: Collection<GraphDatasetId> = listOf()
 ) : NamedEntity(name) {
 
+    // TODO turn map into a list
     @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true)
     @LazyCollection(LazyCollectionOption.FALSE)
     @JoinColumn(name = "experiment")

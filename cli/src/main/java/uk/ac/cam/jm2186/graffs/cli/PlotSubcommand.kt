@@ -5,14 +5,8 @@ import com.github.ajalt.clikt.core.subcommands
 import express.Express
 import express.utils.MediaType
 import kotlinx.coroutines.*
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import tech.tablesaw.api.DoubleColumn
-import tech.tablesaw.api.StringColumn
-import tech.tablesaw.plotly.components.Axis
-import tech.tablesaw.plotly.components.Figure
-import tech.tablesaw.plotly.components.Layout
-import tech.tablesaw.plotly.components.Page
+import tech.tablesaw.plotly.components.*
 import tech.tablesaw.plotly.traces.ScatterTrace
 import uk.ac.cam.jm2186.graffs.db.getNamedEntity
 import uk.ac.cam.jm2186.graffs.db.model.Experiment
@@ -43,6 +37,16 @@ class PlotSubcommand : NoOpCliktCommand(
         name: String? = null,
         help: String = ""
     ) : CoroutineCommand(name = name, help = help) {
+
+        companion object {
+            @JvmStatic
+            protected val colors = listOf(
+                "#04254A", // dark blue
+                "#FFC103", // yellow
+                "#AE2A36", // red
+                "#AA7893"  // beige
+            )
+        }
 
         private val experimentName by experiment_name()
         protected val experiment by lazy {
@@ -82,14 +86,10 @@ class PlotSubcommand : NoOpCliktCommand(
         override suspend fun run1() {
             val rankContinuity = RankContinuityMeasure()
 
-            val tableMutex = Mutex()
-            val colThreshold = DoubleColumn.create("threshold")
-            val colKSimilarity = DoubleColumn.create("ksimilarity")
-            val colDataset = StringColumn.create("dataset")
-
-            coroutineScope {
-                experiment.graphCollections.forEach { (graphDataset, graphCollection) ->
-                    launch {
+            val color = colors.iterator()
+            val traces = coroutineScope {
+                experiment.graphCollections.map { (graphDataset, graphCollection) ->
+                    async {
 
                         sessionFactory.openSession().use { session ->
                             hibernate.detach(graphCollection)
@@ -109,33 +109,67 @@ class PlotSubcommand : NoOpCliktCommand(
                                     }
                                 }
                                 .awaitAll()
-                            tableMutex.withLock {
-                                kSimilarities.forEach { (threshold, kSimilarity) ->
-                                    colThreshold.append(threshold)
-                                    colKSimilarity.append(kSimilarity)
-                                    colDataset.append(graphDataset)
-                                }
+
+                            val colThreshold = DoubleColumn.create("threshold")
+                            val colKSimilarity = DoubleColumn.create("ksimilarity")
+                            kSimilarities.forEach { (threshold, kSimilarity) ->
+                                colThreshold.append(threshold)
+                                colKSimilarity.append(kSimilarity)
                             }
 
+                            val trace = ScatterTrace.builder(colThreshold, colKSimilarity)
+                                .name(graphDataset)
+                                .mode(ScatterTrace.Mode.LINE)
+                                .line(Line.builder().color(color.next()).build())
+                                .showLegend(true)
+                                .build()
+
+                            trace
                         }
                     }
-                }
-            }
+                }.awaitAll()
+            }.toMutableList()
 
             val layout = Layout
-                .builder("Rank similarity of ${metric.id}", colThreshold.name(), colKSimilarity.name())
+                .builder("Rank similarity of ${metric.id}")
+                .xAxis(
+                    Axis.builder()
+                        .title("Threshold")
+                        .range(0.0, 1.02)
+                        .build()
+                )
                 .yAxis(
                     Axis.builder()
-                        .range(0.0, 1.0)
+                        .title("Similarity")
+                        .range(0.0, 1.02)
                         .fixedRange(true)
+                        .tickSettings(
+                            TickSettings.builder()
+                                .arrayTicks(doubleArrayOf(0.0, 0.25, 0.5, 0.75, 1.0))
+                                .tickMode(TickSettings.TickMode.ARRAY)
+                                .build()
+                        )
                         .build()
                 )
                 .build()
-            val trace = ScatterTrace.builder(colThreshold, colKSimilarity)
-                .mode(ScatterTrace.Mode.LINE)
-                .build()
 
-            val figure = Figure(layout, trace)
+            ScatterTrace.builder(doubleArrayOf(0.0, 1.0), doubleArrayOf(0.9, 0.9))
+                .mode(ScatterTrace.Mode.LINE)
+                .line(Line.builder().color("grey").dash(Line.Dash.DASH).build())
+                .showLegend(false)
+                .build()
+                .let { traces.add(it) }
+
+            listOf(0.15, 0.4, 0.7, 0.9).forEach { score ->
+                ScatterTrace.builder(doubleArrayOf(score, score), doubleArrayOf(0.0, 1.0))
+                    .mode(ScatterTrace.Mode.LINE)
+                    .line(Line.builder().color("grey").dash(Line.Dash.DOT).width(1.0).build())
+                    .showLegend(false)
+                    .build()
+                    .let { traces.add(it) }
+            }
+
+            val figure = Figure(layout, *traces.toTypedArray())
             figure.plot()
         }
 
