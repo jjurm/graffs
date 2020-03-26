@@ -17,8 +17,15 @@ jar {
 }
 
 shadowJar {
-    minimize()
     archiveClassifier.set('')
+    minimize {
+        exclude(dependency('org.hibernate:hibernate-core:.*'))
+        exclude(dependency('org.hibernate:hibernate-c3p0:.*'))
+        exclude(dependency('com.h2database:h2:.*'))
+        exclude(dependency('log4j:log4j:.*'))
+        exclude(dependency('commons-logging:commons-logging:.*'))
+        exclude(dependency('org.renjin:.*:.*'))
+    }
     doLast {
         copy {
             from shadowJar
