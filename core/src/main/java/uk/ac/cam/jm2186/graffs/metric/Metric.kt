@@ -11,6 +11,7 @@ abstract class Metric(val id: MetricId) : Serializable {
         val map: Map<MetricId, MetricInfo> = listOf<MetricInfo>(
             AverageDegreeMetric,
             DegreeMetric,
+            LocalClusteringMetric,
             BetweennessCentralityMetric,
             PageRankMetric,
             DangalchevClosenessCentralityMetric
