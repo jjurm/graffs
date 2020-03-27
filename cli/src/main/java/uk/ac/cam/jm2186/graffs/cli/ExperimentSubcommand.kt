@@ -36,6 +36,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
         subcommands(
             ListSub(),
             CreateSub(),
+            ChangeSub(),
             CloneSub(),
             RemoveSub(),
             RunSub(),
@@ -100,6 +101,44 @@ class ExperimentSubcommand : NoOpCliktCommand(
             hibernate.save(experiment)
             hibernate.transaction.commit()
 
+            experiment.printToConsole()
+        }
+    }
+
+    class ChangeSub : CoroutineCommand(
+        name = "change",
+        help = """Change an existing experiment
+            |
+            |Removing a graph metric from the list will not remove computed values of that metric on generated graphs.
+            |Removing a dataset from an experiment will cause all computations on that dataset to be deleted too.
+            |Any change will delete calculated robustness results.
+        """.trimMargin()
+    ) {
+
+        val name by experiment_name()
+
+        private val datasets by experiment_datasets()
+        private val generatorName by experiment_generator()
+        private val metrics by experiment_metrics()
+        private val robustnessMeasures by experiment_robustnessMeasures()
+
+        override suspend fun run1() {
+            val experiment = hibernate.getNamedEntity<Experiment>(name)
+
+            datasets?.let { newDatasets ->
+                val newGraphCollections = newDatasets.map { dataset ->
+                    experiment.graphCollections.firstOrNull { dataset == it.dataset } ?: GraphCollection(dataset)
+                }
+                experiment.graphCollections = newGraphCollections.toMutableList()
+            }
+            generatorName?.let { experiment.generator = hibernate.getNamedEntity<GraphGenerator>(it) }
+            metrics?.let { experiment.metrics = it.toMutableSet() }
+            robustnessMeasures?.let { experiment.robustnessMeasures = it.toMutableSet() }
+
+            hibernate.inTransaction {
+                experiment.robustnessResults.clear()
+                save(experiment)
+            }
             experiment.printToConsole()
         }
     }

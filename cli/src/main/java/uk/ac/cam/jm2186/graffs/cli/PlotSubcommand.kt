@@ -86,11 +86,11 @@ class PlotSubcommand : NoOpCliktCommand(
         override suspend fun run1() {
             val rankContinuity = RankContinuityMeasure()
 
-            val color = colors.iterator()
+            val colorIterator = colors.iterator()
             val traces = coroutineScope {
                 experiment.graphCollections.map { graphCollection ->
+                    val color = colorIterator.next()
                     async {
-
                         sessionFactory.openSession().use { session ->
                             hibernate.detach(graphCollection)
                             session.update(graphCollection)
@@ -120,7 +120,7 @@ class PlotSubcommand : NoOpCliktCommand(
                             val trace = ScatterTrace.builder(colThreshold, colKSimilarity)
                                 .name(graphCollection.dataset)
                                 .mode(ScatterTrace.Mode.LINE)
-                                .line(Line.builder().color(color.next()).build())
+                                .line(Line.builder().color(color).build())
                                 .showLegend(true)
                                 .build()
 

@@ -13,21 +13,26 @@ class Experiment(
 
     @ManyToOne
     @LazyCollection(LazyCollectionOption.FALSE)
-    val generator: GraphGenerator,
+    var generator: GraphGenerator,
+
     @ElementCollection
     @LazyCollection(LazyCollectionOption.FALSE)
-    val metrics: MutableSet<MetricId> = mutableSetOf(),
+    var metrics: MutableSet<MetricId> = mutableSetOf(),
+
     @ElementCollection
     @LazyCollection(LazyCollectionOption.FALSE)
-    val robustnessMeasures: MutableSet<RobustnessMeasureId> = mutableSetOf(),
+    var robustnessMeasures: MutableSet<RobustnessMeasureId> = mutableSetOf(),
 
     datasets: Collection<GraphDatasetId> = listOf()
 ) : NamedEntity(name) {
 
     @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true)
     @JoinColumn(name = "experiment")
-    val graphCollections: MutableList<GraphCollection> = mutableListOf()
+    @LazyCollection(LazyCollectionOption.FALSE)
+    var graphCollections: MutableList<GraphCollection> = mutableListOf()
+
     @OneToMany(mappedBy = "experiment", cascade = [CascadeType.REMOVE], orphanRemoval = true)
+    @LazyCollection(LazyCollectionOption.FALSE)
     val robustnessResults: MutableList<Robustness> = mutableListOf()
 
     val datasets get() = graphCollections.map { it.dataset }
