@@ -116,6 +116,8 @@ github {
     name = "v${version}"
     //body = """"""
     assets = [
-            "${buildDir}/libs/${archivesBaseName}-${version}.jar"
+            "${project(':cli').buildDir}/libs/${archivesBaseName}-${version}.jar"
     ]
 }
+
+githubRelease.dependsOn(":cli:shadowJar")
