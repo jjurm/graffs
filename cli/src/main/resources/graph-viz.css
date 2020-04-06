@@ -1,0 +1,8 @@
+node {
+    size: 4px;
+    fill-color: #000000;
+}
+edge {
+    fill-color: #0000A012;
+    stroke-width: 1px;
+}

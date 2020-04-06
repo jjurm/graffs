@@ -7,6 +7,9 @@ import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.convert
 import com.github.ajalt.clikt.parameters.arguments.multiple
+import com.github.ajalt.clikt.parameters.options.flag
+import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.types.file
 import org.apache.commons.io.FileUtils
 import org.graphstream.graph.Edge
 import org.graphstream.graph.Graph
@@ -71,11 +74,9 @@ class DatasetSubcommand : NoOpCliktCommand(
 
             toLoad?.forEach { dataset ->
                 val graph = dataset.loadGraph()
-                //val averageDegree = AverageDegreeMetric(listOf()).evaluate(graph)
                 val hasWeights =
                     graph.getEdgeSet<Edge>().firstOrNull()?.hasAttribute(ATTRIBUTE_NAME_EDGE_WEIGHT) ?: false
                 println(
-                    //"- ${dataset.id} has ${graph.nodeCount} nodes, ${graph.edgeCount} edges, with average degree ${"%.${2}f".format(averageDegree.first)}${if (hasWeights) " (edges have weights)" else ""}"
                     "- ${dataset.id} has ${graph.nodeCount} nodes, ${graph.edgeCount} edges${if (hasWeights) " (edges have weights)" else ""}"
                 )
             }
@@ -174,6 +175,16 @@ class DatasetSubcommand : NoOpCliktCommand(
             help = "Dataset to visualise"
         ).convert { GraphDataset(it) }
 
+        val giantComponent by option(
+            "-g", "--giant",
+            help = "Vizualise only the biggest component of the graph"
+        ).flag()
+
+        val outputFile by option(
+            "-o", "--output",
+            help = "Take a screenshot and save it to the given file", metavar = "FILE"
+        ).file(mustExist = false, canBeDir = false)
+
         fun getGraph(): Graph {
             try {
                 return dataset.loadGraph()
@@ -183,8 +194,13 @@ class DatasetSubcommand : NoOpCliktCommand(
         }
 
         override fun run0() {
-            GraphVisualiser().visualise(getGraph())
+            val visualiser = GraphVisualiser(getGraph(), giantComponent)
+            val outputFile = outputFile
+            if (outputFile == null) {
+                visualiser.display()
+            } else {
+                visualiser.screenshot(outputFile)
+            }
         }
     }
-
 }

@@ -66,4 +66,6 @@ dependencies {
     implementation 'tech.tablesaw:tablesaw-jsplot:0.37.2', noSlf4j
     implementation 'tech.tablesaw:tablesaw-html:0.37.2', noSlf4j
     implementation 'com.github.Simonwep:java-express:0.1.1'
+
+    implementation group: 'org.graphstream', name: 'gs-algo', version: '1.3'
 }
