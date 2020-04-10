@@ -170,3 +170,4 @@ NOTES.md
 .idea/**/ros.xml
 .idea/**/jarRepositories.xml
 secrets.properties
+output/

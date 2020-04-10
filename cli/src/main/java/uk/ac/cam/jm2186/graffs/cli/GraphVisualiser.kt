@@ -38,7 +38,7 @@ class GraphVisualiser(
     }
 
     fun screenshot(file: File, display: Boolean = true) {
-        val output = FileSinkImages(FileSinkImages.OutputType.png, FileSinkImages.Resolutions.HD1080).apply {
+        val output = FileSinkImages(FileSinkImages.OutputType.png, FileSinkImages.Resolutions.UXGA).apply {
             setStyleSheet(stylesheet)
             setLayoutPolicy(FileSinkImages.LayoutPolicy.COMPUTED_FULLY_AT_NEW_IMAGE)
             setQuality(FileSinkImages.Quality.HIGH)
