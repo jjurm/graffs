@@ -37,7 +37,7 @@ class GraphVisualiser(
         viewer.enableAutoLayout(Layouts.newLayoutAlgorithm())
     }
 
-    fun screenshot(file: File) {
+    fun screenshot(file: File, display: Boolean = true) {
         val output = FileSinkImages(FileSinkImages.OutputType.png, FileSinkImages.Resolutions.HD1080).apply {
             setStyleSheet(stylesheet)
             setLayoutPolicy(FileSinkImages.LayoutPolicy.COMPUTED_FULLY_AT_NEW_IMAGE)
@@ -46,9 +46,7 @@ class GraphVisualiser(
         }
         output.writeAll(graph, file.path)
 
-        if (GraphicsEnvironment.isHeadless()) {
-            // non gui mode
-        } else {
+        if (display && !GraphicsEnvironment.isHeadless()) {
             when {
                 SystemUtils.IS_OS_WINDOWS -> Runtime.getRuntime().exec(arrayOf("cmd", "/C", file.path))
                 SystemUtils.IS_OS_UNIX -> Runtime.getRuntime().exec(arrayOf("xdg-open", file.path))

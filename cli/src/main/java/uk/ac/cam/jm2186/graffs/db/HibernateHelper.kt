@@ -59,3 +59,5 @@ suspend fun <R> Session.inTransaction(block: suspend Session.() -> R) {
         throw e
     }
 }
+
+fun HibernateHelper.getSingleSession(): Session = getBaseConfiguration().buildSessionFactory().openSession()

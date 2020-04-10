@@ -28,18 +28,25 @@ abstract class AbstractEdgeThresholdGraphProducer(
 
         return thresholds.mapIndexed { i, threshold ->
             coroutineScope.async {
-                val replay = FilteredGraphReplay("$baseId-$i-replay", edgeFilter = EdgeThresholdFilter(threshold))
-                val graph = SingleGraph("$baseId-$i")
-                replay.addSink(graph)
-                replay.replay(sourceGraph)
-                graph.setAttribute(ATTRIBUTE_EDGE_THRESHOLD, threshold)
+                val graph = sourceGraph.filterAtThreshold(threshold, baseId, i)
                 DistortedGraph(threshold.hashCode().toLong(), graph)
             }
         }
     }
 
-    private inner class EdgeThresholdFilter(val threshold: Double) : Filter<Edge> {
+    internal class EdgeThresholdFilter(val threshold: Double) : Filter<Edge> {
         override fun isAvailable(e: Edge): Boolean =
             e.getAttribute<Double>(ATTRIBUTE_NAME_EDGE_WEIGHT)!! > threshold
     }
+}
+
+fun Graph.filterAtThreshold(threshold: Double, baseId: String? = this.id, i: Int = 0): Graph {
+    val replay = FilteredGraphReplay(
+        "$baseId-$i-replay", edgeFilter = AbstractEdgeThresholdGraphProducer.EdgeThresholdFilter(threshold)
+    )
+    val graph = SingleGraph("$baseId-$i")
+    replay.addSink(graph)
+    replay.replay(this)
+    graph.setAttribute(AbstractEdgeThresholdGraphProducer.ATTRIBUTE_EDGE_THRESHOLD, threshold)
+    return graph
 }
