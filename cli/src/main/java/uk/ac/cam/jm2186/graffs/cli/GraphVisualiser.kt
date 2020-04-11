@@ -3,14 +3,17 @@ package uk.ac.cam.jm2186.graffs.cli
 import org.apache.commons.lang3.SystemUtils
 import org.graphstream.graph.Graph
 import org.graphstream.stream.file.FileSinkImages
-import org.graphstream.ui.layout.Layouts
+import org.graphstream.ui.layout.Layout
+import org.graphstream.ui.layout.springbox.implementations.SpringBox
 import org.graphstream.ui.view.Viewer
 import java.awt.GraphicsEnvironment
 import java.io.File
 import java.io.IOException
+import java.util.*
 
 class GraphVisualiser(
-    val graph: Graph
+    val graph: Graph,
+    val seed: Long = 42
 ) {
     companion object {
         init {
@@ -33,15 +36,16 @@ class GraphVisualiser(
 
         val viewer = Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD)
         viewer.addView(Viewer.DEFAULT_VIEW_ID, Viewer.newGraphRenderer())
-        viewer.enableAutoLayout(Layouts.newLayoutAlgorithm())
+        viewer.enableAutoLayout(SpringBox(false, Random(seed)))
     }
 
     fun screenshot(file: File, display: Boolean = true) {
-        val output = FileSinkImages(FileSinkImages.OutputType.png, FileSinkImages.Resolutions.UXGA).apply {
+        val output = CustomFileSinkImages(FileSinkImages.OutputType.png, FileSinkImages.Resolutions.UXGA).apply {
             setStyleSheet(stylesheet)
             setLayoutPolicy(FileSinkImages.LayoutPolicy.COMPUTED_FULLY_AT_NEW_IMAGE)
             setQuality(FileSinkImages.Quality.HIGH)
             setLayoutStabilizationLimit(0.95)
+            setLayout(SpringBox(false, Random(seed)))
         }
         output.writeAll(graph, file.path)
 
@@ -53,4 +57,9 @@ class GraphVisualiser(
         }
     }
 
+    class CustomFileSinkImages(type: OutputType, resolution: Resolution) : FileSinkImages(type, resolution) {
+        fun setLayout(layout: Layout) {
+            this.layout = layout
+        }
+    }
 }
