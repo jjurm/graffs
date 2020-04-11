@@ -1,6 +1,8 @@
 package uk.ac.cam.jm2186.graffs.graph
 
 import org.graphstream.graph.Element
+import org.graphstream.graph.Graph
+import org.graphstream.graph.implementations.Graphs
 import org.graphstream.graph.implementations.SingleGraph
 import org.graphstream.stream.file.FileSource
 import java.io.InputStream
@@ -14,6 +16,8 @@ fun FileSource.readGraph(inputStream: InputStream, id: String): SingleGraph {
     removeSink(graph)
     return graph
 }
+
+fun Graph.copy() = Graphs.clone(this)
 
 fun Element.getNumberAttribute(attributeName: String): Double {
     val number = getNumber(attributeName)

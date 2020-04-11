@@ -6,7 +6,7 @@ import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.options.eagerOption
 import uk.ac.cam.jm2186.graffs.db.getAllEntities
 import uk.ac.cam.jm2186.graffs.db.inTransaction
-import uk.ac.cam.jm2186.graffs.graph.RemovingEdgesGenerator
+import uk.ac.cam.jm2186.graffs.graph.gen.RemovingEdgesGenerator
 import uk.ac.cam.jm2186.graffs.db.model.*
 import uk.ac.cam.jm2186.graffs.db.mustNotExist
 import java.util.*

@@ -12,7 +12,7 @@ import uk.ac.cam.jm2186.graffs.db.getNamedEntity
 import uk.ac.cam.jm2186.graffs.db.model.Experiment
 import uk.ac.cam.jm2186.graffs.db.model.experiment_name
 import uk.ac.cam.jm2186.graffs.db.model.metric_name
-import uk.ac.cam.jm2186.graffs.graph.AbstractEdgeThresholdGraphProducer
+import uk.ac.cam.jm2186.graffs.graph.gen.AbstractEdgeThresholdGraphProducer
 import uk.ac.cam.jm2186.graffs.graph.getNumberAttribute
 import uk.ac.cam.jm2186.graffs.metric.Metric
 import uk.ac.cam.jm2186.graffs.metric.MetricId

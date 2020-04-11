@@ -1,4 +1,4 @@
-package uk.ac.cam.jm2186.graffs.graph
+package uk.ac.cam.jm2186.graffs.graph.gen
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred

@@ -6,8 +6,8 @@ import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.double
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.long
-import uk.ac.cam.jm2186.graffs.graph.GraphProducer
-import uk.ac.cam.jm2186.graffs.graph.RemovingEdgesGenerator
+import uk.ac.cam.jm2186.graffs.graph.gen.GraphProducer
+import uk.ac.cam.jm2186.graffs.graph.gen.RemovingEdgesGenerator
 import uk.ac.cam.jm2186.graffs.graph.storage.GraphDataset
 import uk.ac.cam.jm2186.graffs.graph.storage.GraphDatasetId
 import uk.ac.cam.jm2186.graffs.metric.Metric

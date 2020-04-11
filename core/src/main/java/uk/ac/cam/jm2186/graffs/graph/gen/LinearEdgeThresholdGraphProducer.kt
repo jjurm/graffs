@@ -1,4 +1,4 @@
-package uk.ac.cam.jm2186.graffs.graph
+package uk.ac.cam.jm2186.graffs.graph.gen
 
 class LinearEdgeThresholdGraphProducer(
     lowThreshold: Double,
@@ -22,6 +22,6 @@ class LinearEdgeThresholdGraphProducer(
         }
     }
 
-    override val id = LinearEdgeThresholdGraphProducer.id
+    override val id = Companion.id
 
 }

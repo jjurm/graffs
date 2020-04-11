@@ -1,4 +1,4 @@
-package uk.ac.cam.jm2186.graffs.graph
+package uk.ac.cam.jm2186.graffs.graph.gen
 
 import kotlin.random.Random
 
@@ -15,7 +15,7 @@ class RandomEdgeThresholdGraphProducer(
 
     companion object : GraphProducerInfo {
         override val id: GraphProducerId = "threshold-random"
-        override val factory: GraphProducerFactory = {seed, params ->
+        override val factory: GraphProducerFactory = { seed, params ->
             RandomEdgeThresholdGraphProducer(
                 seed,
                 params[0].toDouble(),
@@ -24,6 +24,6 @@ class RandomEdgeThresholdGraphProducer(
         }
     }
 
-    override val id = RandomEdgeThresholdGraphProducer.id
+    override val id = Companion.id
 
 }

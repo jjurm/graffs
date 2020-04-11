@@ -1,9 +1,10 @@
-package uk.ac.cam.jm2186.graffs.graph
+package uk.ac.cam.jm2186.graffs.graph.gen
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import uk.ac.cam.jm2186.graffs.GraphAssert
+import uk.ac.cam.jm2186.graffs.graph.GraphTestUtils
 
 internal class RemovingEdgesGraphProducerTest {
 

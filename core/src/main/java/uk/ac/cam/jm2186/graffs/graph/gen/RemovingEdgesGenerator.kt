@@ -1,4 +1,4 @@
-package uk.ac.cam.jm2186.graffs.graph
+package uk.ac.cam.jm2186.graffs.graph.gen
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
@@ -32,7 +32,7 @@ class RemovingEdgesGenerator(
         }
     }
 
-    override val id get() = RemovingEdgesGenerator.id
+    override val id get() = Companion.id
 
     override fun produce(sourceGraph: Graph, n: Int, coroutineScope: CoroutineScope): List<Deferred<DistortedGraph>> {
         val baseId = sourceGraph.id + "-" + this::class.simpleName

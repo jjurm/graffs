@@ -14,6 +14,7 @@ import org.apache.commons.io.FileUtils
 import org.graphstream.graph.Edge
 import org.graphstream.graph.Graph
 import uk.ac.cam.jm2186.graffs.graph.ATTRIBUTE_NAME_EDGE_WEIGHT
+import uk.ac.cam.jm2186.graffs.graph.alg.giantComponent
 import uk.ac.cam.jm2186.graffs.graph.storage.GraphDataset
 import uk.ac.cam.jm2186.graffs.graph.storage.getAvailableDatasetsChecked
 import java.io.File
@@ -185,16 +186,18 @@ class DatasetSubcommand : NoOpCliktCommand(
             help = "Take a screenshot and save it to the given file", metavar = "FILE"
         ).file(mustExist = false, canBeDir = false)
 
-        fun getGraph(): Graph {
+        private fun getGraph(): Graph {
             try {
-                return dataset.loadGraph()
+                return dataset.loadGraph().run {
+                    if (giantComponent) giantComponent() else this
+                }
             } catch (e: IllegalArgumentException) {
                 throw BadParameterValue(e.message ?: "Could not load dataset", ::dataset.name)
             }
         }
 
         override fun run0() {
-            val visualiser = GraphVisualiser(getGraph(), giantComponent)
+            val visualiser = GraphVisualiser(getGraph())
             val outputFile = outputFile
             if (outputFile == null) {
                 visualiser.display()
