@@ -4,7 +4,7 @@ import org.graphstream.algorithm.ConnectedComponents
 import org.graphstream.graph.Graph
 import org.graphstream.graph.implementations.SingleGraph
 import org.graphstream.util.Filters
-import uk.ac.cam.jm2186.graffs.util.FilteredGraphReplay
+import uk.ac.cam.jm2186.graffs.graph.FilteredGraphReplay
 
 fun Graph.giantComponent(): Graph {
     val components = ConnectedComponents()

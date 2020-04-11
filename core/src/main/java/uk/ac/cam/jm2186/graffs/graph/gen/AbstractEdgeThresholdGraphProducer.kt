@@ -9,7 +9,7 @@ import org.graphstream.graph.implementations.SingleGraph
 import org.graphstream.util.Filter
 import uk.ac.cam.jm2186.graffs.db.model.DistortedGraph
 import uk.ac.cam.jm2186.graffs.graph.ATTRIBUTE_NAME_EDGE_WEIGHT
-import uk.ac.cam.jm2186.graffs.util.FilteredGraphReplay
+import uk.ac.cam.jm2186.graffs.graph.FilteredGraphReplay
 
 abstract class AbstractEdgeThresholdGraphProducer(
     val getThresholds: (n: Int) -> List<Double>

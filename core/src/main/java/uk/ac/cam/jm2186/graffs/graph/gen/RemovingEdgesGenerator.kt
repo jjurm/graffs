@@ -8,7 +8,7 @@ import org.graphstream.graph.Graph
 import org.graphstream.graph.implementations.SingleGraph
 import org.graphstream.util.Filter
 import uk.ac.cam.jm2186.graffs.db.model.DistortedGraph
-import uk.ac.cam.jm2186.graffs.util.FilteredGraphReplay
+import uk.ac.cam.jm2186.graffs.graph.FilteredGraphReplay
 import kotlin.random.Random
 
 /**

@@ -1,6 +1,6 @@
 @file:JvmName("CanonicalGraphString")
 
-package uk.ac.cam.jm2186.graffs.util
+package uk.ac.cam.jm2186.graffs.graph.storage
 
 import org.graphstream.graph.Edge
 import org.graphstream.graph.Element

@@ -1,4 +1,4 @@
-package uk.ac.cam.jm2186.graffs.util
+package uk.ac.cam.jm2186.graffs.graph
 
 import org.graphstream.graph.Edge
 import org.graphstream.graph.Node
@@ -6,7 +6,6 @@ import org.graphstream.graph.implementations.DefaultGraph
 import org.graphstream.util.Filters
 import org.junit.jupiter.api.Test
 import uk.ac.cam.jm2186.graffs.GraphAssert
-import uk.ac.cam.jm2186.graffs.graph.GraphTestUtils
 
 internal class FilteredGraphReplayTest {
 
@@ -17,7 +16,8 @@ internal class FilteredGraphReplayTest {
         graph.getNode<Node>(0).setAttribute("node_attr", 2)
         graph.getEdge<Edge>(0).setAttribute("edge_attr", 3)
 
-        val replay = FilteredGraphReplay(GraphTestUtils.createGraphId())
+        val replay =
+            FilteredGraphReplay(GraphTestUtils.createGraphId())
         val replayed = DefaultGraph(GraphTestUtils.createGraphId())
         replay.addSink(replayed)
         replay.replay(graph)

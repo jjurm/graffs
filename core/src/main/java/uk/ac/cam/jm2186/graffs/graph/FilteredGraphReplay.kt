@@ -1,4 +1,4 @@
-package uk.ac.cam.jm2186.graffs.util
+package uk.ac.cam.jm2186.graffs.graph
 
 import org.graphstream.graph.Edge
 import org.graphstream.graph.Graph
