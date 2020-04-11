@@ -13,7 +13,8 @@ import java.util.*
 
 class GraphVisualiser(
     val graph: Graph,
-    val seed: Long = 42
+    val seed: Long = 42,
+    val autoLayout: Boolean = true
 ) {
     companion object {
         init {
@@ -36,16 +37,25 @@ class GraphVisualiser(
 
         val viewer = Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD)
         viewer.addView(Viewer.DEFAULT_VIEW_ID, Viewer.newGraphRenderer())
-        viewer.enableAutoLayout(SpringBox(false, Random(seed)))
+        if (autoLayout) {
+            viewer.enableAutoLayout(SpringBox(false, Random(seed)))
+        } else {
+            viewer.disableAutoLayout()
+        }
     }
 
     fun screenshot(file: File, display: Boolean = true) {
         val output = CustomFileSinkImages(FileSinkImages.OutputType.png, FileSinkImages.Resolutions.UXGA).apply {
             setStyleSheet(stylesheet)
-            setLayoutPolicy(FileSinkImages.LayoutPolicy.COMPUTED_FULLY_AT_NEW_IMAGE)
             setQuality(FileSinkImages.Quality.HIGH)
-            setLayoutStabilizationLimit(0.95)
-            setLayout(SpringBox(false, Random(seed)))
+
+            if (autoLayout) {
+                setLayoutPolicy(FileSinkImages.LayoutPolicy.COMPUTED_FULLY_AT_NEW_IMAGE)
+                setLayout(SpringBox(false, Random(seed)))
+                setLayoutStabilizationLimit(0.95)
+            } else {
+                setLayoutPolicy(FileSinkImages.LayoutPolicy.NO_LAYOUT)
+            }
         }
         output.writeAll(graph, file.path)
 
