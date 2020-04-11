@@ -12,7 +12,12 @@ import java.io.IOException
 class GraphVisualiser(
     val graph: Graph
 ) {
-    private val graph: Graph = if (giantComponent) giantComponent(sourceGraph) else Graphs.clone(sourceGraph)
+    companion object {
+        init {
+            System.setProperty("gs.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer")
+        }
+    }
+
     private val stylesheet: String
 
     init {
