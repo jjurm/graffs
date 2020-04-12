@@ -15,6 +15,7 @@ class FigureProducer(private val callable: KFunction<*>) {
     suspend fun export() = context.exportTex(texFiguresDir)
 }
 
+fun KFunction<*>.figure() = FigureProducer(this)
 
 fun getAllFigures(): List<FigureProducer> = Figures::class.memberFunctions
     .filter { it.annotations.any { it is Figure } }

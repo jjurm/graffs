@@ -43,13 +43,12 @@ class LatexContext(private val annotation: Figure) : Figures() {
             val gfxArgs = listOf(width * { "width=$it" } + height * { "height=$it" })
                 .joinToString(",", "[", "]")
             val gfx = filenames.joinToString("", transform = { """\includegraphics$gfxArgs{$it}""" })
-            return """
-                \begin{figure}
-                $gfx
-                \caption{$caption}
-                \label{fig:$figureName}
-                \end{figure}
-            """.trimIndent()
+            return """\begin{figure}
+$gfx
+\caption{$caption}
+\label{fig:$figureName}
+\end{figure}
+"""
         }
 
     suspend fun generateFigure(callable: KFunction<*>) {
