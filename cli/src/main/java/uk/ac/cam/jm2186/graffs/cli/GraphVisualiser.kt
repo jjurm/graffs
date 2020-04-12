@@ -44,8 +44,12 @@ class GraphVisualiser(
         }
     }
 
-    fun screenshot(file: File, display: Boolean = true) {
-        val output = CustomFileSinkImages(FileSinkImages.OutputType.png, FileSinkImages.Resolutions.UXGA).apply {
+    fun screenshot(
+        file: File,
+        display: Boolean = true,
+        resolution: FileSinkImages.Resolution = FileSinkImages.CustomResolution(1200, 1200)
+    ) {
+        val output = CustomFileSinkImages(FileSinkImages.OutputType.png, resolution).apply {
             setStyleSheet(stylesheet)
             setQuality(FileSinkImages.Quality.HIGH)
 
@@ -69,7 +73,14 @@ class GraphVisualiser(
 
     class CustomFileSinkImages(type: OutputType, resolution: Resolution) : FileSinkImages(type, resolution) {
         fun setLayout(layout: Layout) {
+            this.layout?.let {
+                gg.removeSink(it)
+                it.removeAttributeSink(gg)
+            }
+
             this.layout = layout
+            gg.addSink(layout)
+            layout.addAttributeSink(gg)
         }
     }
 }

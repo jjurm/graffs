@@ -6,6 +6,9 @@ import org.graphstream.graph.implementations.SingleGraph
 import org.graphstream.util.Filters
 import uk.ac.cam.jm2186.graffs.graph.FilteredGraphReplay
 
+/**
+ * Returns a new graph consisting of nodes of giant component of the given graph, and all edges between them.
+ */
 fun Graph.giantComponent(): Graph {
     val components = ConnectedComponents()
     components.init(this)

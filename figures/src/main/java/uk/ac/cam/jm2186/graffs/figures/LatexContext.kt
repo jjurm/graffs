@@ -11,7 +11,7 @@ import kotlin.reflect.full.callSuspend
 
 
 interface FigureContext {
-    val targetFile: File
+    fun newTargetFile(): File
 
     fun log(text: String)
 }
@@ -23,8 +23,15 @@ class LatexContext(private val annotation: Figure) : Figures() {
     val height get() = annotation.height
     val caption get() = annotation.caption
 
-    private val filename get() = "$figureName.png"
-    override val targetFile get() = File(File("output"), filename)
+    private fun filename(index: Int) = "$figureName${if (index == 0) "" else (index + 1).toString()}.png"
+    private val filenames = mutableListOf<String>()
+    private fun file(filename: String) = File(File("output"), filename)
+
+    override fun newTargetFile(): File {
+        val newFilename = filename(filenames.size)
+        filenames.add(newFilename)
+        return file(newFilename)
+    }
 
     override fun log(text: String) = println("[$figureName]: $text")
 
@@ -35,9 +42,10 @@ class LatexContext(private val annotation: Figure) : Figures() {
         get() {
             val gfxArgs = listOf(width * { "width=$it" } + height * { "height=$it" })
                 .joinToString(",", "[", "]")
+            val gfx = filenames.joinToString("", transform = { """\includegraphics$gfxArgs{$it}""" })
             return """
                 \begin{figure}
-                \includegraphics$gfxArgs{$filename}
+                $gfx
                 \caption{$caption}
                 \label{fig:$figureName}
                 \end{figure}
@@ -56,7 +64,9 @@ class LatexContext(private val annotation: Figure) : Figures() {
     suspend fun exportTex(texFiguresDir: File) {
         try {
             withContext(Dispatchers.IO) {
-                FileUtils.copyFile(targetFile, File(texFiguresDir, filename))
+                filenames.forEach { filename ->
+                    FileUtils.copyFile(file(filename), File(texFiguresDir, filename))
+                }
                 FileUtils.writeStringToFile(File(texFiguresDir, "$figureName.tex"), texCode, Charsets.UTF_8)
             }
             println("Exported $figureName")
