@@ -1,8 +1,11 @@
+graph {
+    fill-mode: none;
+}
 node {
-    size: 4px;
+    size: 5px;
     fill-color: #000000;
 }
 edge {
-    size: 1px;
+    size: 2px;
     fill-color: #0000A020;
 }
