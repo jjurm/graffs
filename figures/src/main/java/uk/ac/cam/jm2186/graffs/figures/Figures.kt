@@ -10,10 +10,13 @@ import uk.ac.cam.jm2186.graffs.graph.alg.giantComponent
 import uk.ac.cam.jm2186.graffs.graph.computeLayout
 import uk.ac.cam.jm2186.graffs.graph.copy
 import uk.ac.cam.jm2186.graffs.graph.gen.filterAtThreshold
+import uk.ac.cam.jm2186.graffs.graph.getNumberAttribute
 import uk.ac.cam.jm2186.graffs.graph.storage.GraphDataset
 import uk.ac.cam.jm2186.graffs.graph.style
+import uk.ac.cam.jm2186.graffs.metric.*
 import uk.ac.cam.jm2186.graffs.util.removeAll
 import java.util.*
+import kotlin.math.roundToInt
 
 
 abstract class Figures : FigureContext {
@@ -30,16 +33,19 @@ abstract class Figures : FigureContext {
         GraphVisualiser(ecoli900).screenshot(newTargetFile(), false)
     }
 
+    val simpleGraph by lazy {
+        val graph = GraphDataset("test").loadGraph().copy()
+        graph.removeNode<Node>(0)
+        graph.giantComponent()
+    }
+
     @Figure(
         "simple_graph",
         height = "6cm",
         caption = """A small example of a \textsl{connected} \textsl{simple} graph (i.e. \textsl{undirected} and \textsl{anti-reflexive})."""
     )
     fun figureSimpleGraph() {
-        var graph = GraphDataset("test").loadGraph().copy()
-        graph.removeNode<Node>(0)
-        graph = graph.giantComponent()
-
+        val graph = simpleGraph.copy()
         log("${graph.nodeCount} nodes and ${graph.edgeCount} edges")
         styleBig1(graph)
         GraphVisualiser(graph).screenshot(newTargetFile(), false)
@@ -48,7 +54,7 @@ abstract class Figures : FigureContext {
     @Figure(
         "disconnecting_graph",
         height = "8cm",
-        caption = """Illustrated is how thresholding a protein network results in one giant component (red) and multiple small disconnected components.
+        caption = """Illustrated is how thresholding (a subgraph of) a protein network (left) results in one giant component (red) and multiple small disconnected components.
 The left is a certain subgraph of the \textit{ecoli} dataset (all edges with confidence $>0.4$), the right graph has only edges with confidence $>0.5$."""
     )
     fun figureDisconnectedGraph() {
@@ -100,6 +106,48 @@ The left is a certain subgraph of the \textit{ecoli} dataset (all edges with con
             }
         }
         GraphVisualiser(graph2, autoLayout = false).screenshot(newTargetFile(), false)
+    }
+
+    @Figure(
+        "simplegraph_by_some_metrics",
+        height = "5cm",
+        caption = """A simple graph with each node's diameter proportional to its \textsl{degree} (1), \textsl{betweenness centrality} (2), and \textsl{local clustering} (3).
+In this particular graph, (1) and (2) show similar characteristics (greater value for more ``central'' nodes), whereas local clustering is significantly different."""
+    )
+    fun figureByDegree() {
+        val metrics = listOf<MetricInfo>(
+            DegreeMetric,
+            BetweennessCentralityMetric,
+            LocalClusteringMetric
+        )
+
+        metrics.forEach { metric ->
+            val graph = simpleGraph.copy()
+
+            colorNodesByMetric(
+                graph, metric, sizeMax = when (metric) {
+                    LocalClusteringMetric -> 60.0
+                    else -> 100.0
+                }
+            )
+            graph.getEdgeSet<Edge>().forEach {
+                it.style("size: 4px; fill-color: #0000A040;")
+            }
+            GraphVisualiser(graph, seed = 43).screenshot(newTargetFile(), false)
+        }
+    }
+
+    private fun colorNodesByMetric(graph: Graph, metric: MetricInfo, sizeMin: Double = 6.0, sizeMax: Double = 60.0) {
+        metric.evaluateSingle(graph)
+        val values = graph.getNodeSet<Node>().map { it.getNumberAttribute(metric.attributeName) }
+        val max = values.max()!!
+        val min = values.min()!!
+
+        graph.getNodeSet<Node>().forEach {
+            val value = it.getNumberAttribute(metric.attributeName)
+            val size = (value - min) / (max - min) * (sizeMax - sizeMin) + sizeMin
+            it.style("size: ${size.roundToInt()}px;")
+        }
     }
 
 

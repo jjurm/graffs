@@ -14,7 +14,6 @@ import kotlinx.coroutines.sync.withLock
 import org.apache.commons.lang3.StringUtils.leftPad
 import org.apache.commons.lang3.StringUtils.rightPad
 import org.apache.commons.lang3.time.StopWatch
-import org.graphstream.graph.Graph
 import uk.ac.cam.jm2186.graffs.graph.storage.GraphDataset
 import uk.ac.cam.jm2186.graffs.graph.storage.GraphDatasetId
 import uk.ac.cam.jm2186.graffs.metric.Metric
@@ -24,6 +23,8 @@ import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasure
 import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasureId
 import uk.ac.cam.jm2186.graffs.db.*
 import uk.ac.cam.jm2186.graffs.db.model.*
+import uk.ac.cam.jm2186.graffs.metric.MetricResult
+import uk.ac.cam.jm2186.graffs.metric.evaluateMetricsAsync
 import uk.ac.cam.jm2186.graffs.util.TimePerf
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -241,21 +242,23 @@ class ExperimentSubcommand : NoOpCliktCommand(
         private suspend fun metrics(experiment: Experiment) {
             val nEvaluations = experiment.datasets.size * experiment.generator.n * experiment.metrics.size
             val nEvaluated = AtomicInteger(0)
-            suspend fun Metric.evaluateAndLog(
-                graph: Graph,
+
+            suspend fun evaluateAndLog(
+                metricEvaluation: suspend () -> MetricResult?,
+                metric: MetricInfo,
                 datasetId: GraphDatasetId,
                 distortedGraph: DistortedGraph
             ) {
                 val stopWatch = StopWatch()
                 stopWatch.start()
-                val evaluated = evaluate(graph)
+                val evaluated = metricEvaluation()
                 stopWatch.stop()
 
                 if (evaluated != null) {
                     val sProgress = leftPad(nEvaluated.incrementAndGet().toString(), nEvaluations.toString().length)
                     val sDataset = rightPad(datasetId, 16)
                     val sHash = leftPad(distortedGraph.getShortHash(), 4)
-                    val sMetric = rightPad(id, 20)
+                    val sMetric = rightPad(metric.id, 20)
                     val sResult = leftPad(evaluated.toString(), 6)
                     val sTime = "${stopWatch.time / 1000}s"
                     println("[$sProgress/$nEvaluations] $sDataset (seed $sHash) -> $sMetric = $sResult  ($sTime)")
@@ -276,35 +279,25 @@ class ExperimentSubcommand : NoOpCliktCommand(
 
                 experiment.graphCollections.forEach { graphCollection ->
                     graphCollection.distortedGraphs.forEach { distortedGraph ->
-                        val graphDeferred = async { distortedGraph.graph }
-                        val graphMutex = Mutex()
 
-                        val jobs = HashMap<MetricInfo, Deferred<Unit>>()
-                        metrics.forEach { (metricInfo, metric) ->
-                            val job = async(start = CoroutineStart.LAZY) {
-                                // make sure that all dependencies are computed first
-                                val dependencies = metricInfo.dependencies.map { jobs.getValue(it) }
-                                dependencies.awaitAll()
-
-                                // now compute the current metric
-                                val graph = graphDeferred.await()
-                                graphMutex.withLock {
-                                    metric.evaluateAndLog(graph, graphCollection.dataset, distortedGraph)
+                        val graphJob = evaluateMetricsAsync(metrics,
+                            getGraph = { distortedGraph.graph },
+                            evaluateAndLog = { metricEvaluation, metric ->
+                                evaluateAndLog(
+                                    metricEvaluation,
+                                    metric,
+                                    graphCollection.dataset,
+                                    distortedGraph
+                                )
+                            },
+                            storeResults = { graph ->
+                                distortedGraph.graph = graph
+                                hibernateMutex.withLock {
+                                    hibernate.inTransaction { save(distortedGraph) }
                                 }
                             }
-                            jobs[metricInfo] = job
-                        }
+                        )
 
-                        // start and wait for all jobs
-                        val graphJob = async(start = CoroutineStart.LAZY) {
-                            jobs.values.awaitAll()
-                            // store the result
-                            distortedGraph.graph = graphDeferred.await()
-                            hibernateMutex.withLock {
-                                hibernate.inTransaction { save(distortedGraph) }
-                            }
-                            Unit
-                        }
                         graphJobs.add(graphJob)
                     }
                 }

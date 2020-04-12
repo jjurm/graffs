@@ -8,14 +8,16 @@ typealias MetricId = String
 abstract class Metric(val id: MetricId) : Serializable {
 
     companion object {
-        val map: Map<MetricId, MetricInfo> = listOf<MetricInfo>(
-            AverageDegreeMetric,
-            DegreeMetric,
-            LocalClusteringMetric,
-            BetweennessCentralityMetric,
-            PageRankMetric,
-            DangalchevClosenessCentralityMetric
-        ).map { it.id to it }.toMap()
+        val map: Map<MetricId, MetricInfo> by lazy {
+            listOf<MetricInfo>(
+                AverageDegreeMetric,
+                DegreeMetric,
+                LocalClusteringMetric,
+                BetweennessCentralityMetric,
+                PageRankMetric,
+                DangalchevClosenessCentralityMetric
+            ).map { it.id to it }.toMap()
+        }
     }
 
     // self-factory for singleton subclasses
@@ -45,6 +47,7 @@ abstract class Metric(val id: MetricId) : Serializable {
 }
 
 typealias MetricFactory = () -> Metric
+
 sealed class MetricResult {
     object Unit : MetricResult() {
         override fun toString() = "[true]"
