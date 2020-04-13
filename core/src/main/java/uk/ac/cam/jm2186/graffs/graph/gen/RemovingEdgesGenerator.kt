@@ -54,6 +54,7 @@ class RemovingEdgesGenerator(
         val graph = SingleGraph(id)
         replay.addSink(graph)
         replay.replay(sourceGraph)
+        replay.removeSink(graph)
         return DistortedGraph(seed, graph)
     }
 

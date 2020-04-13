@@ -50,6 +50,7 @@ fun Graph.filterAtThreshold(threshold: Double, baseId: String? = this.id, i: Int
     val graph = SingleGraph("$baseId-$i")
     replay.addSink(graph)
     replay.replay(this)
+    replay.removeSink(graph)
     graph.setAttribute(AbstractEdgeThresholdGraphProducer.ATTRIBUTE_EDGE_THRESHOLD, threshold)
     return graph
 }

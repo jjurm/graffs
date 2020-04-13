@@ -23,5 +23,6 @@ fun Graph.giantComponent(): Graph {
     val giant = SingleGraph("$id-giant")
     replay.addSink(giant)
     replay.replay(this)
+    replay.removeSink(giant)
     return giant
 }

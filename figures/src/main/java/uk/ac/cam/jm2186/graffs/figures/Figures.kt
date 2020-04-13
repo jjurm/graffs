@@ -6,13 +6,10 @@ import org.graphstream.graph.Graph
 import org.graphstream.graph.Node
 import org.graphstream.ui.layout.springbox.implementations.SpringBox
 import uk.ac.cam.jm2186.graffs.cli.GraphVisualiser
+import uk.ac.cam.jm2186.graffs.graph.*
 import uk.ac.cam.jm2186.graffs.graph.alg.giantComponent
-import uk.ac.cam.jm2186.graffs.graph.computeLayout
-import uk.ac.cam.jm2186.graffs.graph.copy
 import uk.ac.cam.jm2186.graffs.graph.gen.filterAtThreshold
-import uk.ac.cam.jm2186.graffs.graph.getNumberAttribute
 import uk.ac.cam.jm2186.graffs.graph.storage.GraphDataset
-import uk.ac.cam.jm2186.graffs.graph.style
 import uk.ac.cam.jm2186.graffs.metric.*
 import uk.ac.cam.jm2186.graffs.util.removeAll
 import java.util.*
@@ -136,6 +133,34 @@ In this particular graph, (1) and (2) show similar characteristics (greater valu
             GraphVisualiser(graph, seed = 43).screenshot(newTargetFile(), false)
         }
     }
+
+    @Figure(
+        "graph_example_scored_edges",
+        height = "5cm",
+        caption = """A tiny subgraph of the \textsl{ecoli} dataset with scored edges"""
+    )
+    fun figureScoredEdges() {
+        var graph = GraphDataset("ecoli").loadGraph()
+
+        val mustHaveNeighbours = graph.getNode<Node>(0).getNeighborNodeIterator<Node>().asSequence()
+            .toList().shuffled(Random(44)).take(2)
+        log("mustHaveNeighbours: ${mustHaveNeighbours.size}")
+        val keep = graph.filter { node ->
+            node.degree < 320 && mustHaveNeighbours.all { node.hasEdgeBetween(it) }
+        }
+        log("to keep: ${keep.size}")
+        log("degrees: ${keep.map { it.degree }}")
+        graph = graph.subgraph(nodeSet = keep).giantComponent()
+
+        graph.getNodeSet<Node>().forEach { it.style("size: 40px;") }
+        graph.getEdgeSet<Edge>().forEach { edge ->
+            val w = edge.getNumberAttribute(ATTRIBUTE_NAME_EDGE_WEIGHT) / 1000.0
+            val size = (w * 35) + 4
+            edge.style("size: ${size}px; fill-color: #0000A060;")
+        }
+        GraphVisualiser(graph).screenshot(newTargetFile(), false)
+    }
+
 
     private fun colorNodesByMetric(graph: Graph, metric: MetricInfo, sizeMin: Double = 6.0, sizeMax: Double = 60.0) {
         metric.evaluateSingle(graph)
