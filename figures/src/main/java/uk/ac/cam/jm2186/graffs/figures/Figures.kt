@@ -12,6 +12,8 @@ import uk.ac.cam.jm2186.graffs.graph.gen.filterAtThreshold
 import uk.ac.cam.jm2186.graffs.graph.storage.GraphDataset
 import uk.ac.cam.jm2186.graffs.metric.*
 import uk.ac.cam.jm2186.graffs.util.removeAll
+import java.io.File
+import java.io.IOException
 import java.util.*
 import kotlin.math.roundToInt
 
@@ -152,10 +154,10 @@ In this particular graph, (1) and (2) show similar characteristics (greater valu
         log("degrees: ${keep.map { it.degree }}")
         graph = graph.subgraph(nodeSet = keep).giantComponent()
 
-        graph.getNodeSet<Node>().forEach { it.style("size: 40px;") }
+        graph.getNodeSet<Node>().forEach { it.style("size: 50px;") }
         graph.getEdgeSet<Edge>().forEach { edge ->
             val w = edge.getNumberAttribute(ATTRIBUTE_NAME_EDGE_WEIGHT) / 1000.0
-            val size = (w * 35) + 4
+            val size = (w * 45) + 4
             edge.style("size: ${size}px; fill-color: #0000A060;")
         }
         GraphVisualiser(graph).screenshot(newTargetFile(), false)
@@ -181,6 +183,13 @@ In this particular graph, (1) and (2) show similar characteristics (greater valu
         graph.getEdgeSet<Edge>().forEach {
             it.style("size: 7px; fill-color: #0000A040;")
         }
+    }
+
+    private fun convertSvgToPdf(`in`: File, out: File) {
+        val process = Runtime.getRuntime().exec(
+            arrayOf("inkscape", "-D", "-z", "--file", `in`.path, "--export-pdf", out.path, "--export-area-drawing")
+        )
+        if (process.waitFor() != 0) throw IOException("Could not run `inkscape`")
     }
 
 }

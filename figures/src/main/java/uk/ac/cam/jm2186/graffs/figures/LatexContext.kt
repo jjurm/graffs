@@ -9,13 +9,15 @@ import java.lang.reflect.InvocationTargetException
 import kotlin.reflect.KFunction
 import kotlin.reflect.full.callSuspend
 
+enum class FileType(val extension: String) {
+    PNG("png"), PDF("pdf");
+}
 
 interface FigureContext {
-    fun newTargetFile(): File
+    fun newTargetFile(type: FileType = FileType.PNG): File
 
     fun log(text: String)
 }
-
 
 class LatexContext(private val annotation: Figure) : Figures() {
     val figureName get() = annotation.name
@@ -23,13 +25,15 @@ class LatexContext(private val annotation: Figure) : Figures() {
     val height get() = annotation.height
     val caption get() = annotation.caption
 
-    private fun filename(index: Int) = "$figureName${if (index == 0) "" else (index + 1).toString()}.png"
-    private val filenames = mutableListOf<String>()
+    private fun filename(index: Int, fileType: FileType) =
+        "$figureName${if (index == 0) "" else (index + 1).toString()}.${fileType.extension}"
+
+    private val filenames = mutableListOf<Pair<FileType, String>>()
     private fun file(filename: String) = File(File("output"), filename)
 
-    override fun newTargetFile(): File {
-        val newFilename = filename(filenames.size)
-        filenames.add(newFilename)
+    override fun newTargetFile(type: FileType): File {
+        val newFilename = filename(filenames.size, type)
+        filenames.add(type to newFilename)
         return file(newFilename)
     }
 
@@ -42,7 +46,7 @@ class LatexContext(private val annotation: Figure) : Figures() {
         get() {
             val gfxArgs = listOf(width * { "width=$it" } + height * { "height=$it" })
                 .joinToString(",", "[", "]")
-            val gfx = filenames.joinToString("", transform = { """\includegraphics$gfxArgs{$it}""" })
+            val gfx = filenames.joinToString("", transform = { (_, file) -> """\includegraphics$gfxArgs{$file}""" })
             return """\begin{figure}
 $gfx
 \caption{$caption}
@@ -63,7 +67,7 @@ $gfx
     suspend fun exportTex(texFiguresDir: File) {
         try {
             withContext(Dispatchers.IO) {
-                filenames.forEach { filename ->
+                filenames.forEach { (_, filename) ->
                     FileUtils.copyFile(file(filename), File(texFiguresDir, filename))
                 }
                 FileUtils.writeStringToFile(File(texFiguresDir, "$figureName.tex"), texCode, Charsets.UTF_8)
