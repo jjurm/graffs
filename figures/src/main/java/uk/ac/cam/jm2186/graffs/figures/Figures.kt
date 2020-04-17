@@ -163,6 +163,16 @@ In this particular graph, (1) and (2) show similar characteristics (greater valu
         GraphVisualiser(graph).screenshot(newTargetFile(), false)
     }
 
+    @Figure(
+        "data_model_diagram",
+        caption = """Data model diagram showing \textsl{persistence schema}, i.e. entities stored in the database."""
+    )
+    fun diagramDataModel() {
+        convertSvgToPdf(File("diagrams/data-model.svg"), newTargetFile(FileType.PDF))
+    }
+
+
+    //----------
 
     private fun colorNodesByMetric(graph: Graph, metric: MetricInfo, sizeMin: Double = 6.0, sizeMax: Double = 60.0) {
         metric.evaluateSingle(graph)
