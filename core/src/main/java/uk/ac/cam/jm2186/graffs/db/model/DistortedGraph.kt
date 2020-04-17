@@ -4,8 +4,8 @@ import org.graphstream.graph.Graph
 import org.graphstream.graph.implementations.SingleGraph
 import org.graphstream.stream.file.FileSinkDGS
 import org.graphstream.stream.file.FileSourceDGS
-import uk.ac.cam.jm2186.graffs.graph.readGraph
 import uk.ac.cam.jm2186.graffs.db.AbstractJpaPersistable
+import uk.ac.cam.jm2186.graffs.graph.readGraph
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.util.zip.DeflaterOutputStream

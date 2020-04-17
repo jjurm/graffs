@@ -3,6 +3,7 @@ package uk.ac.cam.jm2186.graffs.db.model
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import org.graphstream.graph.Graph
+import uk.ac.cam.jm2186.graffs.db.NamedEntity
 import uk.ac.cam.jm2186.graffs.graph.gen.GraphProducer
 import uk.ac.cam.jm2186.graffs.graph.gen.GraphProducerId
 import javax.persistence.ElementCollection

@@ -6,6 +6,7 @@ import uk.ac.cam.jm2186.graffs.graph.storage.GraphDatasetId
 import uk.ac.cam.jm2186.graffs.db.IdClassEntity
 import java.io.Serializable
 import javax.persistence.*
+import uk.ac.cam.jm2186.graffs.db.Entity as EntityIntf
 
 @Entity
 @IdClass(RobustnessId::class)
@@ -22,7 +23,7 @@ class Robustness(
     val robustnessMeasure: RobustnessMeasureId,
 
     val value: Double
-) : Serializable
+) : EntityIntf()
 
 @IdClassEntity
 class RobustnessId(

@@ -2,6 +2,7 @@ package uk.ac.cam.jm2186.graffs.db.model
 
 import org.hibernate.annotations.LazyCollection
 import org.hibernate.annotations.LazyCollectionOption
+import uk.ac.cam.jm2186.graffs.db.NamedEntity
 import uk.ac.cam.jm2186.graffs.graph.storage.GraphDatasetId
 import uk.ac.cam.jm2186.graffs.metric.MetricId
 import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasureId
@@ -26,8 +27,7 @@ class Experiment(
     datasets: Collection<GraphDatasetId> = listOf()
 ) : NamedEntity(name) {
 
-    @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true)
-    @JoinColumn(name = "experiment")
+    @OneToMany(mappedBy = "experiment", cascade = [CascadeType.ALL], orphanRemoval = true)
     @LazyCollection(LazyCollectionOption.FALSE)
     var graphCollections: MutableList<GraphCollection> = mutableListOf()
 
