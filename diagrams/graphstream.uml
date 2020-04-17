@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>org.graphstream.graph.Graph</OriginalElement>
+  <nodes>
+    <node x="38.16666666666666" y="0.0">uk.ac.cam.jm2186.graffs.figures.uk.ac.cam.jm2186.graffs.figures.graphstream.Element</node>
+    <node x="326.91666666666663" y="170.0">uk.ac.cam.jm2186.graffs.figures.uk.ac.cam.jm2186.graffs.figures.graphstream.Graph</node>
+    <node x="0.0" y="158.0">uk.ac.cam.jm2186.graffs.figures.uk.ac.cam.jm2186.graffs.figures.graphstream.Edge</node>
+    <node x="117.43055555555554" y="158.0">uk.ac.cam.jm2186.graffs.figures.uk.ac.cam.jm2186.graffs.figures.graphstream.Node</node>
+    <node x="257.16666666666663" y="23.0">java.lang.Iterable</node>
+    <node x="389.16666666666663" y="11.0">uk.ac.cam.jm2186.graffs.figures.uk.ac.cam.jm2186.graffs.figures.graphstream.Structure</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="uk.ac.cam.jm2186.graffs.figures.uk.ac.cam.jm2186.graffs.figures.graphstream.Graph" target="uk.ac.cam.jm2186.graffs.figures.uk.ac.cam.jm2186.graffs.figures.graphstream.Element">
+      <point x="-24.0" y="-26.0" />
+      <point x="338.91666666666663" y="128.0" />
+      <point x="203.99999999999997" y="128.0" />
+      <point x="66.33333333333331" y="49.0" />
+    </edge>
+    <edge source="uk.ac.cam.jm2186.graffs.figures.uk.ac.cam.jm2186.graffs.figures.graphstream.Node" target="java.lang.Iterable">
+      <point x="43.5" y="-38.0" />
+      <point x="247.93055555555554" y="138.0" />
+      <point x="285.16666666666663" y="138.0" />
+      <point x="-28.0" y="26.0" />
+    </edge>
+    <edge source="uk.ac.cam.jm2186.graffs.figures.uk.ac.cam.jm2186.graffs.figures.graphstream.Graph" target="uk.ac.cam.jm2186.graffs.figures.uk.ac.cam.jm2186.graffs.figures.graphstream.Structure">
+      <point x="24.0" y="-26.0" />
+      <point x="386.91666666666663" y="138.0" />
+      <point x="477.66666666666663" y="138.0" />
+      <point x="0.0" y="38.0" />
+    </edge>
+    <edge source="uk.ac.cam.jm2186.graffs.figures.uk.ac.cam.jm2186.graffs.figures.graphstream.Graph" target="java.lang.Iterable">
+      <point x="0.0" y="-26.0" />
+      <point x="362.91666666666663" y="118.0" />
+      <point x="341.16666666666663" y="118.0" />
+      <point x="28.0" y="26.0" />
+    </edge>
+    <edge source="uk.ac.cam.jm2186.graffs.figures.uk.ac.cam.jm2186.graffs.figures.graphstream.Edge" target="uk.ac.cam.jm2186.graffs.figures.uk.ac.cam.jm2186.graffs.figures.graphstream.Element">
+      <point x="0.0" y="-38.0" />
+      <point x="48.5" y="138.0" />
+      <point x="71.33333333333331" y="138.0" />
+      <point x="-66.33333333333333" y="49.0" />
+    </edge>
+    <edge source="uk.ac.cam.jm2186.graffs.figures.uk.ac.cam.jm2186.graffs.figures.graphstream.Node" target="uk.ac.cam.jm2186.graffs.figures.uk.ac.cam.jm2186.graffs.figures.graphstream.Element">
+      <point x="-43.5" y="-38.0" />
+      <point x="160.93055555555554" y="138.0" />
+      <point x="137.66666666666663" y="138.0" />
+      <point x="-2.8421709430404007E-14" y="49.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="1.0" x="283.5" y="117.0" />
+  <SelectedNodes>
+    <node>java.lang.Iterable</node>
+  </SelectedNodes>
+  <Categories>
+    <Category>Fields</Category>
+    <Category>Properties</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+

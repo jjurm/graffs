@@ -171,6 +171,14 @@ In this particular graph, (1) and (2) show similar characteristics (greater valu
         convertSvgToPdf(File("diagrams/data-model.svg"), newTargetFile(FileType.PDF))
     }
 
+    @Figure(
+        "graphstream_diagram",
+        caption = """A simplified diagram of the most relevant interfaces from the GraphStream library"""
+    )
+    fun diagramGraphstream() {
+        convertSvgToPdf(File("diagrams/graphstream.svg"), newTargetFile(FileType.PDF))
+    }
+
 
     //----------
 
