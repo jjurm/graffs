@@ -206,7 +206,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
             val hibernateMutex = Mutex()
             coroutineScope {
                 experiment.graphCollections.forEach { graphCollection ->
-                    if (graphCollection.distortedGraphs.isEmpty()) {
+                    if (graphCollection.perturbedGraphs.isEmpty()) {
                         launch {
                             val sourceGraph = GraphDataset(graphCollection.dataset).loadGraph()
                             // Generate graphs
@@ -226,7 +226,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
                                     graph
                                 }
                             }
-                            graphCollection.distortedGraphs.addAll(savedGraphs.awaitAll())
+                            graphCollection.perturbedGraphs.addAll(savedGraphs.awaitAll())
                             hibernateMutex.withLock {
                                 hibernate.inTransaction {
                                     save(graphCollection)
@@ -247,7 +247,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
                 metricEvaluation: suspend () -> MetricResult?,
                 metric: MetricInfo,
                 datasetId: GraphDatasetId,
-                distortedGraph: DistortedGraph
+                perturbedGraph: PerturbedGraph
             ) {
                 val stopWatch = StopWatch()
                 stopWatch.start()
@@ -257,7 +257,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
                 if (evaluated != null) {
                     val sProgress = leftPad(nEvaluated.incrementAndGet().toString(), nEvaluations.toString().length)
                     val sDataset = rightPad(datasetId, 16)
-                    val sHash = leftPad(distortedGraph.getShortHash(), 4)
+                    val sHash = leftPad(perturbedGraph.getShortHash(), 4)
                     val sMetric = rightPad(metric.id, 20)
                     val sResult = leftPad(evaluated.toString(), 6)
                     val sTime = "${stopWatch.time / 1000}s"
@@ -278,7 +278,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
                 val graphJobs = mutableListOf<Deferred<Unit>>()
 
                 experiment.graphCollections.forEach { graphCollection ->
-                    graphCollection.distortedGraphs.forEach { distortedGraph ->
+                    graphCollection.perturbedGraphs.forEach { distortedGraph ->
 
                         val graphJob = evaluateMetricsAsync(metrics,
                             getGraph = { distortedGraph.graph },
@@ -409,7 +409,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
             val experiment = hibernate.getNamedEntity<Experiment>(name)
             hibernate.inTransaction {
                 experiment.graphCollections.forEach {
-                    it.distortedGraphs.clear()
+                    it.perturbedGraphs.clear()
                     save(it)
                 }
                 experiment.robustnessResults.clear()

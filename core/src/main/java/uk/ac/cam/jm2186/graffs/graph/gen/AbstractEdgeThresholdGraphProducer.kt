@@ -7,7 +7,7 @@ import org.graphstream.graph.Edge
 import org.graphstream.graph.Graph
 import org.graphstream.graph.implementations.SingleGraph
 import org.graphstream.util.Filter
-import uk.ac.cam.jm2186.graffs.db.model.DistortedGraph
+import uk.ac.cam.jm2186.graffs.db.model.PerturbedGraph
 import uk.ac.cam.jm2186.graffs.graph.ATTRIBUTE_NAME_EDGE_WEIGHT
 import uk.ac.cam.jm2186.graffs.graph.FilteredGraphReplay
 
@@ -23,14 +23,14 @@ abstract class AbstractEdgeThresholdGraphProducer(
         sourceGraph: Graph,
         n: Int,
         coroutineScope: CoroutineScope
-    ): List<Deferred<DistortedGraph>> {
+    ): List<Deferred<PerturbedGraph>> {
         val thresholds = getThresholds(n)
         val baseId = sourceGraph.id + "-" + this::class.simpleName
 
         return thresholds.mapIndexed { i, threshold ->
             coroutineScope.async {
                 val graph = sourceGraph.filterAtThreshold(threshold, baseId, i)
-                DistortedGraph(threshold.hashCode().toLong(), graph)
+                PerturbedGraph(threshold.hashCode().toLong(), graph)
             }
         }
     }

@@ -42,7 +42,7 @@ class OverallNodeRanking internal constructor(
             this@Companion(
                 // Compute rankings of each graph asynchronously
                 rankings = coroutineScope {
-                    graphCollection.distortedGraphs.map {
+                    graphCollection.perturbedGraphs.map {
                         async {
                             GraphAttributeNodeRanking(it.graph, metric.attributeName)
                         }

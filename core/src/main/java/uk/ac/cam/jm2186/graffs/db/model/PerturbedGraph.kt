@@ -13,7 +13,7 @@ import java.util.zip.InflaterInputStream
 import javax.persistence.*
 
 @Entity
-class DistortedGraph(
+class PerturbedGraph(
     val hash: Long,
     graph: Graph
 ) : AbstractJpaPersistable<Long>() {

@@ -7,7 +7,7 @@ import org.graphstream.graph.Element
 import org.graphstream.graph.Graph
 import org.graphstream.graph.implementations.SingleGraph
 import org.graphstream.util.Filter
-import uk.ac.cam.jm2186.graffs.db.model.DistortedGraph
+import uk.ac.cam.jm2186.graffs.db.model.PerturbedGraph
 import uk.ac.cam.jm2186.graffs.graph.FilteredGraphReplay
 import kotlin.random.Random
 
@@ -34,7 +34,7 @@ class RemovingEdgesGenerator(
 
     override val id get() = Companion.id
 
-    override fun produce(sourceGraph: Graph, n: Int, coroutineScope: CoroutineScope): List<Deferred<DistortedGraph>> {
+    override fun produce(sourceGraph: Graph, n: Int, coroutineScope: CoroutineScope): List<Deferred<PerturbedGraph>> {
         val baseId = sourceGraph.id + "-" + this::class.simpleName
         val random = Random(seed)
         return (0 until n).map { i ->
@@ -46,7 +46,7 @@ class RemovingEdgesGenerator(
         }
     }
 
-    private fun produceSingle(sourceGraph: Graph, seed: Long, id: String): DistortedGraph {
+    private fun produceSingle(sourceGraph: Graph, seed: Long, id: String): PerturbedGraph {
         val replay = FilteredGraphReplay(
             "$id-replay",
             edgeFilter = RandomElementRemoverFilter(seed)
@@ -55,7 +55,7 @@ class RemovingEdgesGenerator(
         replay.addSink(graph)
         replay.replay(sourceGraph)
         replay.removeSink(graph)
-        return DistortedGraph(seed, graph)
+        return PerturbedGraph(seed, graph)
     }
 
     private inner class RandomElementRemoverFilter<E : Element>(seed: Long) : Filter<E> {

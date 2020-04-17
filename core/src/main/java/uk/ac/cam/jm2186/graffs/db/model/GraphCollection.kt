@@ -13,6 +13,6 @@ class GraphCollection(
 
     @OneToMany(mappedBy = "graphcollection", cascade = [CascadeType.REMOVE], orphanRemoval = true /*, fetch = FetchType.LAZY*/)
     @LazyCollection(LazyCollectionOption.EXTRA) // Allow querying size without initialising
-    val distortedGraphs: MutableList<DistortedGraph> = mutableListOf()
+    val perturbedGraphs: MutableList<PerturbedGraph> = mutableListOf()
 
 }

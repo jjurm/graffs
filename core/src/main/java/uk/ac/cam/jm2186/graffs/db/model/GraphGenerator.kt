@@ -21,7 +21,7 @@ class GraphGenerator(
     val seed: Long
 ) : NamedEntity(name) {
 
-    fun produceFromGraph(sourceGraph: Graph, coroutineScope: CoroutineScope): List<Deferred<DistortedGraph>> {
+    fun produceFromGraph(sourceGraph: Graph, coroutineScope: CoroutineScope): List<Deferred<PerturbedGraph>> {
         val generatorFactory = GraphProducer.map.getValue(method)
         return generatorFactory(seed, params)
             .produce(sourceGraph, n, coroutineScope)
