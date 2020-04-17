@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>Persistence</ID>
+  <OriginalElement />
+  <nodes>
+    <node x="189.5" y="340.0">Robustness#file://E:/workspace/graffs/core/src/main/java/uk/ac/cam/jm2186/graffs/db/model/Robustness.kt</node>
+    <node x="171.0" y="151.0">Experiment#file://E:/workspace/graffs/core/src/main/java/uk/ac/cam/jm2186/graffs/db/model/Experiment.kt</node>
+    <node x="-37.5" y="-20.0">DistortedGraph#file://E:/workspace/graffs/core/src/main/java/uk/ac/cam/jm2186/graffs/db/model/DistortedGraph.kt</node>
+    <node x="443.0" y="129.0">GraphGenerator#file://E:/workspace/graffs/core/src/main/java/uk/ac/cam/jm2186/graffs/db/model/GraphGenerator.kt</node>
+    <node x="-36.0" y="162.0">GraphCollection#file://E:/workspace/graffs/core/src/main/java/uk/ac/cam/jm2186/graffs/db/model/GraphCollection.kt</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="GraphCollection#file://E:/workspace/graffs/core/src/main/java/uk/ac/cam/jm2186/graffs/db/model/GraphCollection.kt" target="DistortedGraph#file://E:/workspace/graffs/core/src/main/java/uk/ac/cam/jm2186/graffs/db/model/DistortedGraph.kt">
+      <point x="0.0" y="-38.0" />
+      <point x="0.0" y="60.0" />
+    </edge>
+    <edge source="Robustness#file://E:/workspace/graffs/core/src/main/java/uk/ac/cam/jm2186/graffs/db/model/Robustness.kt" target="Experiment#file://E:/workspace/graffs/core/src/main/java/uk/ac/cam/jm2186/graffs/db/model/Experiment.kt">
+      <point x="0.0" y="-60.0" />
+      <point x="0.0" y="49.0" />
+    </edge>
+    <edge source="Experiment#file://E:/workspace/graffs/core/src/main/java/uk/ac/cam/jm2186/graffs/db/model/Experiment.kt" target="GraphCollection#file://E:/workspace/graffs/core/src/main/java/uk/ac/cam/jm2186/graffs/db/model/GraphCollection.kt">
+      <point x="-109.0" y="0.0" />
+      <point x="76.0" y="0.0" />
+    </edge>
+    <edge source="Experiment#file://E:/workspace/graffs/core/src/main/java/uk/ac/cam/jm2186/graffs/db/model/Experiment.kt" target="GraphGenerator#file://E:/workspace/graffs/core/src/main/java/uk/ac/cam/jm2186/graffs/db/model/GraphGenerator.kt">
+      <point x="109.0" y="0.0" />
+      <point x="-77.0" y="0.0" />
+    </edge>
+  </edges>
+  <settings layout="Orthogonal" zoom="1.0" x="286.5" y="234.5" />
+  <SelectedNodes />
+  <Categories>
+    <Category>Embeddables</Category>
+    <Category>Properties</Category>
+  </Categories>
+</Diagram>
+

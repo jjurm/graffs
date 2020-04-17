@@ -165,10 +165,21 @@ In this particular graph, (1) and (2) show similar characteristics (greater valu
 
     @Figure(
         "data_model_diagram",
-        caption = """Data model diagram showing \textsl{persistence schema}, i.e. entities stored in the database."""
+        caption = """Data model diagram showing \textsl{persistence schema}, i.e. entities stored in the database.
+The arrows indicate \textsl{association} links, i.e. ``has a'' or ``refers to'' relationships.
+The diagram is created from the Java Persistence API schema inferred from the source code."""
     )
     fun diagramDataModel() {
-        convertSvgToPdf(File("diagrams/data-model.svg"), newTargetFile(FileType.PDF))
+        convertSvgToPdf(File("diagrams/data-model2.svg"), newTargetFile(FileType.PDF))
+    }
+
+    @Figure(
+        "data_model_classes_diagram",
+        caption = """Inheritance hierarchy of the (Kotlin) classes underlying the persistence model presented in \autoref{fig:data_model_diagram}.
+The arrows indicate \textsl{inheritance} (``is a'') relationships between classes."""
+    )
+    fun diagramDataModelClasses() {
+        convertSvgToPdf(File("diagrams/data-model-classes.svg"), newTargetFile(FileType.PDF))
     }
 
     @Figure(

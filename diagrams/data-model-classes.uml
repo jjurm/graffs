@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>uk.ac.cam.jm2186.graffs.db</OriginalElement>
+  <nodes>
+    <node x="307.25" y="102.0">uk.ac.cam.jm2186.graffs.db.model.Robustness</node>
+    <node x="511.25" y="146.0">uk.ac.cam.jm2186.graffs.db.AbstractJpaPersistable</node>
+    <node x="167.25" y="146.0">uk.ac.cam.jm2186.graffs.db.NamedEntity</node>
+    <node x="605.5" y="338.0">uk.ac.cam.jm2186.graffs.db.model.GraphCollection</node>
+    <node x="264.0" y="316.0">uk.ac.cam.jm2186.graffs.db.model.GraphGenerator</node>
+    <node x="0.0" y="294.0">uk.ac.cam.jm2186.graffs.db.model.Experiment</node>
+    <node x="354.0" y="0.0">uk.ac.cam.jm2186.graffs.db.Entity</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="uk.ac.cam.jm2186.graffs.db.model.Robustness" target="uk.ac.cam.jm2186.graffs.db.Entity">
+      <point x="0.0" y="-71.0" />
+      <point x="391.25" y="77.0" />
+      <point x="394.0" y="77.0" />
+      <point x="0.0" y="26.0" />
+    </edge>
+    <edge source="uk.ac.cam.jm2186.graffs.db.model.Experiment" target="uk.ac.cam.jm2186.graffs.db.NamedEntity">
+      <point x="0.0" y="-82.0" />
+      <point x="122.0" y="269.0" />
+      <point x="197.25" y="269.0" />
+      <point x="-30.0" y="27.0" />
+    </edge>
+    <edge source="uk.ac.cam.jm2186.graffs.db.AbstractJpaPersistable" target="uk.ac.cam.jm2186.graffs.db.Entity">
+      <point x="0.0" y="-27.0" />
+      <point x="615.25" y="77.0" />
+      <point x="420.6666666666667" y="77.0" />
+      <point x="26.666666666666686" y="26.0" />
+    </edge>
+    <edge source="uk.ac.cam.jm2186.graffs.db.NamedEntity" target="uk.ac.cam.jm2186.graffs.db.Entity">
+      <point x="0.0" y="-27.0" />
+      <point x="227.25" y="77.0" />
+      <point x="367.3333333333333" y="77.0" />
+      <point x="-26.666666666666686" y="26.0" />
+    </edge>
+    <edge source="uk.ac.cam.jm2186.graffs.db.model.GraphGenerator" target="uk.ac.cam.jm2186.graffs.db.NamedEntity">
+      <point x="0.0" y="-60.0" />
+      <point x="338.0" y="269.0" />
+      <point x="257.25" y="269.0" />
+      <point x="30.0" y="27.0" />
+    </edge>
+    <edge source="uk.ac.cam.jm2186.graffs.db.model.GraphCollection" target="uk.ac.cam.jm2186.graffs.db.AbstractJpaPersistable">
+      <point x="0.0" y="-38.0" />
+      <point x="722.5" y="269.0" />
+      <point x="667.25" y="269.0" />
+      <point x="52.0" y="27.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="1.0" x="425.0" y="229.0" />
+  <SelectedNodes>
+    <node>uk.ac.cam.jm2186.graffs.db.model.Robustness</node>
+  </SelectedNodes>
+  <Categories>
+    <Category>Properties</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+
