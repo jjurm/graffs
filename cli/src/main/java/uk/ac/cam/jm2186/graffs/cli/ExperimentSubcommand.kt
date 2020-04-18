@@ -133,8 +133,8 @@ class ExperimentSubcommand : NoOpCliktCommand(
                 experiment.graphCollections = newGraphCollections.toMutableList()
             }
             generatorName?.let { experiment.generator = hibernate.getNamedEntity<GraphGenerator>(it) }
-            metrics?.let { experiment.metrics = it.toMutableSet() }
-            robustnessMeasures?.let { experiment.robustnessMeasures = it.toMutableSet() }
+            metrics?.let { experiment.metrics = it.toSet() }
+            robustnessMeasures?.let { experiment.robustnessMeasures = it.toSet() }
 
             hibernate.inTransaction {
                 experiment.robustnessResults.clear()

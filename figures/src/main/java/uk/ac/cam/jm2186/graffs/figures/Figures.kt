@@ -26,8 +26,7 @@ abstract class Figures : FigureContext {
         caption = """An interaction network of proteins from the \textit{Escherichia coli} organism from the STRING database, thresholded at the $0.9$ score (high confidence). Only nodes of the giant component are shown."""
     )
     fun figure1() {
-        val graph = GraphDataset("ecoli").loadGraph()
-        val ecoli900 = graph.filterAtThreshold(900.0).giantComponent()
+        val ecoli900 = GraphDataset("ecoli").loadGraph().filterAtThreshold(900.0).giantComponent()
         log("the graph has ${ecoli900.nodeCount} nodes and ${ecoli900.edgeCount} edges")
         GraphVisualiser(ecoli900).screenshot(newTargetFile(), false)
     }
@@ -142,7 +141,7 @@ In this particular graph, (1) and (2) show similar characteristics (greater valu
         caption = """A tiny subgraph of the \textsl{ecoli} dataset with scored edges"""
     )
     fun figureScoredEdges() {
-        var graph = GraphDataset("ecoli").loadGraph()
+        var graph = GraphDataset("ecoli").loadGraph().copy()
 
         val mustHaveNeighbours = graph.getNode<Node>(0).getNeighborNodeIterator<Node>().asSequence()
             .toList().shuffled(Random(44)).take(2)
@@ -165,6 +164,7 @@ In this particular graph, (1) and (2) show similar characteristics (greater valu
 
     @Figure(
         "data_model_diagram",
+        width = """\linewidth""",
         caption = """Data model diagram showing \textsl{persistence schema}, i.e. entities stored in the database.
 The arrows indicate \textsl{association} links, i.e. ``has a'' or ``refers to'' relationships.
 The diagram is created from the Java Persistence API schema inferred from the source code."""
@@ -175,7 +175,8 @@ The diagram is created from the Java Persistence API schema inferred from the so
 
     @Figure(
         "data_model_classes_diagram",
-        caption = """Inheritance hierarchy of the (Kotlin) classes underlying the persistence model presented in \autoref{fig:data_model_diagram}.
+        width = """\linewidth""",
+        caption = """\textsl{Entity classes} (i.e. classes defining the persistence model presented in \autoref{fig:data_model_diagram}), and their inheritance hierarchy.
 The arrows indicate \textsl{inheritance} (``is a'') relationships between classes."""
     )
     fun diagramDataModelClasses() {
@@ -184,6 +185,8 @@ The arrows indicate \textsl{inheritance} (``is a'') relationships between classe
 
     @Figure(
         "graphstream_diagram",
+        figurePos = "h",
+        width = """0.8\linewidth""",
         caption = """A simplified diagram of the most relevant interfaces from the GraphStream library"""
     )
     fun diagramGraphstream() {

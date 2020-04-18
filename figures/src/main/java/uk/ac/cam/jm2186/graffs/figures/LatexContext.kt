@@ -21,6 +21,7 @@ interface FigureContext {
 
 class LatexContext(private val annotation: Figure) : Figures() {
     val figureName get() = annotation.name
+    val figurePos get() = annotation.figurePos
     val width get() = annotation.width
     val height get() = annotation.height
     val caption get() = annotation.caption
@@ -47,7 +48,7 @@ class LatexContext(private val annotation: Figure) : Figures() {
             val gfxArgs = listOf(width * { "width=$it" } + height * { "height=$it" })
                 .joinToString(",", "[", "]")
             val gfx = filenames.joinToString("", transform = { (_, file) -> """\includegraphics$gfxArgs{$file}""" })
-            return """\begin{figure}
+            return """\begin{figure}${figurePos * { "[$it]" }}
 $gfx
 \caption{$caption}
 \label{fig:$figureName}
