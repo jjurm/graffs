@@ -15,7 +15,11 @@ import javax.persistence.*
 @Entity
 class PerturbedGraph(
     val hash: Long,
-    graph: Graph
+    graph: Graph,
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "graphcollection")
+    var graphCollection: GraphCollection? = null
 ) : AbstractJpaPersistable<Long>() {
 
     @Lob

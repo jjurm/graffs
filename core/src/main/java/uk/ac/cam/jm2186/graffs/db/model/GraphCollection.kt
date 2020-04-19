@@ -8,10 +8,15 @@ import javax.persistence.*
 
 @Entity
 class GraphCollection(
-    val dataset: GraphDatasetId
+    val dataset: GraphDatasetId,
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "experiment")
+    val experiment: Experiment
+
 ) : AbstractJpaPersistable<Long>() {
 
-    @OneToMany(mappedBy = "graphcollection", cascade = [CascadeType.REMOVE], orphanRemoval = true /*, fetch = FetchType.LAZY*/)
+    @OneToMany(mappedBy = "graphCollection", cascade = [CascadeType.REMOVE], orphanRemoval = true)
     @LazyCollection(LazyCollectionOption.EXTRA) // Allow querying size without initialising
     val perturbedGraphs: MutableList<PerturbedGraph> = mutableListOf()
 

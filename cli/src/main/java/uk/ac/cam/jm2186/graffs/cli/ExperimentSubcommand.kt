@@ -128,7 +128,8 @@ class ExperimentSubcommand : NoOpCliktCommand(
 
             datasets?.let { newDatasets ->
                 val newGraphCollections = newDatasets.map { dataset ->
-                    experiment.graphCollections.firstOrNull { dataset == it.dataset } ?: GraphCollection(dataset)
+                    experiment.graphCollections.firstOrNull { dataset == it.dataset }
+                        ?: GraphCollection(dataset, experiment)
                 }
                 experiment.graphCollections = newGraphCollections.toMutableList()
             }
@@ -217,6 +218,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
                                 // Store each graph in the database as soon as it is generated and serialized
                                 async {
                                     val graph = it.await()
+                                    graph.graphCollection = graphCollection
                                     hibernateMutex.withLock {
                                         hibernate.inTransaction {
                                             save(graph)

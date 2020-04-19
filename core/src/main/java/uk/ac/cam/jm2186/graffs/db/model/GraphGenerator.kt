@@ -3,12 +3,13 @@ package uk.ac.cam.jm2186.graffs.db.model
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import org.graphstream.graph.Graph
+import org.hibernate.annotations.LazyCollection
+import org.hibernate.annotations.LazyCollectionOption
 import uk.ac.cam.jm2186.graffs.db.NamedEntity
 import uk.ac.cam.jm2186.graffs.graph.gen.GraphProducer
 import uk.ac.cam.jm2186.graffs.graph.gen.GraphProducerId
 import javax.persistence.ElementCollection
 import javax.persistence.Entity
-import javax.persistence.FetchType
 
 @Entity
 class GraphGenerator(
@@ -16,7 +17,8 @@ class GraphGenerator(
 
     val n: Int,
     val method: GraphProducerId,
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection
+    @LazyCollection(LazyCollectionOption.FALSE)
     val params: List<Double>,
     val seed: Long
 ) : NamedEntity(name) {
