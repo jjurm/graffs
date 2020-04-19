@@ -7,5 +7,6 @@ annotation class Figure(
     val figurePos: String = "",
     val width: String = "",
     val height: String = "",
-    val caption: String
+    val caption: String,
+    val ignore: Boolean = false
 )

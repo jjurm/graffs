@@ -28,9 +28,9 @@ class GraphDataset(val id: GraphDatasetId, validate: Boolean = false) {
             )
 
         private val loaders = listOf(
-            RDataGraphLoader { name.endsWith(".RData") },
+            RDataGraphLoader { name.endsWith(".RData", ignoreCase = true) },
             EdgesGraphLoader { name == "edges.txt" },
-            EdgesGraphLoader { name.endsWith(".txt") }
+            EdgesGraphLoader { name.endsWith(".txt", ignoreCase = true) }
         )
 
         /**

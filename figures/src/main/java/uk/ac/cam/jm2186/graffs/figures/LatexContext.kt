@@ -3,6 +3,7 @@ package uk.ac.cam.jm2186.graffs.figures
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.apache.commons.io.FileUtils
+import uk.ac.cam.jm2186.graffs.figures.FileType.*
 import java.io.File
 import java.io.IOException
 import java.lang.reflect.InvocationTargetException
@@ -10,11 +11,11 @@ import kotlin.reflect.KFunction
 import kotlin.reflect.full.callSuspend
 
 enum class FileType(val extension: String) {
-    PNG("png"), PDF("pdf");
+    PNG("png"), PDF("pdf"), TEX("tex");
 }
 
 interface FigureContext {
-    fun newTargetFile(type: FileType = FileType.PNG): File
+    fun newTargetFile(type: FileType = PNG): File
 
     fun log(text: String)
 }
@@ -25,6 +26,7 @@ class LatexContext(private val annotation: Figure) : Figures() {
     val width get() = annotation.width
     val height get() = annotation.height
     val caption get() = annotation.caption
+    val ignore get() = annotation.ignore
 
     private fun filename(index: Int, fileType: FileType) =
         "$figureName${if (index == 0) "" else (index + 1).toString()}.${fileType.extension}"
@@ -47,9 +49,14 @@ class LatexContext(private val annotation: Figure) : Figures() {
         get() {
             val gfxArgs = listOf(width * { "width=$it" } + height * { "height=$it" })
                 .joinToString(",", "[", "]")
-            val gfx = filenames.joinToString("", transform = { (_, file) -> """\includegraphics$gfxArgs{$file}""" })
+            val files = filenames.joinToString("", transform = { (type, file) ->
+                when(type){
+                    PDF, PNG -> """\includegraphics$gfxArgs{$file}"""
+                    TEX -> file(file).readText()
+                }
+            })
             return """\begin{figure}${figurePos * { "[$it]" }}
-$gfx
+$files
 \caption{$caption}
 \label{fig:$figureName}
 \end{figure}
@@ -57,6 +64,7 @@ $gfx
         }
 
     suspend fun generateFigure(callable: KFunction<*>) {
+        if (ignore) return
         try {
             callable.callSuspend(this)
         } catch (e: InvocationTargetException) {
@@ -66,6 +74,7 @@ $gfx
     }
 
     suspend fun exportTex(texFiguresDir: File) {
+        if (ignore) return
         try {
             withContext(Dispatchers.IO) {
                 filenames.forEach { (_, filename) ->

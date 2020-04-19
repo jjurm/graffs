@@ -193,6 +193,37 @@ The arrows indicate \textsl{inheritance} (``is a'') relationships between classe
         convertSvgToPdf(File("diagrams/graphstream.svg"), newTargetFile(FileType.PDF))
     }
 
+    @Figure(
+        "data_dir_structure",
+        caption = """An example structure of the \texttt{data} directory"""
+    )
+    fun treeDatasets() {
+        val root = File("data")
+
+        val sb = StringBuilder(
+            """\begin{tikzpicture}%
+\draw[color=black!60!white]"""
+        )
+        var nextId = 0
+        fun File.escapedName() = name.replace("_", "\\_")
+        fun dir(parentId: String, d: File) {
+            val id = "i" + (nextId++)
+            sb.append("\n\\FTdir($parentId,$id,${d.escapedName()}){")
+            d.listFiles()!!.forEach { child ->
+                if (child.isDirectory) {
+                    dir(id, child)
+                } else {
+                    sb.append("\n\\FTfile($id,${child.escapedName()})")
+                }
+            }
+            sb.append("\n}")
+        }
+        dir("\\FTroot", root)
+        sb.append(";\n\\end{tikzpicture}\n")
+
+        newTargetFile(FileType.TEX).writeText(sb.toString(), Charsets.UTF_8)
+    }
+
 
     //----------
 
