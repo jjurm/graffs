@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class ExperimentSubcommand : NoOpCliktCommand(
     name = "experiment",
-    help = "Run experiments (evaluate metrics on generated graphs) and show results"
+    help = "Manage experiments (evaluating metrics on generated graphs)"
 ) {
 
     init {
@@ -404,7 +404,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
 
     class PruneSub : CoroutineCommand(
         name = "prune",
-        help = "Remove all generated graphs and calculated robustness values of an experiment"
+        help = "Remove generated graphs and calculated robustness values of an experiment"
     ) {
         val name by experiment_name()
         override suspend fun run1() {

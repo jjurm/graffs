@@ -1,10 +1,12 @@
 package uk.ac.cam.jm2186.graffs.figures
 
+import com.github.ajalt.clikt.core.CliktCommand
 import org.graphstream.algorithm.ConnectedComponents
 import org.graphstream.graph.Edge
 import org.graphstream.graph.Graph
 import org.graphstream.graph.Node
 import org.graphstream.ui.layout.springbox.implementations.SpringBox
+import uk.ac.cam.jm2186.graffs.cli.Graffs
 import uk.ac.cam.jm2186.graffs.cli.GraphVisualiser
 import uk.ac.cam.jm2186.graffs.graph.*
 import uk.ac.cam.jm2186.graffs.graph.alg.giantComponent
@@ -16,6 +18,8 @@ import java.io.File
 import java.io.IOException
 import java.util.*
 import kotlin.math.roundToInt
+import kotlin.reflect.full.memberProperties
+import kotlin.reflect.jvm.isAccessible
 
 
 abstract class Figures : FigureContext {
@@ -220,6 +224,46 @@ The arrows indicate \textsl{inheritance} (``is a'') relationships between classe
         }
         dir("\\FTroot", root)
         sb.append(";\n\\end{tikzpicture}\n")
+
+        newTargetFile(FileType.TEX).writeText(sb.toString(), Charsets.UTF_8)
+    }
+
+    @Figure(
+        "cli_commands_hierarchy",
+        caption = """Hierarchy of supported command-line interface commands, and their brief description""",
+        captionPos = CaptionPos.TOP
+    )
+    fun treeCliCommands() {
+        val sb = StringBuilder("""\begin{flushleft}
+\setlength{\DTbaselineskip}{11pt}
+\small
+\dirtree{%
+""")
+
+        class CliktTree(val cmd: CliktCommand) {
+            val children: Iterable<CliktTree>
+                get() {
+                    val f = CliktCommand::class.memberProperties.first { it.name == "_subcommands" }
+                    f.isAccessible = true
+                    @Suppress("UNCHECKED_CAST")
+                    val children = f.get(cmd) as List<CliktCommand>
+                    return children.map { CliktTree(it) }
+                }
+
+            override fun toString(): String {
+                val helpText = cmd.commandHelp.substringBefore("\n")
+                    .takeIf { it.isNotEmpty() }
+                    ?.let { """ \scriptsize \dotfill\ \begin{minipage}[t]{10.6cm}$it\end{minipage}""" }
+                    ?: ""
+                return cmd.commandName + helpText
+            }
+        }
+        fun rec(tree: CliktTree, level: Int) {
+            sb.append(".$level $tree.\n")
+            tree.children.forEach { child -> rec(child, level + 1) }
+        }
+        rec(CliktTree(Graffs()), 1)
+        sb.append("}\n\\end{flushleft}")
 
         newTargetFile(FileType.TEX).writeText(sb.toString(), Charsets.UTF_8)
     }

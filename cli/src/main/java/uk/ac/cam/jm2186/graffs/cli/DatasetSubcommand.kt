@@ -61,7 +61,7 @@ class DatasetSubcommand : NoOpCliktCommand(
 
     class LoadDatasetsCommand : CliktCommand(
         name = "load",
-        help = "Check if the given or all datasets can be loaded from the `${GraphDataset.DATASET_DIRECTORY_NAME}` directory"
+        help = "Check if datasets can be loaded from the `${GraphDataset.DATASET_DIRECTORY_NAME}` directory"
     ) {
 
         val datasets by argument(
@@ -86,7 +86,10 @@ class DatasetSubcommand : NoOpCliktCommand(
     }
 
     class DownloadDemoDatasetsCommand : AbstractCommand(
-        name = "download-demos", help = "Download datasets for demonstration. Namely: ${demos.keys.joinToString()}"
+        name = "download-demos", help = """Download datasets for demonstration
+            |
+            |List of available datasets: ${demos.keys.joinToString()}
+        """.trimMargin()
     ) {
         companion object {
 

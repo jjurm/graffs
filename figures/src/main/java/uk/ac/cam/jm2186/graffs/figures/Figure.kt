@@ -8,5 +8,8 @@ annotation class Figure(
     val width: String = "",
     val height: String = "",
     val caption: String,
+    val captionPos: CaptionPos = CaptionPos.BOTTOM,
     val ignore: Boolean = false
 )
+
+enum class CaptionPos { TOP, BOTTOM }

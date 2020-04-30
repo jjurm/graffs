@@ -3,6 +3,8 @@ package uk.ac.cam.jm2186.graffs.figures
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.apache.commons.io.FileUtils
+import uk.ac.cam.jm2186.graffs.figures.CaptionPos.BOTTOM
+import uk.ac.cam.jm2186.graffs.figures.CaptionPos.TOP
 import uk.ac.cam.jm2186.graffs.figures.FileType.*
 import java.io.File
 import java.io.IOException
@@ -26,6 +28,7 @@ class LatexContext(private val annotation: Figure) : Figures() {
     val width get() = annotation.width
     val height get() = annotation.height
     val caption get() = annotation.caption
+    val captionPos get() = annotation.captionPos
     val ignore get() = annotation.ignore
 
     private fun filename(index: Int, fileType: FileType) =
@@ -47,20 +50,27 @@ class LatexContext(private val annotation: Figure) : Figures() {
 
     val texCode: String
         get() {
+            val sb = StringBuilder()
+
+            val captionAndLabel = """\caption{$caption}
+\label{fig:$figureName}"""
+            sb.append("""\begin{figure}${figurePos * { "[$it]" }}""" + "\n")
+            if (captionPos == TOP) sb.append(captionAndLabel + "\n")
+
             val gfxArgs = listOf(width * { "width=$it" } + height * { "height=$it" })
                 .joinToString(",", "[", "]")
             val files = filenames.joinToString("", transform = { (type, file) ->
-                when(type){
+                when (type) {
                     PDF, PNG -> """\includegraphics$gfxArgs{$file}"""
                     TEX -> file(file).readText()
                 }
             })
-            return """\begin{figure}${figurePos * { "[$it]" }}
-$files
-\caption{$caption}
-\label{fig:$figureName}
-\end{figure}
-"""
+            sb.append(files + "\n")
+
+            if (captionPos == BOTTOM) sb.append(captionAndLabel + "\n")
+            sb.append("""\end{figure}""" + "\n")
+
+            return sb.toString()
         }
 
     suspend fun generateFigure(callable: KFunction<*>) {
