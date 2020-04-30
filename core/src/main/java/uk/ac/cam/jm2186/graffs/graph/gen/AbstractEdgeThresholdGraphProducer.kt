@@ -12,7 +12,8 @@ import uk.ac.cam.jm2186.graffs.graph.ATTRIBUTE_NAME_EDGE_WEIGHT
 import uk.ac.cam.jm2186.graffs.graph.FilteredGraphReplay
 
 abstract class AbstractEdgeThresholdGraphProducer(
-    val getThresholds: (n: Int) -> List<Double>
+    protected val getThresholds: (n: Int) -> List<Double>,
+    protected val coroutineScope: CoroutineScope
 ) : GraphProducer {
 
     companion object {
@@ -21,8 +22,7 @@ abstract class AbstractEdgeThresholdGraphProducer(
 
     override fun produce(
         sourceGraph: Graph,
-        n: Int,
-        coroutineScope: CoroutineScope
+        n: Int
     ): List<Deferred<PerturbedGraph>> {
         val thresholds = getThresholds(n)
         val baseId = sourceGraph.id + "-" + this::class.simpleName

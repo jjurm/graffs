@@ -11,12 +11,13 @@ internal class RemovingEdgesGraphProducerTest {
     @Test
     fun produce() {
         val graph = GraphTestUtils.generateSmallGraph()
-        val producer = RemovingEdgesGenerator(
-            deletionRate = 0.3,
-            seed = 42
-        )
         val generated = runBlocking(Dispatchers.Default) {
-            producer.produce(graph, 1, this)[0].await()
+            val producer = RemovingEdgesGenerator(
+                deletionRate = 0.3,
+                seed = 42,
+                coroutineScope = this
+            )
+            producer.produce(graph, 1)[0].await()
         }
 
         GraphAssert.assertGraphEquals(

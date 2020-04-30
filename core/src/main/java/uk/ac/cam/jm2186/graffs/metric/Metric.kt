@@ -1,11 +1,11 @@
 package uk.ac.cam.jm2186.graffs.metric
 
 import org.graphstream.graph.Graph
-import java.io.Serializable
 
 typealias MetricId = String
 
-abstract class Metric(val id: MetricId) : Serializable {
+interface Metric {
+    fun evaluate(graph: Graph): MetricResult?
 
     companion object {
         val map: Map<MetricId, MetricInfo> by lazy {
@@ -19,16 +19,19 @@ abstract class Metric(val id: MetricId) : Serializable {
             ).map { it.id to it }.toMap()
         }
     }
+}
+
+abstract class SingletonMetric(override val id: MetricId) : Metric, MetricInfo {
 
     // self-factory for singleton subclasses
-    open val factory: MetricFactory = { this }
+    override val factory: MetricFactory = { this }
 
-    protected abstract suspend fun evaluate0(graph: Graph)
+    protected abstract fun evaluate0(graph: Graph)
 
     /**
      * Evaluate the metric. Assumes all required metrics have been computed for the graph.
      */
-    suspend fun evaluate(graph: Graph): MetricResult? {
+    override fun evaluate(graph: Graph): MetricResult? {
         return if (graph.hasAttribute(id)) {
             // Avoid calculating this metric if already calculated
             null

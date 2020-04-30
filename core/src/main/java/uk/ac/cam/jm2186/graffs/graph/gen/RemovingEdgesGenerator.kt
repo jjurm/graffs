@@ -19,22 +19,24 @@ import kotlin.random.Random
 class RemovingEdgesGenerator(
     private val seed: Long,
     /** A number between 0 and 1, the probability to remove an edge. */
-    private val deletionRate: Double
+    private val deletionRate: Double,
+    private val coroutineScope: CoroutineScope
 ) : GraphProducer {
 
     companion object: GraphProducerInfo {
         override val id: GraphProducerId = "removing-edges"
-        override val factory: GraphProducerFactory = { seed, params ->
+        override val factory: GraphProducerFactory = { seed, params, coroutineScope ->
             RemovingEdgesGenerator(
                 seed = seed,
-                deletionRate = params[0].toDouble()
+                deletionRate = params[0].toDouble(),
+                coroutineScope = coroutineScope
             )
         }
     }
 
     override val id get() = Companion.id
 
-    override fun produce(sourceGraph: Graph, n: Int, coroutineScope: CoroutineScope): List<Deferred<PerturbedGraph>> {
+    override fun produce(sourceGraph: Graph, n: Int): List<Deferred<PerturbedGraph>> {
         val baseId = sourceGraph.id + "-" + this::class.simpleName
         val random = Random(seed)
         return (0 until n).map { i ->

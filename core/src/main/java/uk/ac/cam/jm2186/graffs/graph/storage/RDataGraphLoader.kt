@@ -32,8 +32,8 @@ internal class RDataGraphLoader(fileFilter: File.() -> Boolean = { true }) : Gra
 
         engine.eval("""load("${file.invariantSeparatorsPath}", e <- new.env())""")
         val names = engine.eval("ls(e)") as StringVector
-        val name = names.first { it.endsWith(".df") }
-        val dataframe = engine.eval("e\$$name") as ListVector
+        val name: String = names.first { it.endsWith(".df") }
+        val dataframe = engine.eval("e$$name") as ListVector
 
         pool.returnObject(engine)
 

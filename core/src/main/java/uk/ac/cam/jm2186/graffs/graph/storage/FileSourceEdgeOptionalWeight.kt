@@ -7,7 +7,7 @@ import java.io.StreamTokenizer
 /**
  * Similar to [FileSourceEdge] but also handles input from https://string-db.org/.
  */
-class FileSourceEdge2(edgesAreDirected: Boolean) : FileSourceEdge(edgesAreDirected) {
+class FileSourceEdgeOptionalWeight(edgesAreDirected: Boolean) : FileSourceEdge(edgesAreDirected) {
 
     override fun configureTokenizer(tok: StreamTokenizer) {
         tok.apply {

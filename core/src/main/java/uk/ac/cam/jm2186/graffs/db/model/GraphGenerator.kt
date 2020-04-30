@@ -25,8 +25,8 @@ class GraphGenerator(
 
     fun produceFromGraph(sourceGraph: Graph, coroutineScope: CoroutineScope): List<Deferred<PerturbedGraph>> {
         val generatorFactory = GraphProducer.map.getValue(method)
-        return generatorFactory(seed, params)
-            .produce(sourceGraph, n, coroutineScope)
+        return generatorFactory(seed, params, coroutineScope)
+            .produce(sourceGraph, n)
     }
 
     override fun toString(): String {

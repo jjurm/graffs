@@ -6,7 +6,7 @@ import java.io.Serializable
 
 typealias RobustnessMeasureId = String
 
-interface RobustnessMeasure : Serializable {
+interface RobustnessMeasure {
     suspend fun evaluate(metric: MetricInfo, graphCollection: GraphCollection, metadata: GraphCollectionMetadata): Double
 
     companion object {

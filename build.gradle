@@ -27,6 +27,10 @@ allprojects {
 
     group 'uk.ac.cam.jm2186'
     version '1.1-' + gitVersion()
+
+    def javaVersion = JavaVersion.VERSION_1_8
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
 }
 
 subprojects {
