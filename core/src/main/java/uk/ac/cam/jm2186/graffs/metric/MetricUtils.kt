@@ -16,8 +16,15 @@ fun CoroutineScope.evaluateMetricsAsync(
     val graphDeferred = async { getGraph() }
     val graphMutex = Mutex()
 
+    // include also all dependencies needed to compute
+    val metricsToCompute = metrics.toMutableSet() + metrics
+        .flatMap { (metricInfo, _) -> metricInfo.dependencies }
+        .filterNot { dep -> metrics.any { (metricInfo, _) -> metricInfo == dep } }
+        .toSet()
+        .map { dep -> dep to dep.factory() }
+
     val jobs = HashMap<MetricInfo, Deferred<Unit>>()
-    metrics.forEach { (metricInfo, metric) ->
+    metricsToCompute.forEach { (metricInfo, metric) ->
         val job = async(start = CoroutineStart.LAZY) {
             // make sure that all dependencies are computed first
             val dependencies = metricInfo.dependencies.map { jobs.getValue(it) }
