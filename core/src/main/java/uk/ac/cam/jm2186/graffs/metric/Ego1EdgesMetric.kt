@@ -39,7 +39,8 @@ object EgoRatioMetric : SingletonMetric("EgoRatio") {
             val ego1nodes = node.degree
             val ego2nodes = node.getMetricValue(Ego2NodesMetric)
             val ratio = ego1nodes / ego2nodes
-            node.addAttribute(attributeName, ratio)
+            val v = if (ratio.isNaN()) 0.0 else ratio
+            node.addAttribute(attributeName, v)
         }
     }
 }

@@ -49,7 +49,7 @@ fun Graph.subgraph(
 fun Element.getNumberAttribute(attributeName: String): Double {
     val number = getNumber(attributeName)
     if (number.isNaN()) {
-        throw IllegalStateException("${this::class.simpleName} `${id}` has no attribute `${attributeName}`")
+        throw IllegalStateException("${this::class.simpleName} `${id}` has no number attribute `${attributeName}`")
     }
     return number
 }
