@@ -5,7 +5,7 @@ import uk.ac.cam.jm2186.graffs.graph.ATTRIBUTE_NAME_EDGE_WEIGHT
 import java.io.StreamTokenizer
 
 /**
- * Similar to [FileSourceEdge] but also handles input from https://string-db.org/.
+ * Similar to [FileSourceEdge] but also handles input from https://string-db.org/ and http://konect.uni-koblenz.de/.
  */
 class FileSourceEdgeOptionalWeight(edgesAreDirected: Boolean) : FileSourceEdge(edgesAreDirected) {
 
@@ -18,6 +18,7 @@ class FileSourceEdgeOptionalWeight(edgesAreDirected: Boolean) : FileSourceEdge(e
             wordChars(128 + 32, 255)
             whitespaceChars(0, ' '.toInt())
             commentChar('/'.toInt())
+            commentChar('%'.toInt())
             quoteChar('"'.toInt())
             quoteChar('\''.toInt())
             //parseNumbers()
@@ -60,8 +61,10 @@ class FileSourceEdgeOptionalWeight(edgesAreDirected: Boolean) : FileSourceEdge(e
                     id2 = getWordOrNumberOrStringOrEolOrEof()
                     if (id2 != "EOL") {
                         val weight = id2.toDouble()
-                        sendEdgeAttributeAdded(graphName, edgeId,
-                            ATTRIBUTE_NAME_EDGE_WEIGHT, weight)
+                        sendEdgeAttributeAdded(
+                            graphName, edgeId,
+                            ATTRIBUTE_NAME_EDGE_WEIGHT, weight
+                        )
                     }
                 }
 

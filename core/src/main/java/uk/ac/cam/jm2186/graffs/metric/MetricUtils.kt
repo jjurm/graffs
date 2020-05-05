@@ -26,7 +26,6 @@ fun CoroutineScope.evaluateMetricsAsync(
         metricsToCompute.forEach { metricInfo ->
             val graph = graphDeferred.await()
             val metric = metricInfo.factory()
-            println("evaluating ${metricInfo.id}")
             evaluateAndLog({ metric.evaluate(graph) }, metricInfo)
         }
         // store the result

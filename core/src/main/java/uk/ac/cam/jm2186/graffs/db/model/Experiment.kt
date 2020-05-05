@@ -14,9 +14,11 @@ class Experiment(
 
     @ManyToOne(fetch = FetchType.EAGER)
     var generator: GraphGenerator,
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection
+    @LazyCollection(LazyCollectionOption.FALSE)
     var metrics: List<MetricId> = listOf(),
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection
+    @LazyCollection(LazyCollectionOption.FALSE)
     var robustnessMeasures: List<RobustnessMeasureId> = listOf(),
 
     datasets: Collection<GraphDatasetId> = listOf()

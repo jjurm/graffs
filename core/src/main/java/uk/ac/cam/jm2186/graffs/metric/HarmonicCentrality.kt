@@ -6,7 +6,7 @@ import org.graphstream.graph.Node
 
 object HarmonicCentrality : SingletonMetric("Harmonic") {
     override val isNodeMetric get() = true
-    override val dependencies: Set<MetricInfo> = setOf(ASPSMetric)
+    override val dependencies: Set<MetricInfo> = setOf(APSPMetric)
 
     override fun evaluate0(graph: Graph) {
         graph.getEachNode<Node>().forEach { node ->

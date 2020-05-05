@@ -10,17 +10,23 @@ import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
 import org.apache.commons.io.FileUtils
+import org.apache.commons.io.IOUtils
 import org.graphstream.graph.Edge
 import org.graphstream.graph.Graph
 import uk.ac.cam.jm2186.graffs.graph.ATTRIBUTE_NAME_EDGE_WEIGHT
 import uk.ac.cam.jm2186.graffs.graph.alg.giantComponent
 import uk.ac.cam.jm2186.graffs.graph.storage.GraphDataset
 import uk.ac.cam.jm2186.graffs.graph.storage.getAvailableDatasetsChecked
+import java.io.BufferedInputStream
 import java.io.File
 import java.net.URL
+import java.net.URLConnection
 import java.nio.charset.Charset
 import java.util.zip.GZIPInputStream
+
 
 class DatasetSubcommand : NoOpCliktCommand(
     name = "dataset",
@@ -31,7 +37,7 @@ class DatasetSubcommand : NoOpCliktCommand(
         Datasets are stored in the `${GraphDataset.DATASET_DIRECTORY_NAME}` folder, each dataset in a subfolder.
         Supported files are:
         ```
-        - *.txt with lines describing edges with optional weight in the format: NODE1 NODE2 [WEIGHT]
+        - edges.txt (or *.txt) with lines describing edges with optional weight in the format: NODE1 NODE2 [WEIGHT]
         - *.RData with an R dataframe object named *.df
         ```
     """.trimIndent()
@@ -97,12 +103,40 @@ class DatasetSubcommand : NoOpCliktCommand(
                 FileUtils.copyURLToFile(URL(url), file, 5_000, 10_000)
             }
 
-            private fun downloadGzip(url: String, file: File) {
+            private fun getConnection(url: String): URLConnection {
                 val urlObj = URL(url)
                 val connection = urlObj.openConnection()
                 connection.connectTimeout = 5_000
                 connection.readTimeout = 10_000
+                return connection
+            }
+
+            private fun downloadGzip(url: String, file: File) {
+                val connection = getConnection(url)
                 FileUtils.copyInputStreamToFile(GZIPInputStream(connection.getInputStream()), file)
+            }
+
+            private fun downloadKoblenz(dir: File, url: String) {
+                val connection = getConnection(url)
+                TarArchiveInputStream(
+                    BZip2CompressorInputStream(
+                        BufferedInputStream(
+                            connection.getInputStream()
+                        )
+                    )
+                ).use { tarInput ->
+                    while (true) {
+                        val entry = tarInput.nextEntry ?: break
+                        var flatFilename = File(entry.name).name.substringBefore(".") + ".txt"
+                        if (flatFilename == "out.txt") flatFilename = "edges.txt"
+                        val outputFile = File(dir, flatFilename)
+                        if (!entry.isDirectory) {
+                            outputFile.outputStream().use { outputStream ->
+                                IOUtils.copy(tarInput, outputStream)
+                            }
+                        }
+                    }
+                }
             }
 
             private fun info(dir: File, info: String) {
@@ -143,6 +177,24 @@ class DatasetSubcommand : NoOpCliktCommand(
                     info(
                         dir,
                         "High-energy physics theory citation network\nhttps://snap.stanford.edu/data/cit-HepTh.html"
+                    )
+                },
+                "collab" to { dir ->
+                    downloadGzip("https://snap.stanford.edu/data/ca-GrQc.txt.gz", File(dir, "edges.txt"))
+                    info(
+                        dir,
+                        "Collaboration network of Arxiv General Relativity category\nhttps://snap.stanford.edu/data/ca-GrQc.html"
+                    )
+                },
+                "internet" to { dir ->
+                    downloadKoblenz(dir, "http://konect.uni-koblenz.de/downloads/tsv/topology.tar.bz2")
+                    info(dir, "Internet topology network\nhttp://konect.uni-koblenz.de/networks/topology")
+                },
+                "airports" to { dir ->
+                    downloadKoblenz(dir, "http://konect.uni-koblenz.de/downloads/tsv/opsahl-usairport.tar.bz2")
+                    info(
+                        dir,
+                        "Airport–airport flights in the US in 2010\nhttp://konect.uni-koblenz.de/networks/opsahl-usairport"
                     )
                 }
             )

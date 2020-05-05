@@ -56,7 +56,7 @@ class GraphDataset(val id: GraphDatasetId, validate: Boolean = false) {
                 .filter { loader.supportsFile(it) }
                 .map { { loader.load(it, id) } }
         }.firstOrNull()?.invoke()
-            ?: throw IOException("Could not load dataset `$id` - no suitable graph file found.")
+            ?: throw IOException("Could not load dataset `$id` - no suitable file found.")
     }
 
     /**
