@@ -15,9 +15,9 @@ class Experiment(
     @ManyToOne(fetch = FetchType.EAGER)
     var generator: GraphGenerator,
     @ElementCollection(fetch = FetchType.EAGER)
-    var metrics: Set<MetricId> = mutableSetOf(),
+    var metrics: List<MetricId> = listOf(),
     @ElementCollection(fetch = FetchType.EAGER)
-    var robustnessMeasures: Set<RobustnessMeasureId> = mutableSetOf(),
+    var robustnessMeasures: List<RobustnessMeasureId> = listOf(),
 
     datasets: Collection<GraphDatasetId> = listOf()
 ) : NamedEntity(name) {
@@ -38,8 +38,8 @@ fun Experiment.printToConsole() {
         """- $name
             |  datasets: $datasets
             |  generator: $generator
-            |  metrics: $metrics
-            |  robustnessMeasures: $robustnessMeasures
+            |  metrics: ${metrics.joinToString(",")}
+            |  robustnessMeasures: ${robustnessMeasures.joinToString(",")}
         """.trimMargin()
     )
 }

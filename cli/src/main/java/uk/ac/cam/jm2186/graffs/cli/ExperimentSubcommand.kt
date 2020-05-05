@@ -68,8 +68,8 @@ class ExperimentSubcommand : NoOpCliktCommand(
                     Experiment(
                         name = "sampleExperiment",
                         generator = generator,
-                        metrics = mutableSetOf("Degree", "PageRank", "Betweenness"),
-                        robustnessMeasures = mutableSetOf("RankIdentifiability", "RankInstability"),
+                        metrics = listOf("Degree", "PageRank", "Betweenness"),
+                        robustnessMeasures = listOf("RankIdentifiability", "RankInstability"),
                         datasets = listOf("test")
                     )
                 )
@@ -89,8 +89,8 @@ class ExperimentSubcommand : NoOpCliktCommand(
                 Experiment(
                     name = name,
                     generator = generator,
-                    metrics = metrics.toMutableSet(),
-                    robustnessMeasures = robustnessMeasures.toMutableSet(),
+                    metrics = metrics,
+                    robustnessMeasures = robustnessMeasures,
                     datasets = datasets
                 )
             )
@@ -133,9 +133,12 @@ class ExperimentSubcommand : NoOpCliktCommand(
                 }
                 experiment.graphCollections = newGraphCollections.toMutableList()
             }
-            generatorName?.let { experiment.generator = hibernate.getNamedEntity<GraphGenerator>(it) }
-            metrics?.let { experiment.metrics = it.toSet() }
-            robustnessMeasures?.let { experiment.robustnessMeasures = it.toSet() }
+            generatorName?.let {
+                experiment.generator = hibernate.getNamedEntity<GraphGenerator>(it)
+                experiment.graphCollections.forEach { it.perturbedGraphs.clear() }
+            }
+            metrics?.let { experiment.metrics = it }
+            robustnessMeasures?.let { experiment.robustnessMeasures = it }
 
             hibernate.inTransaction {
                 experiment.robustnessResults.clear()
@@ -270,11 +273,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
             println("Evaluate metrics")
             timer.phase("Evaluate metrics - prepare")
             val hibernateMutex = Mutex()
-            val metrics = experiment.metrics.map {
-                val info = Metric.map.getValue(it)
-                val metric = info.factory()
-                info to metric
-            }
+            val metrics = experiment.metrics.map { Metric.map.getValue(it) }
 
             coroutineScope {
                 val graphJobs = mutableListOf<Deferred<Unit>>()
@@ -389,8 +388,8 @@ class ExperimentSubcommand : NoOpCliktCommand(
                 Experiment(
                     name = name,
                     generator = generator,
-                    metrics = metrics?.toMutableSet() ?: from.metrics.toMutableSet(),
-                    robustnessMeasures = robustnessMeasures?.toMutableSet() ?: from.robustnessMeasures.toMutableSet(),
+                    metrics = metrics ?: from.metrics,
+                    robustnessMeasures = robustnessMeasures ?: from.robustnessMeasures,
                     datasets = datasets ?: from.datasets
                 )
             )

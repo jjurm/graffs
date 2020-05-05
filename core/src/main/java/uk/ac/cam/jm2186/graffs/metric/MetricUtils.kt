@@ -1,51 +1,38 @@
 package uk.ac.cam.jm2186.graffs.metric
 
 import kotlinx.coroutines.*
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import org.graphstream.graph.Graph
 import org.graphstream.graph.Node
 import uk.ac.cam.jm2186.graffs.graph.getNumberAttribute
 
 fun CoroutineScope.evaluateMetricsAsync(
-    metrics: Collection<Pair<MetricInfo, Metric>>,
+    metrics: Collection<MetricInfo>,
     getGraph: () -> Graph,
     evaluateAndLog: suspend (metricEvaluation: suspend () -> MetricResult?, metric: MetricInfo) -> Unit = { eval, _ -> eval() },
     storeResults: suspend (graph: Graph) -> Unit = { }
 ): Deferred<Unit> {
     val graphDeferred = async { getGraph() }
-    val graphMutex = Mutex()
 
     // include also all dependencies needed to compute
-    val metricsToCompute = metrics.toMutableSet() + metrics
-        .flatMap { (metricInfo, _) -> metricInfo.dependencies }
-        .filterNot { dep -> metrics.any { (metricInfo, _) -> metricInfo == dep } }
-        .toSet()
-        .map { dep -> dep to dep.factory() }
-
-    val jobs = HashMap<MetricInfo, Deferred<Unit>>()
-    metricsToCompute.forEach { (metricInfo, metric) ->
-        val job = async(start = CoroutineStart.LAZY) {
-            // make sure that all dependencies are computed first
-            val dependencies = metricInfo.dependencies.map { jobs.getValue(it) }
-            dependencies.awaitAll()
-
-            // now compute the current metric
-            val graph = graphDeferred.await()
-            graphMutex.withLock {
-                evaluateAndLog({ metric.evaluate(graph) }, metricInfo)
-            }
-        }
-        jobs[metricInfo] = job
+    val metricsToCompute: MutableList<MetricInfo> = mutableListOf()
+    fun addWithDependencies(metric: MetricInfo) {
+        if (metric in metricsToCompute) return
+        metric.dependencies.forEach { addWithDependencies(it) }
+        metricsToCompute += metric
     }
+    metrics.forEach { metric -> addWithDependencies(metric) }
 
-    // start and wait for all jobs
-    val graphJob = async(start = CoroutineStart.LAZY) {
-        jobs.values.awaitAll()
+    val job = async(start = CoroutineStart.LAZY) {
+        metricsToCompute.forEach { metricInfo ->
+            val graph = graphDeferred.await()
+            val metric = metricInfo.factory()
+            println("evaluating ${metricInfo.id}")
+            evaluateAndLog({ metric.evaluate(graph) }, metricInfo)
+        }
         // store the result
         storeResults(graphDeferred.await())
     }
-    return graphJob
+    return job
 }
 
 /**
@@ -55,7 +42,7 @@ fun MetricInfo.evaluateSingle(graph: Graph) {
     val metric = this
     runBlocking {
         evaluateMetricsAsync(
-            metrics = listOf(metric to metric.factory()),
+            metrics = listOf(metric),
             getGraph = { graph }
         ).await()
     }
