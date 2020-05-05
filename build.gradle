@@ -33,6 +33,8 @@ allprojects {
     targetCompatibility = javaVersion
 }
 
+println version
+
 subprojects {
     apply plugin: 'java'
     apply plugin: 'org.jetbrains.kotlin.jvm'
