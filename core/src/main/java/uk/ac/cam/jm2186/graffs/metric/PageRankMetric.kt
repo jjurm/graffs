@@ -5,6 +5,7 @@ import org.graphstream.graph.Graph
 
 object PageRankMetric : SingletonMetric("PageRank") {
     override val isNodeMetric get() = true
+    override val attributeName = "P"
 
     override fun evaluate0(graph: Graph) {
         val alg = PageRank(PageRank.DEFAULT_DAMPING_FACTOR, PageRank.DEFAULT_PRECISION, attributeName)

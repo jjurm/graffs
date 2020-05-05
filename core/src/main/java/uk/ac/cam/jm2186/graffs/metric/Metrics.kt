@@ -7,6 +7,8 @@ typealias MetricId = String
 interface Metric {
     fun evaluate(graph: Graph): MetricResult?
 
+    fun cleanup(graph: Graph) {}
+
     companion object {
         val map: Map<MetricId, MetricInfo> by lazy {
             listOf<MetricInfo>(

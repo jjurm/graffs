@@ -11,4 +11,11 @@ object APSPMetric : SingletonMetric("APSP") {
         apsp.init(graph)
         apsp.compute()
     }
+
+    override fun cleanup(graph: Graph) {
+        graph.removeAttribute(attributeName)
+        graph.forEach { node ->
+            node.removeAttribute(APSP.APSPInfo.ATTRIBUTE_NAME)
+        }
+    }
 }

@@ -5,6 +5,7 @@ import org.graphstream.graph.Node
 
 object AverageDegreeMetric : SingletonMetric("AverageDegree") {
     override val isNodeMetric get() = false
+    override val attributeName = "AD"
 
     override fun evaluate0(graph: Graph) {
         val average = graph.getNodeSet<Node>().map { it.degree }.average()

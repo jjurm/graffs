@@ -5,6 +5,18 @@ import org.graphstream.graph.Graph
 import org.graphstream.graph.Node
 import uk.ac.cam.jm2186.graffs.graph.getNumberAttribute
 
+fun Collection<MetricInfo>.topologicalOrderWithDependencies(): List<MetricInfo> {
+    // include also all dependencies needed to compute
+    val metricsToCompute: MutableList<MetricInfo> = mutableListOf()
+    fun addWithDependencies(metric: MetricInfo) {
+        if (metric in metricsToCompute) return
+        metric.dependencies.forEach { addWithDependencies(it) }
+        metricsToCompute += metric
+    }
+    forEach { metric -> addWithDependencies(metric) }
+    return metricsToCompute
+}
+
 fun CoroutineScope.evaluateMetricsAsync(
     metrics: Collection<MetricInfo>,
     getGraph: () -> Graph,
@@ -13,25 +25,20 @@ fun CoroutineScope.evaluateMetricsAsync(
 ): Deferred<Unit> {
     val graphDeferred = async { getGraph() }
 
-    // include also all dependencies needed to compute
-    val metricsToCompute: MutableList<MetricInfo> = mutableListOf()
-    fun addWithDependencies(metric: MetricInfo) {
-        if (metric in metricsToCompute) return
-        metric.dependencies.forEach { addWithDependencies(it) }
-        metricsToCompute += metric
-    }
-    metrics.forEach { metric -> addWithDependencies(metric) }
+    val metricsToCompute = metrics.topologicalOrderWithDependencies()
 
-    val job = async(start = CoroutineStart.LAZY) {
-        metricsToCompute.forEach { metricInfo ->
-            val graph = graphDeferred.await()
-            val metric = metricInfo.factory()
+    return async(start = CoroutineStart.LAZY) {
+        val metricList = metricsToCompute.map { it to it.factory() }
+        val graph = graphDeferred.await()
+        metricList.forEach { (metricInfo, metric) ->
             evaluateAndLog({ metric.evaluate(graph) }, metricInfo)
+        }
+        metricList.forEach { (_, metric) ->
+            metric.cleanup(graph)
         }
         // store the result
         storeResults(graphDeferred.await())
     }
-    return job
 }
 
 /**

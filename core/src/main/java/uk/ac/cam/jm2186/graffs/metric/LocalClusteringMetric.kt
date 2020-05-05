@@ -5,6 +5,7 @@ import org.graphstream.graph.Graph
 
 object LocalClusteringMetric : SingletonMetric("LocalClustering") {
     override val isNodeMetric get() = true
+    override val attributeName = "LC"
 
     override fun evaluate0(graph: Graph) {
         graph.forEach { node ->

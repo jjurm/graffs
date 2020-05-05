@@ -16,15 +16,12 @@ import org.apache.commons.lang3.StringUtils.rightPad
 import org.apache.commons.lang3.time.StopWatch
 import uk.ac.cam.jm2186.graffs.graph.storage.GraphDataset
 import uk.ac.cam.jm2186.graffs.graph.storage.GraphDatasetId
-import uk.ac.cam.jm2186.graffs.metric.Metric
-import uk.ac.cam.jm2186.graffs.metric.MetricInfo
 import uk.ac.cam.jm2186.graffs.robustness.GraphCollectionMetadata
 import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasure
 import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasureId
 import uk.ac.cam.jm2186.graffs.db.*
 import uk.ac.cam.jm2186.graffs.db.model.*
-import uk.ac.cam.jm2186.graffs.metric.MetricResult
-import uk.ac.cam.jm2186.graffs.metric.evaluateMetricsAsync
+import uk.ac.cam.jm2186.graffs.metric.*
 import uk.ac.cam.jm2186.graffs.util.TimePerf
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -303,7 +300,8 @@ class ExperimentSubcommand : NoOpCliktCommand(
                     }
                 }
 
-                println("Running $nEvaluations metric evaluations (at most ${experiment.datasets.size} datasets * ${experiment.generator.n} generated * ${experiment.metrics.size} metrics)")
+                println("Running ~$nEvaluations metric evaluations (${experiment.datasets.size} datasets * ${experiment.generator.n} generated * ${experiment.metrics.size} metrics)")
+                println(" ${metrics.topologicalOrderWithDependencies().joinToString(",") { it.id }}")
                 timer.phase("Evaluate metrics - run")
                 graphJobs.awaitAll()
             }
