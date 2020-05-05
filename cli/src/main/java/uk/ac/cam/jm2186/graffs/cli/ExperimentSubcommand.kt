@@ -388,9 +388,9 @@ class ExperimentSubcommand : NoOpCliktCommand(
                 Experiment(
                     name = name,
                     generator = generator,
-                    metrics = metrics ?: from.metrics,
-                    robustnessMeasures = robustnessMeasures ?: from.robustnessMeasures,
-                    datasets = datasets ?: from.datasets
+                    metrics = metrics ?: from.metrics.toList(),
+                    robustnessMeasures = robustnessMeasures ?: from.robustnessMeasures.toList(),
+                    datasets = datasets ?: from.datasets.toList()
                 )
             )
         }
