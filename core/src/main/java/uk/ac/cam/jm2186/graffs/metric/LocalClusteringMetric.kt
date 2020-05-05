@@ -9,7 +9,7 @@ object LocalClusteringMetric : SingletonMetric("LocalClustering") {
     override fun evaluate0(graph: Graph) {
         graph.forEach { node ->
             val clustering = Toolkit.clusteringCoefficient(node)
-            node.setAttribute(id, clustering)
+            node.setAttribute(attributeName, clustering)
         }
     }
 }

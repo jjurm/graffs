@@ -8,7 +8,7 @@ object DangalchevClosenessCentralityMetric : SingletonMetric("DangalchevClosenes
     override val isNodeMetric get() = true
 
     override fun evaluate0(graph: Graph) {
-        val alg = ClosenessCentrality(id, AbstractCentrality.NormalizationMode.NONE, true, true)
+        val alg = ClosenessCentrality(attributeName, AbstractCentrality.NormalizationMode.NONE, true, true)
         alg.init(graph)
         alg.compute()
     }

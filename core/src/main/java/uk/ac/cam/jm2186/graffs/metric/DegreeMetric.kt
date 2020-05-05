@@ -8,7 +8,7 @@ object DegreeMetric : SingletonMetric("Degree") {
 
     override fun evaluate0(graph: Graph) {
         graph.getEachNode<Node>().forEach { node ->
-            node.addAttribute(id, node.degree)
+            node.addAttribute(attributeName, node.degree)
         }
     }
 }

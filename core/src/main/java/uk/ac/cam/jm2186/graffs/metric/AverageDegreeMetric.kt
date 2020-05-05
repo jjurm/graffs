@@ -8,6 +8,6 @@ object AverageDegreeMetric : SingletonMetric("AverageDegree") {
 
     override fun evaluate0(graph: Graph) {
         val average = graph.getNodeSet<Node>().map { it.degree }.average()
-        graph.setAttribute(id, average)
+        graph.setAttribute(attributeName, average)
     }
 }

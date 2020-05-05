@@ -4,6 +4,8 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.graphstream.graph.Graph
+import org.graphstream.graph.Node
+import uk.ac.cam.jm2186.graffs.graph.getNumberAttribute
 
 fun CoroutineScope.evaluateMetricsAsync(
     metrics: Collection<Pair<MetricInfo, Metric>>,
@@ -51,3 +53,5 @@ fun MetricInfo.evaluateSingle(graph: Graph) {
         ).await()
     }
 }
+
+fun Node.getMetricValue(metric: MetricInfo): Double = getNumberAttribute(metric.attributeName)

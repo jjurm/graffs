@@ -7,7 +7,7 @@ object PageRankMetric : SingletonMetric("PageRank") {
     override val isNodeMetric get() = true
 
     override fun evaluate0(graph: Graph) {
-        val alg = PageRank(PageRank.DEFAULT_DAMPING_FACTOR, PageRank.DEFAULT_PRECISION, id)
+        val alg = PageRank(PageRank.DEFAULT_DAMPING_FACTOR, PageRank.DEFAULT_PRECISION, attributeName)
         alg.init(graph)
         alg.compute()
     }
