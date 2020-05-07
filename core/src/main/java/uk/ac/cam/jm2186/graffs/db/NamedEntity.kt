@@ -1,6 +1,5 @@
 package uk.ac.cam.jm2186.graffs.db
 
-import java.io.Serializable
 import javax.persistence.Id
 import javax.persistence.MappedSuperclass
 
