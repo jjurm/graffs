@@ -3,9 +3,14 @@ package uk.ac.cam.jm2186.graffs.metric
 import org.graphstream.graph.Graph
 import org.graphstream.graph.Node
 
-private fun MutableSet<Node>.expand(): MutableSet<Node> {
-    addAll(asSequence().flatMap { node -> node.getNeighborNodeIterator<Node>().asSequence() })
-    return this
+fun Set<Node>.expand(): Set<Node> {
+    val set = toMutableSet()
+    forEach { node ->
+        node.getNeighborNodeIterator<Node>().forEach { neighbour ->
+            set.add(neighbour)
+        }
+    }
+    return set
 }
 
 object Ego1EdgesMetric : SingletonMetric("Ego1Edges") {

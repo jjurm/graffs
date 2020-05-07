@@ -317,20 +317,35 @@ class ExperimentSubcommand : NoOpCliktCommand(
                 Metric.map.getValue(it)
             }.filter { it.isNodeMetric }
 
+            // Check existence of Robustness entities
+            val criteriaBuilder = hibernate.criteriaBuilder
+            val query = criteriaBuilder.createQuery(Robustness::class.java)
+            val root = query.from(Robustness::class.java)
+            query.select(root)
+            query.where(criteriaBuilder.equal(root.get(Robustness_.experiment), experiment))
+            val existingRobustness = hibernate.createQuery(query).resultList
+
             coroutineScope {
                 val jobs = experiment.graphCollections.flatMap { graphCollection ->
                     metrics.flatMap { metric ->
                         val metadata = GraphCollectionMetadata(graphCollection, metric, this)
                         measures.map { (measureId, measure) ->
                             async(start = CoroutineStart.LAZY) {
-                                val result = measure.evaluateAndLog(
-                                    metric, graphCollection, metadata, graphCollection.dataset, measureId
-                                )
-                                val robustness =
-                                    Robustness(experiment, graphCollection.dataset, metric.id, measureId, result)
+                                if (!existingRobustness.any { robustness ->
+                                        robustness.experiment == experiment
+                                                && robustness.dataset == graphCollection.dataset
+                                                && robustness.metric == metric.id
+                                                && robustness.robustnessMeasure == measureId
+                                    }) {
+                                    val result = measure.evaluateAndLog(
+                                        metric, graphCollection, metadata, graphCollection.dataset, measureId
+                                    )
+                                    val robustness =
+                                        Robustness(experiment, graphCollection.dataset, metric.id, measureId, result)
 
-                                hibernateMutex.withLock {
-                                    hibernate.inTransaction { saveOrUpdate(robustness) }
+                                    hibernateMutex.withLock {
+                                        hibernate.inTransaction { saveOrUpdate(robustness) }
+                                    }
                                 }
                             }
                         }
