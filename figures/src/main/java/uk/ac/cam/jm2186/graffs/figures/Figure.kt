@@ -9,6 +9,7 @@ annotation class Figure(
     val height: String = "",
     val caption: String,
     val captionPos: CaptionPos = CaptionPos.BOTTOM,
+    val generateTex: Boolean = true,
     val ignore: Boolean = false
 )
 

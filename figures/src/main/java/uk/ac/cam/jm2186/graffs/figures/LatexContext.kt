@@ -13,7 +13,7 @@ import kotlin.reflect.KFunction
 import kotlin.reflect.full.callSuspend
 
 enum class FileType(val extension: String) {
-    PNG("png"), PDF("pdf"), TEX("tex");
+    PNG("png"), PDF("pdf"), TEX("tex"), CSV("csv");
 }
 
 interface FigureContext {
@@ -29,6 +29,7 @@ class LatexContext(private val annotation: Figure) : Figures() {
     val height get() = annotation.height
     val caption get() = annotation.caption
     val captionPos get() = annotation.captionPos
+    val generateTex get() = annotation.generateTex
     val ignore get() = annotation.ignore
 
     private fun filename(index: Int, fileType: FileType) =
@@ -63,6 +64,7 @@ class LatexContext(private val annotation: Figure) : Figures() {
                 when (type) {
                     PDF, PNG -> """\includegraphics$gfxArgs{$file}"""
                     TEX -> file(file).readText()
+                    CSV -> ""
                 }
             })
             sb.append(files + "\n")
@@ -90,7 +92,9 @@ class LatexContext(private val annotation: Figure) : Figures() {
                 filenames.forEach { (_, filename) ->
                     FileUtils.copyFile(file(filename), File(texFiguresDir, filename))
                 }
-                FileUtils.writeStringToFile(File(texFiguresDir, "$figureName.tex"), texCode, Charsets.UTF_8)
+                if (generateTex) {
+                    FileUtils.writeStringToFile(File(texFiguresDir, "$figureName.tex"), texCode, Charsets.UTF_8)
+                }
             }
             println("Exported $figureName")
         } catch (e: IOException) {

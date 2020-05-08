@@ -234,11 +234,13 @@ The arrows indicate \textsl{inheritance} (``is a'') relationships between classe
         captionPos = CaptionPos.TOP
     )
     fun treeCliCommands() {
-        val sb = StringBuilder("""\begin{flushleft}
+        val sb = StringBuilder(
+            """\begin{flushleft}
 \setlength{\DTbaselineskip}{11pt}
 \small
 \dirtree{%
-""")
+"""
+        )
 
         class CliktTree(val cmd: CliktCommand) {
             val children: Iterable<CliktTree>
@@ -258,6 +260,7 @@ The arrows indicate \textsl{inheritance} (``is a'') relationships between classe
                 return cmd.commandName + helpText
             }
         }
+
         fun rec(tree: CliktTree, level: Int) {
             sb.append(".$level $tree.\n")
             tree.children.forEach { child -> rec(child, level + 1) }
@@ -266,6 +269,28 @@ The arrows indicate \textsl{inheritance} (``is a'') relationships between classe
         sb.append("}\n\\end{flushleft}")
 
         newTargetFile(FileType.TEX).writeText(sb.toString(), Charsets.UTF_8)
+    }
+
+    @Figure(
+        "plot_edge_deletion_per_step", generateTex = false,
+        caption = """"""
+    )
+    fun edgeDeletionPerStep() {
+        val sb = StringBuffer("dataset,threshold,deleted\n")
+
+        val datasets = listOf("pvivax", "ecoli", "yeast")
+        datasets.forEach { dataset ->
+            val graph = GraphDataset(dataset).loadGraph()
+            var g = graph.filterAtThreshold(600.0)
+            (600..900 step 10).drop(1).forEach { threshold ->
+                val n = g.edgeCount
+                g = g.filterAtThreshold(threshold.toDouble())
+                val n2 = g.edgeCount
+                val r = (n - n2).toDouble() / n
+                sb.append("$dataset,$threshold,$r\n")
+            }
+        }
+        newTargetFile(FileType.CSV).writeText(sb.toString())
     }
 
 
