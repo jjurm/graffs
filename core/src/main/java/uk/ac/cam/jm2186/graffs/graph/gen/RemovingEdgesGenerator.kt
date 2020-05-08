@@ -9,6 +9,7 @@ import org.graphstream.graph.implementations.SingleGraph
 import org.graphstream.util.Filter
 import uk.ac.cam.jm2186.graffs.db.model.PerturbedGraph
 import uk.ac.cam.jm2186.graffs.graph.FilteredGraphReplay
+import uk.ac.cam.jm2186.graffs.graph.hasWeights
 import kotlin.random.Random
 
 /**
@@ -20,15 +21,17 @@ class RemovingEdgesGenerator(
     private val seed: Long,
     /** A number between 0 and 1, the probability to remove an edge. */
     private val deletionRate: Double,
+    private val initialThreshold: Double?,
     private val coroutineScope: CoroutineScope
 ) : GraphProducer {
 
-    companion object: GraphProducerInfo {
+    companion object : GraphProducerInfo {
         override val id: GraphProducerId = "removing-edges"
         override val factory: GraphProducerFactory = { seed, params, coroutineScope ->
             RemovingEdgesGenerator(
                 seed = seed,
                 deletionRate = params[0].toDouble(),
+                initialThreshold = params.getOrNull(1)?.toDouble(),
                 coroutineScope = coroutineScope
             )
         }
@@ -39,11 +42,18 @@ class RemovingEdgesGenerator(
     override fun produce(sourceGraph: Graph, n: Int): List<Deferred<PerturbedGraph>> {
         val baseId = sourceGraph.id + "-" + this::class.simpleName
         val random = Random(seed)
+        val baseGraph = coroutineScope.async {
+            if (initialThreshold != null && sourceGraph.hasWeights()) {
+                sourceGraph.filterAtThreshold(initialThreshold)
+            } else sourceGraph
+        }
+
         return (0 until n).map { i ->
             coroutineScope.async {
+                val g = baseGraph.await()
                 val graphSeed = random.nextLong()
                 val id = "$baseId-$i"
-                produceSingle(sourceGraph, graphSeed, id)
+                produceSingle(g, graphSeed, id)
             }
         }
     }

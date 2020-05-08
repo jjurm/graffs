@@ -5,11 +5,10 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import org.graphstream.graph.Edge
 import org.graphstream.graph.Graph
-import org.graphstream.graph.implementations.SingleGraph
 import org.graphstream.util.Filter
 import uk.ac.cam.jm2186.graffs.db.model.PerturbedGraph
 import uk.ac.cam.jm2186.graffs.graph.ATTRIBUTE_NAME_EDGE_WEIGHT
-import uk.ac.cam.jm2186.graffs.graph.FilteredGraphReplay
+import uk.ac.cam.jm2186.graffs.graph.subgraph
 
 abstract class AbstractEdgeThresholdGraphProducer(
     protected val getThresholds: (n: Int) -> List<Double>,
@@ -42,15 +41,8 @@ abstract class AbstractEdgeThresholdGraphProducer(
 }
 
 fun Graph.filterAtThreshold(threshold: Double, baseId: String? = this.id, i: Int = 0): Graph {
-    val replay = FilteredGraphReplay(
-        "$baseId-$i-replay", edgeFilter = AbstractEdgeThresholdGraphProducer.EdgeThresholdFilter(
-            threshold
-        )
+    return subgraph(
+        edgeFilter = AbstractEdgeThresholdGraphProducer.EdgeThresholdFilter(threshold),
+        id = "$baseId-$i"
     )
-    val graph = SingleGraph("$baseId-$i")
-    replay.addSink(graph)
-    replay.replay(this)
-    replay.removeSink(graph)
-    graph.setAttribute(AbstractEdgeThresholdGraphProducer.ATTRIBUTE_EDGE_THRESHOLD, threshold)
-    return graph
 }

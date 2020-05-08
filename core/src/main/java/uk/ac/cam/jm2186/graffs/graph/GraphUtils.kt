@@ -26,11 +26,14 @@ fun FileSource.readGraph(inputStream: InputStream, id: String): SingleGraph {
 
 fun Graph.copy() = Graphs.clone(this)
 
+fun Graph.hasWeights() = getEdgeSet<Edge>().firstOrNull()?.hasAttribute(ATTRIBUTE_NAME_EDGE_WEIGHT) ?: false
+
 fun Graph.subgraph(
     nodeFilter: Filter<Node> = Filters.trueFilter(),
-    edgeFilter: Filter<Edge> = Filters.trueFilter()
+    edgeFilter: Filter<Edge> = Filters.trueFilter(),
+    id: String = this.id
 ): Graph {
-    val replay = FilteredGraphReplay("$id-replay", nodeFilter, edgeFilter)
+    val replay = FilteredGraphReplay("${this.id}-replay", nodeFilter, edgeFilter)
     val replayed = DefaultGraph(id)
     replay.addSink(replayed)
     replay.replay(this)
@@ -40,10 +43,12 @@ fun Graph.subgraph(
 
 fun Graph.subgraph(
     nodeSet: Collection<Node>? = null,
-    edgeSet: Collection<Edge>? = null
+    edgeSet: Collection<Edge>? = null,
+    id: String = this.id
 ) = subgraph(
     nodeFilter = nodeSet?.let { set -> Filter<Node> { it in set } } ?: Filters.trueFilter(),
-    edgeFilter = edgeSet?.let { set -> Filter<Edge> { it in set } } ?: Filters.trueFilter()
+    edgeFilter = edgeSet?.let { set -> Filter<Edge> { it in set } } ?: Filters.trueFilter(),
+    id = id
 )
 
 fun Element.getNumberAttribute(attributeName: String): Double {

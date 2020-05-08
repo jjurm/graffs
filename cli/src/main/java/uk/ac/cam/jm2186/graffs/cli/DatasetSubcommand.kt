@@ -18,6 +18,7 @@ import org.graphstream.graph.Edge
 import org.graphstream.graph.Graph
 import uk.ac.cam.jm2186.graffs.graph.ATTRIBUTE_NAME_EDGE_WEIGHT
 import uk.ac.cam.jm2186.graffs.graph.alg.giantComponent
+import uk.ac.cam.jm2186.graffs.graph.hasWeights
 import uk.ac.cam.jm2186.graffs.graph.storage.GraphDataset
 import uk.ac.cam.jm2186.graffs.graph.storage.getAvailableDatasetsChecked
 import java.io.BufferedInputStream
@@ -81,11 +82,8 @@ class DatasetSubcommand : NoOpCliktCommand(
 
             toLoad?.forEach { dataset ->
                 val graph = dataset.loadGraph()
-                val hasWeights =
-                    graph.getEdgeSet<Edge>().firstOrNull()?.hasAttribute(ATTRIBUTE_NAME_EDGE_WEIGHT) ?: false
-                println(
-                    "- ${dataset.id} has ${graph.nodeCount} nodes, ${graph.edgeCount} edges${if (hasWeights) " (edges have weights)" else ""}"
-                )
+                val scored = if (graph.hasWeights()) "scored" else "unscored"
+                println("- ${dataset.id} has ${graph.nodeCount} nodes, ${graph.edgeCount} edges ($scored)")
             }
         }
 
