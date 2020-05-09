@@ -1,5 +1,6 @@
 package uk.ac.cam.jm2186.graffs.metric
 
+import org.apache.commons.lang3.time.StopWatch
 import org.graphstream.graph.Graph
 
 abstract class SingletonMetric(override val id: MetricId) : Metric, MetricInfo {
@@ -17,13 +18,17 @@ abstract class SingletonMetric(override val id: MetricId) : Metric, MetricInfo {
             // Avoid calculating this metric if already calculated
             null
         } else {
+            val stopWatch = StopWatch()
+            stopWatch.start()
             evaluate0(graph)
+            stopWatch.stop()
+
             if (!graph.hasAttribute(id)) {
                 graph.addAttribute(id)
-                MetricResult.Unit
+                MetricResult.Unit(stopWatch.time)
             } else {
                 val value = graph.getAttribute<Double>(id)
-                MetricResult.Double(value)
+                MetricResult.Double(value, stopWatch.time)
             }
         }
     }

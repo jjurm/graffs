@@ -54,7 +54,11 @@ suspend fun <R> Session.inTransaction(block: suspend Session.() -> R) {
         this.block()
         transaction.commit()
     } catch (e: Exception) {
-        transaction.rollback()
+        try {
+            transaction.rollback()
+        } catch (e2: Exception) {
+            e.addSuppressed(e2)
+        }
         throw e
     }
 }

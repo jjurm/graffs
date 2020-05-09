@@ -29,7 +29,7 @@ abstract class AbstractEdgeThresholdGraphProducer(
         return thresholds.mapIndexed { i, threshold ->
             coroutineScope.async {
                 val graph = sourceGraph.filterAtThreshold(threshold, baseId, i)
-                PerturbedGraph(threshold.hashCode().toLong(), graph)
+                PerturbedGraph(i.toLong(), graph)
             }
         }
     }

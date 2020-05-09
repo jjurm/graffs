@@ -135,7 +135,10 @@ class ExperimentSubcommand : NoOpCliktCommand(
                 experiment.graphCollections.forEach { it.perturbedGraphs.clear() }
             }
             metrics?.let { experiment.metrics = it }
-            robustnessMeasures?.let { experiment.robustnessMeasures = it }
+            robustnessMeasures?.let {
+                experiment.robustnessMeasures = it
+                experiment.robustnessResults.clear()
+            }
 
             hibernate.inTransaction {
                 experiment.robustnessResults.clear()
@@ -197,7 +200,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
                 }.forEach { phase ->
                     phase(experiment)
                 }
-            println("Done.")
+            println("Experiment ${experiment.name} done.")
             timer.finish()
             timer.printToConsole()
         }
@@ -245,26 +248,19 @@ class ExperimentSubcommand : NoOpCliktCommand(
             val nEvaluations = experiment.datasets.size * experiment.generator.n * experiment.metrics.size
             val nEvaluated = AtomicInteger(0)
 
-            suspend fun evaluateAndLog(
-                metricEvaluation: suspend () -> MetricResult?,
+            fun log(
                 metric: MetricInfo,
+                result: MetricResult,
                 datasetId: GraphDatasetId,
                 perturbedGraph: PerturbedGraph
             ) {
-                val stopWatch = StopWatch()
-                stopWatch.start()
-                val evaluated = metricEvaluation()
-                stopWatch.stop()
-
-                if (evaluated != null) {
-                    val sProgress = leftPad(nEvaluated.incrementAndGet().toString(), nEvaluations.toString().length)
-                    val sDataset = rightPad(datasetId, 16)
-                    val sHash = leftPad(perturbedGraph.getShortHash(), 4)
-                    val sMetric = rightPad(metric.id, 20)
-                    val sResult = leftPad(evaluated.toString(), 6)
-                    val sTime = "${stopWatch.time / 1000}s"
-                    println("[$sProgress/$nEvaluations] $sDataset (seed $sHash) -> $sMetric = $sResult  ($sTime)")
-                }
+                val sProgress = leftPad(nEvaluated.incrementAndGet().toString(), nEvaluations.toString().length)
+                val sDataset = rightPad(datasetId, 16)
+                val sHash = leftPad(perturbedGraph.getShortHash(), 4)
+                val sMetric = rightPad(metric.id, 20)
+                val sResult = leftPad(result.toString(), 6)
+                val sTime = "${result.time / 1000}s"
+                println("[$sProgress/$nEvaluations] $sDataset (seed $sHash) -> $sMetric = $sResult  ($sTime)")
             }
 
             println("Evaluate metrics")
@@ -280,16 +276,9 @@ class ExperimentSubcommand : NoOpCliktCommand(
 
                         val graphJob = evaluateMetricsAsync(metrics,
                             getGraph = { distortedGraph.graph },
-                            evaluateAndLog = { metricEvaluation, metric ->
-                                evaluateAndLog(
-                                    metricEvaluation,
-                                    metric,
-                                    graphCollection.dataset,
-                                    distortedGraph
-                                )
-                            },
-                            storeResults = { graph ->
-                                distortedGraph.graph = graph
+                            log = { metric, result -> log(metric, result, graphCollection.dataset, distortedGraph) },
+                            storeResults = { saveTo ->
+                                saveTo(distortedGraph)
                                 hibernateMutex.withLock {
                                     hibernate.inTransaction { save(distortedGraph) }
                                 }

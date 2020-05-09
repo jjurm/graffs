@@ -31,12 +31,12 @@ interface Metric {
 
 typealias MetricFactory = () -> Metric
 
-sealed class MetricResult {
-    object Unit : MetricResult() {
+sealed class MetricResult(val time: Long) {
+    class Unit(time: Long) : MetricResult(time) {
         override fun toString() = "[true]"
     }
 
-    class Double(val value: kotlin.Double) : MetricResult() {
+    class Double(val value: kotlin.Double, time: Long) : MetricResult(time) {
         override fun toString() = "%.2f".format(value)
     }
 }

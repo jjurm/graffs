@@ -6,6 +6,7 @@ import org.graphstream.stream.file.FileSinkDGS
 import org.graphstream.stream.file.FileSourceDGS
 import uk.ac.cam.jm2186.graffs.db.AbstractJpaPersistable
 import uk.ac.cam.jm2186.graffs.graph.readGraph
+import uk.ac.cam.jm2186.graffs.metric.MetricId
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.util.zip.DeflaterOutputStream
@@ -23,7 +24,7 @@ class PerturbedGraph(
 ) : AbstractJpaPersistable<Long>() {
 
     @Lob
-    @Basic(fetch = FetchType.LAZY)
+    @Basic(fetch = FetchType.LAZY, optional = false)
     @Column(length = 2147483647)
     private lateinit var serialized: ByteArray
     private lateinit var graphstreamId: String
@@ -31,6 +32,18 @@ class PerturbedGraph(
     @Transient
     @kotlin.jvm.Transient
     private var _graph: Graph? = null
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    @MapKeyColumn(name = "metric")
+    @Column(name = "time")
+    @CollectionTable(joinColumns = [JoinColumn(name = "perturbedgraph")])
+    var timings: MutableMap<MetricId, Long>? = mutableMapOf()
+
+    fun addTimings(timings: List<Pair<MetricId, Long>>) {
+        val t = this.timings ?: mutableMapOf()
+        t.putAll(timings)
+        this.timings = t
+    }
 
     /** Access the deserialized version of the distorted graph (with underlying cache) */
     var graph: Graph
@@ -64,7 +77,7 @@ class PerturbedGraph(
 
     fun getShortHash(): String {
         val v1 = hash.hashCode()
-        val v2 = (v1 and 0xffff) xor ((v1 shr 32) and 0xffff)
+        val v2 = (v1 and 0xffff) xor ((v1 shr 16) and 0xffff)
         return v2.toString(16)
     }
 

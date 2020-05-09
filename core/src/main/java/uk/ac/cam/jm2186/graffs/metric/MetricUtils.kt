@@ -3,6 +3,7 @@ package uk.ac.cam.jm2186.graffs.metric
 import kotlinx.coroutines.*
 import org.graphstream.graph.Graph
 import org.graphstream.graph.Node
+import uk.ac.cam.jm2186.graffs.db.model.PerturbedGraph
 import uk.ac.cam.jm2186.graffs.graph.getNumberAttribute
 
 fun Collection<MetricInfo>.topologicalOrderWithDependencies(): List<MetricInfo> {
@@ -20,8 +21,8 @@ fun Collection<MetricInfo>.topologicalOrderWithDependencies(): List<MetricInfo> 
 fun CoroutineScope.evaluateMetricsAsync(
     metrics: Collection<MetricInfo>,
     getGraph: () -> Graph,
-    evaluateAndLog: suspend (metricEvaluation: suspend () -> MetricResult?, metric: MetricInfo) -> Unit = { eval, _ -> eval() },
-    storeResults: suspend (graph: Graph) -> Unit = { }
+    log: (metric: MetricInfo, result: MetricResult) -> Unit = { _, _ -> },
+    storeResults: suspend (saveTo: (PerturbedGraph) -> Unit) -> Unit = { }
 ): Deferred<Unit> {
     val graphDeferred = async { getGraph() }
 
@@ -30,14 +31,23 @@ fun CoroutineScope.evaluateMetricsAsync(
     return async(start = CoroutineStart.LAZY) {
         val metricList = metricsToCompute.map { it to it.factory() }
         val graph = graphDeferred.await()
-        metricList.forEach { (metricInfo, metric) ->
-            evaluateAndLog({ metric.evaluate(graph) }, metricInfo)
+        val timings = metricList.mapNotNull { (metricInfo, metric) ->
+            val result = metric.evaluate(graph)
+            result?.let {
+                log(metricInfo, result)
+                metricInfo.id to result.time
+            }
         }
         metricList.forEach { (_, metric) ->
             metric.cleanup(graph)
         }
-        // store the result
-        storeResults(graphDeferred.await())
+        // store any new results
+        if (timings.isNotEmpty()) {
+            storeResults { perturbedGraph ->
+                perturbedGraph.graph = graph
+                perturbedGraph.addTimings(timings)
+            }
+        }
     }
 }
 
