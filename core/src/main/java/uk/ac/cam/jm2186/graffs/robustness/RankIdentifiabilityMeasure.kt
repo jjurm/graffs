@@ -18,6 +18,11 @@ class RankIdentifiabilityMeasure : RobustnessMeasure {
          * ~= 0.0234
          */
         val DEFAULT_K = listOf(100.0 / 3255, 100.0 / 4144, 100.0 / 6418).average()
+
+        /**
+         * Default value of alpha for the alpha-relaxed k-similarity, from the paper by Bozhilova et al.
+         */
+        val DEFAULT_ALPHA = 1.5
     }
 
     private val logger = Logger.getLogger(RankInstabilityMeasure::class.java)
@@ -31,7 +36,7 @@ class RankIdentifiabilityMeasure : RobustnessMeasure {
         val N = overallRanking.size
         val k = DEFAULT_K
         if (N * k < 50) logger.warn("k*N (=~${(k * N).toInt()}) is too small. The Paper uses k*N=100. The generalised RankIdentifiability measure may be imprecise on small graphs.")
-        val alpha = 1.5
+        val alpha = DEFAULT_ALPHA
 
         val rankIdentifiability = overallRanking.rankings.map { ranking ->
             alphaRelaxedKSimilarity(k, alpha, overallRanking, ranking, overallRanking)

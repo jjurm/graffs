@@ -8,6 +8,7 @@ import org.graphstream.graph.Graph
 import org.graphstream.util.Filter
 import uk.ac.cam.jm2186.graffs.db.model.PerturbedGraph
 import uk.ac.cam.jm2186.graffs.graph.ATTRIBUTE_NAME_EDGE_WEIGHT
+import uk.ac.cam.jm2186.graffs.graph.getNumberAttribute
 import uk.ac.cam.jm2186.graffs.graph.subgraph
 
 abstract class AbstractEdgeThresholdGraphProducer(
@@ -41,8 +42,12 @@ abstract class AbstractEdgeThresholdGraphProducer(
 }
 
 fun Graph.filterAtThreshold(threshold: Double, baseId: String? = this.id, i: Int = 0): Graph {
-    return subgraph(
+    val graph = subgraph(
         edgeFilter = AbstractEdgeThresholdGraphProducer.EdgeThresholdFilter(threshold),
         id = "$baseId-$i"
     )
+    graph.setAttribute(AbstractEdgeThresholdGraphProducer.ATTRIBUTE_EDGE_THRESHOLD, threshold)
+    return graph
 }
+
+fun Graph.threshold() = getNumberAttribute(AbstractEdgeThresholdGraphProducer.ATTRIBUTE_EDGE_THRESHOLD)

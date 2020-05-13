@@ -13,13 +13,12 @@ import uk.ac.cam.jm2186.graffs.db.model.Experiment
 import uk.ac.cam.jm2186.graffs.db.model.experiment_name
 import uk.ac.cam.jm2186.graffs.db.model.metric_name
 import uk.ac.cam.jm2186.graffs.graph.gen.AbstractEdgeThresholdGraphProducer
+import uk.ac.cam.jm2186.graffs.graph.gen.threshold
 import uk.ac.cam.jm2186.graffs.graph.getNumberAttribute
 import uk.ac.cam.jm2186.graffs.metric.Metric
 import uk.ac.cam.jm2186.graffs.metric.MetricId
-import uk.ac.cam.jm2186.graffs.robustness.GraphAttributeNodeRanking
-import uk.ac.cam.jm2186.graffs.robustness.GraphCollectionMetadata
-import uk.ac.cam.jm2186.graffs.robustness.RankContinuityMeasure
-import uk.ac.cam.jm2186.graffs.robustness.kSimilarity
+import uk.ac.cam.jm2186.graffs.robustness.*
+import java.io.File
 import java.util.concurrent.Executors
 
 class PlotSubcommand : NoOpCliktCommand(
@@ -29,7 +28,9 @@ class PlotSubcommand : NoOpCliktCommand(
 
     init {
         subcommands(
-            RankSimilarityPlot()
+            RankSimilarityCsv(),
+            RankSimilarityPlot(),
+            RelaxedSimilarityCsv()
         )
     }
 
@@ -77,7 +78,7 @@ class PlotSubcommand : NoOpCliktCommand(
         }
     }
 
-    class RankSimilarityPlot : AbstractPlot(name = "rank-similarity") {
+    class RankSimilarityPlot : AbstractPlot(name = "rank-similarity-visual") {
 
         private fun GraphAttributeNodeRanking.threshold() = graph.getNumberAttribute(
             AbstractEdgeThresholdGraphProducer.ATTRIBUTE_EDGE_THRESHOLD
@@ -171,6 +172,106 @@ class PlotSubcommand : NoOpCliktCommand(
 
             val figure = Figure(layout, *traces.toTypedArray())
             figure.plot()
+        }
+
+    }
+
+    class RankSimilarityCsv : CoroutineCommand(name = "rank-similarity") {
+
+        private val experimentName by experiment_name()
+        private val experiment by lazy { hibernate.getNamedEntity<Experiment>(experimentName) }
+
+        override suspend fun run1() {
+            val sb = StringBuilder("dataset,metric,threshold,similarity\n")
+            val rankContinuity = RankContinuityMeasure()
+            // k chosen according to https://github.com/lbozhilova/measuring_rank_robustness/blob/master/figure_generation.R#L28
+            val k = 0.01
+
+            coroutineScope {
+                experiment.graphCollections.map { graphCollection ->
+                    async {
+                        sessionFactory.openSession().use { session ->
+                            hibernate.detach(graphCollection)
+                            session.update(graphCollection)
+
+                            experiment.metrics.map { metric ->
+                                val metricInfo = Metric.map.getValue(metric)
+                                val overallRanking = OverallNodeRanking(graphCollection, metricInfo)
+
+                                val consecutiveRankingPairs = rankContinuity.consecutiveRankingPairs(overallRanking)
+                                val kSimilarities = consecutiveRankingPairs
+                                    .map { (ranking1, ranking2) ->
+                                        async {
+                                            val threshold = ranking1.graph.threshold() / 1000
+                                            val kSimilarity = kSimilarity(k, overallRanking, ranking1, ranking2)
+                                            "${graphCollection.dataset},$metric,$threshold,$kSimilarity\n"
+                                        }
+                                    }
+                                kSimilarities
+                            }.flatten().awaitAll()
+                        }
+                    }
+                }.awaitAll().flatten()
+            }.forEach<String> { sb.append(it) }
+
+            val filename = "${experiment.name}-${commandName}.csv"
+            File(filename).writeText(sb.toString())
+            println("Written to $filename")
+        }
+    }
+
+    class RelaxedSimilarityCsv : CoroutineCommand(name = "relaxed-similarity") {
+
+        private val experimentName by experiment_name()
+        private val experiment by lazy { hibernate.getNamedEntity<Experiment>(experimentName) }
+
+        override suspend fun run1() {
+            val sb = StringBuilder("dataset,metric,threshold,similarity\n")
+            // k chosen according to https://github.com/lbozhilova/measuring_rank_robustness/blob/master/figure_generation.R#L28
+            val k = 0.01
+
+            coroutineScope {
+                experiment.graphCollections.map { graphCollection ->
+                    async {
+                        sessionFactory.openSession().use { session ->
+                            hibernate.detach(graphCollection)
+                            session.update(graphCollection)
+
+                            experiment.metrics.map { metric ->
+                                val metricInfo = Metric.map.getValue(metric)
+                                val rankings = graphCollection.perturbedGraphs.map {
+                                    async {
+                                        GraphAttributeNodeRanking(it.graph, metricInfo.attributeName)
+                                    }
+                                }.awaitAll()
+                                // Calculate overall ranking only based on the med-high confidence interval
+                                val overallRanking = OverallNodeRanking(
+                                    rankings = rankings.filter {
+                                        val t = it.graph.threshold()
+                                        600 <= t + 1e-4 && t - 1e-4 <= 900
+                                    }
+                                )
+
+                                val similarities = rankings.map { ranking ->
+                                    async {
+                                        val threshold = ranking.graph.threshold() / 1000
+                                        val similarity = alphaRelaxedKSimilarity(
+                                            k, RankIdentifiabilityMeasure.DEFAULT_ALPHA, nodes = overallRanking,
+                                            A = ranking, B = overallRanking
+                                        )
+                                        "${graphCollection.dataset},$metric,$threshold,$similarity\n"
+                                    }
+                                }
+                                similarities
+                            }.flatten().awaitAll()
+                        }
+                    }
+                }.awaitAll().flatten()
+            }.forEach<String> { sb.append(it) }
+
+            val filename = "${experiment.name}-${commandName}.csv"
+            File(filename).writeText(sb.toString())
+            println("Written to $filename")
         }
 
     }
