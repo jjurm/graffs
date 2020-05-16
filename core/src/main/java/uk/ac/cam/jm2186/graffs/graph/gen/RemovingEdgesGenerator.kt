@@ -21,7 +21,7 @@ class RemovingEdgesGenerator(
     private val seed: Long,
     /** A number between 0 and 1, the probability to remove an edge. */
     private val deletionRate: Double,
-    private val initialThreshold: Double?,
+    private val initialThreshold: Double? = null,
     private val coroutineScope: CoroutineScope
 ) : GraphProducer {
 

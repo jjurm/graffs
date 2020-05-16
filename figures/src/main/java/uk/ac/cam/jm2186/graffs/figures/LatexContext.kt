@@ -25,8 +25,7 @@ interface FigureContext {
 class LatexContext(private val annotation: Figure) : Figures() {
     val figureName get() = annotation.name
     val figurePos get() = annotation.figurePos
-    val width get() = annotation.width
-    val height get() = annotation.height
+    val gfxArgs get() = annotation.gfxArgs
     val caption get() = annotation.caption
     val captionPos get() = annotation.captionPos
     val generateTex get() = annotation.generateTex
@@ -58,11 +57,9 @@ class LatexContext(private val annotation: Figure) : Figures() {
             sb.append("""\begin{figure}${figurePos * { "[$it]" }}""" + "\n")
             if (captionPos == TOP) sb.append(captionAndLabel + "\n")
 
-            val gfxArgs = listOf(width * { "width=$it" } + height * { "height=$it" })
-                .joinToString(",", "[", "]")
             val files = filenames.joinToString("", transform = { (type, file) ->
                 when (type) {
-                    PDF, PNG -> """\includegraphics$gfxArgs{$file}"""
+                    PDF, PNG -> """\includegraphics[$gfxArgs]{$file}"""
                     TEX -> file(file).readText()
                     CSV -> ""
                 }

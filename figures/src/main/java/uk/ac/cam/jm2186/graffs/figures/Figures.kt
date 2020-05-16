@@ -26,7 +26,7 @@ abstract class Figures : FigureContext {
 
     @Figure(
         "ecoli_giant_at_900",
-        height = "10cm",
+        gfxArgs = "height=10cm",
         caption = """An interaction network of proteins from the \textit{Escherichia coli} organism from the STRING database, thresholded at the $0.9$ score (high confidence). Only nodes of the giant component are shown."""
     )
     fun figure1() {
@@ -43,7 +43,7 @@ abstract class Figures : FigureContext {
 
     @Figure(
         "simple_graph",
-        height = "6cm",
+        gfxArgs = "height=6cm",
         caption = """A small example of a \textsl{connected} \textsl{simple} graph (i.e. \textsl{undirected} and \textsl{anti-reflexive})."""
     )
     fun figureSimpleGraph() {
@@ -55,7 +55,7 @@ abstract class Figures : FigureContext {
 
     @Figure(
         "disconnecting_graph",
-        height = "8cm",
+        gfxArgs = "height=8cm",
         caption = """Illustrated is how thresholding (a subgraph of) a protein network (left) results in one giant component (red) and multiple small disconnected components.
 The left is a certain subgraph of the \textit{ecoli} dataset (all edges with confidence $>0.4$), the right graph has only edges with confidence $>0.5$."""
     )
@@ -112,7 +112,7 @@ The left is a certain subgraph of the \textit{ecoli} dataset (all edges with con
 
     @Figure(
         "simplegraph_by_some_metrics",
-        height = "5cm",
+        gfxArgs = "height=5cm",
         caption = """A simple graph with each node's diameter proportional to its \textsl{degree} (1), \textsl{betweenness centrality} (2), and \textsl{local clustering} (3).
 In this particular graph, (1) and (2) show similar characteristics (greater value for more ``central'' nodes), whereas local clustering is significantly different."""
     )
@@ -141,7 +141,7 @@ In this particular graph, (1) and (2) show similar characteristics (greater valu
 
     @Figure(
         "graph_example_scored_edges",
-        height = "5cm",
+        gfxArgs = "height=4cm,trim=0 3cm 0 3cm,clip",
         caption = """A tiny subgraph of the \textsl{ecoli} dataset with scored edges"""
     )
     fun figureScoredEdges() {
@@ -168,7 +168,7 @@ In this particular graph, (1) and (2) show similar characteristics (greater valu
 
     @Figure(
         "data_model_diagram",
-        width = """\linewidth""",
+        gfxArgs = """width=0.9\linewidth""",
         caption = """Data model diagram showing \textsl{persistence schema}, i.e. entities stored in the database.
 The arrows indicate \textsl{association} links, i.e. ``has a'' or ``refers to'' relationships.
 The diagram is created from the Java Persistence API schema inferred from the source code."""
@@ -179,7 +179,7 @@ The diagram is created from the Java Persistence API schema inferred from the so
 
     @Figure(
         "data_model_classes_diagram",
-        width = """\linewidth""",
+        gfxArgs = """width=\linewidth""",
         caption = """\textsl{Entity classes} (i.e. classes defining the persistence model presented in \autoref{fig:data_model_diagram}), and their inheritance hierarchy.
 The arrows indicate \textsl{inheritance} (``is a'') relationships between classes."""
     )
@@ -190,7 +190,7 @@ The arrows indicate \textsl{inheritance} (``is a'') relationships between classe
     @Figure(
         "graphstream_diagram",
         figurePos = "h",
-        width = """0.8\linewidth""",
+        gfxArgs = """width=0.8\linewidth""",
         caption = """A simplified diagram of the most relevant interfaces from the GraphStream library"""
     )
     fun diagramGraphstream() {
@@ -271,10 +271,7 @@ The arrows indicate \textsl{inheritance} (``is a'') relationships between classe
         newTargetFile(FileType.TEX).writeText(sb.toString(), Charsets.UTF_8)
     }
 
-    @Figure(
-        "plot_edge_deletion_per_step", generateTex = false,
-        caption = """"""
-    )
+    @Figure("plot_edge_deletion_per_step", generateTex = false)
     fun edgeDeletionPerStep() {
         val sb = StringBuffer("dataset,threshold,deleted\n")
 
@@ -289,6 +286,22 @@ The arrows indicate \textsl{inheritance} (``is a'') relationships between classe
                 val r = (n - n2).toDouble() / n
                 sb.append("$dataset,$threshold,$r\n")
             }
+        }
+        newTargetFile(FileType.CSV).writeText(sb.toString())
+    }
+
+    @Figure("histogram_edges", generateTex = false)
+    fun histogramEdges() {
+        val sb = StringBuffer("dataset,weights\n")
+
+        val datasets = listOf("pvivax", "ecoli", "yeast")
+        datasets.forEach { dataset ->
+            val graph = GraphDataset(dataset).loadGraph()
+            val weights = graph.getEachEdge<Edge>().map {
+                val w = it.getNumberAttribute(ATTRIBUTE_NAME_EDGE_WEIGHT)
+                w.toInt()
+            }
+            sb.append("$dataset,${weights.joinToString(";")}\n")
         }
         newTargetFile(FileType.CSV).writeText(sb.toString())
     }
