@@ -5,6 +5,7 @@ import org.graphstream.algorithm.ConnectedComponents
 import org.graphstream.graph.Edge
 import org.graphstream.graph.Graph
 import org.graphstream.graph.Node
+import org.graphstream.stream.file.FileSinkImages
 import org.graphstream.ui.layout.springbox.implementations.SpringBox
 import uk.ac.cam.jm2186.graffs.cli.Graffs
 import uk.ac.cam.jm2186.graffs.cli.GraphVisualiser
@@ -60,21 +61,7 @@ abstract class Figures : FigureContext {
 The left is a certain subgraph of the \textit{ecoli} dataset (all edges with confidence $>0.4$), the right graph has only edges with confidence $>0.5$."""
     )
     fun figureDisconnectedGraph() {
-        var graph = GraphDataset("ecoli").loadGraph().copy()
-
-        val baseNodes = listOf(0).map { graph.getNode<Node>(it) }
-        // Find all of distance 2 from base nodes, except base nodes
-        var targetNodes = baseNodes.toSet()
-        repeat(2) {
-            targetNodes = targetNodes + targetNodes.flatMap {
-                it.getNeighborNodeIterator<Node>().asSequence().toList()
-            }.toSet()
-        }
-        targetNodes = targetNodes - baseNodes
-
-        // Only keep selected nodes, and only the giant component at threshold 0.4
-        graph.iterator().removeAll { it !in targetNodes }
-        graph = graph.filterAtThreshold(400.0).giantComponent()
+        val graph = smallEcoliSubset(400.0)
 
         // Calculate layout
         val layout = SpringBox(false, Random(42))
@@ -306,6 +293,48 @@ The arrows indicate \textsl{inheritance} (``is a'') relationships between classe
         newTargetFile(FileType.CSV).writeText(sb.toString())
     }
 
+    @Figure(
+        "thresholding_array",
+        gfxArgs = """width=0.2\linewidth""",
+        caption = """Visualised effect of thresholding confidence scores.
+The 5 graphs correspond to a small subset of the \textsl{ecoli} dataset thresholded at linearly spaced values between $0.55$ and $0.95$."""
+    )
+    fun figureThresholdingArray() {
+        var base = smallEcoliSubset(550.0)
+
+        // Calculate and keep the layout
+        val layout = SpringBox(false, Random(43))
+        base.computeLayout(layout, 0.95)
+
+        // Set style
+        base.getNodeSet<Node>().forEach { it.style("size: 9px;") }
+        base.getEdgeSet<Edge>().forEach {
+            it.style("size: 4px; fill-color: #0000A080;")
+        }
+
+        (550..950 step 100).forEachIndexed { i, threshold ->
+            base = base.filterAtThreshold(threshold.toDouble(), i = i)
+            GraphVisualiser(base, autoLayout = false).screenshot(newTargetFile(), false)
+        }
+    }
+
+    @Figure("cover_graph_img", generateTex = false)
+    fun coverGraphImg() {
+        val graph = smallEcoliSubset(450.0)
+        val layout = SpringBox(false, Random(7))
+        graph.computeLayout(layout, 0.95)
+
+        // figure1
+        graph.getNodeSet<Node>().forEach { it.style("size: 20px;") }
+        graph.getEdgeSet<Edge>().forEach {
+            it.style("size: 6px; fill-color: #00000045;")
+        }
+        GraphVisualiser(graph, autoLayout = false).screenshot(
+            newTargetFile(), false,
+            resolution = FileSinkImages.CustomResolution(2400, 2400)
+        )
+    }
+
 
     //----------
 
@@ -335,6 +364,25 @@ The arrows indicate \textsl{inheritance} (``is a'') relationships between classe
             arrayOf("inkscape", "-D", "-z", "--file", `in`.path, "--export-pdf", out.path, "--export-area-drawing")
         )
         if (process.waitFor() != 0) throw IOException("Could not run `inkscape`")
+    }
+
+    private fun smallEcoliSubset(threshold: Double): Graph {
+        var base = GraphDataset("ecoli").loadGraph().copy()
+
+        val baseNodes = listOf(0).map { base.getNode<Node>(it) }
+        // Find all of distance 2 from base nodes, except base nodes
+        var targetNodes = baseNodes.toSet()
+        repeat(2) {
+            targetNodes = targetNodes + targetNodes.flatMap {
+                it.getNeighborNodeIterator<Node>().asSequence().toList()
+            }.toSet()
+        }
+        targetNodes = targetNodes - baseNodes
+
+        // Only keep selected nodes, and only the giant component at threshold 0.4
+        base.iterator().removeAll { it !in targetNodes }
+        base = base.filterAtThreshold(threshold).giantComponent()
+        return base
     }
 
 }

@@ -33,6 +33,7 @@ class PerturbedGraph(
     @kotlin.jvm.Transient
     private var _graph: Graph? = null
 
+    /** How long it took to evaluate each metric on this graph, in milliseconds */
     @ElementCollection(fetch = FetchType.LAZY)
     @MapKeyColumn(name = "metric")
     @Column(name = "time")

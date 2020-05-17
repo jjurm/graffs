@@ -15,7 +15,7 @@ class RankIdentifiabilityMeasure : RobustnessMeasure {
          * The value is fixed so that this generalises to graphs of any size, but is based on the k values used in the
          * paper by Bozhilova et al.
          *
-         * ~= 0.0234
+         * ~= 0.023478
          */
         val DEFAULT_K = listOf(100.0 / 3255, 100.0 / 4144, 100.0 / 6418).average()
 

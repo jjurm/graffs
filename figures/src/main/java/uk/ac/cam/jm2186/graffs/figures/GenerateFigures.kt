@@ -17,8 +17,8 @@ fun CoroutineScope.generateAndExportAll(args: Array<String>) {
 fun main(args: Array<String>) {
     runBlocking {
 
-        //Figures::figureScoredEdges.figure().generate().export()
-        generateAndExportAll(args)
+        Figures::coverGraphImg.figure().generate().export()
+        //generateAndExportAll(args)
 
     }
 }
