@@ -46,9 +46,11 @@ fun CliktCommand.experiment_name(
 ) =
     option(*names, help = help, metavar = "NAME").required()
 
-fun CliktCommand.experiment_datasets(): OptionWithValues<List<GraphDatasetId>?, List<GraphDatasetId>, GraphDatasetId> {
+fun CliktCommand.experiment_datasets(
+    help: String = "Source dataset(s) to generate graphs from, delimited by comma"
+): OptionWithValues<List<GraphDatasetId>?, List<GraphDatasetId>, GraphDatasetId> {
     return option(
-        "--datasets", help = "Source dataset(s) to generate graphs from, delimited by comma",
+        "--datasets", help = help,
         metavar = "DATASET,..."
     ).convert {
         GraphDataset(it, validate = true).id

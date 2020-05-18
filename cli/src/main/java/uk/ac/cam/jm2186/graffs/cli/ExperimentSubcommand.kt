@@ -182,15 +182,22 @@ class ExperimentSubcommand : NoOpCliktCommand(
         private val phasesAvailable = listOf(::generate, ::metrics, ::robustness)
 
         private val experimentName by experiment_name()
+        private val experiment: Experiment = hibernate.getNamedEntity<Experiment>(experimentName)
         private val phases by argument(
             name = "phase",
             help = "Run only up to the specified phase [1|2|3|all]"
         ).choice(*phasesArgMapping.keys.toTypedArray()).multiple(required = false)
+        private val datasetSubset by experiment_datasets(
+            help = "Subset of datasets to work with in this run (default is to run on all datasets of the experiment)"
+        )
+        private val graphCollectionSubset
+            get() = experiment.graphCollections.filter {
+                datasetSubset?.contains(it.dataset) ?: true
+            }
 
         private val timer = TimePerf()
 
         override suspend fun run1() {
-            val experiment: Experiment = hibernate.getNamedEntity<Experiment>(experimentName)
             experiment.printToConsole()
             println()
 
@@ -198,18 +205,18 @@ class ExperimentSubcommand : NoOpCliktCommand(
                 .flatMap {
                     phasesArgMapping.getValue(it).map { phasesAvailable[it] }
                 }.forEach { phase ->
-                    phase(experiment)
+                    phase()
                 }
             println("Experiment ${experiment.name} done.")
             timer.finish()
             timer.printToConsole()
         }
 
-        private suspend fun generate(experiment: Experiment) {
+        private suspend fun generate() {
             print(timer.phase("Generate graphs"))
             val hibernateMutex = Mutex()
             coroutineScope {
-                experiment.graphCollections.forEach { graphCollection ->
+                graphCollectionSubset.forEach { graphCollection ->
                     if (graphCollection.perturbedGraphs.isEmpty()) {
                         launch {
                             val sourceGraph = GraphDataset(graphCollection.dataset).loadGraph()
@@ -244,7 +251,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
             println()
         }
 
-        private suspend fun metrics(experiment: Experiment) {
+        private suspend fun metrics() {
             val nEvaluations = experiment.datasets.size * experiment.generator.n * experiment.metrics.size
             val nEvaluated = AtomicInteger(0)
 
@@ -271,7 +278,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
             coroutineScope {
                 val graphJobs = mutableListOf<Deferred<Unit>>()
 
-                experiment.graphCollections.forEach { graphCollection ->
+                graphCollectionSubset.forEach { graphCollection ->
                     graphCollection.perturbedGraphs.forEach { distortedGraph ->
 
                         val graphJob = evaluateMetricsAsync(metrics,
@@ -296,7 +303,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
             }
         }
 
-        private suspend fun robustness(experiment: Experiment) {
+        private suspend fun robustness() {
             timer.phase("Robustness - prepare")
             val hibernateMutex = Mutex()
             val measures = experiment.robustnessMeasures.map {
@@ -315,7 +322,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
             val existingRobustness = hibernate.createQuery(query).resultList
 
             coroutineScope {
-                val jobs = experiment.graphCollections.flatMap { graphCollection ->
+                val jobs = graphCollectionSubset.flatMap { graphCollection ->
                     metrics.flatMap { metric ->
                         val metadata = GraphCollectionMetadata(graphCollection, metric, this)
                         measures.map { (measureId, measure) ->
