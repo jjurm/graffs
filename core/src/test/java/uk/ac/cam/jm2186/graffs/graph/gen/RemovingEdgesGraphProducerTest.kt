@@ -12,7 +12,7 @@ internal class RemovingEdgesGraphProducerTest {
     fun produce() {
         val graph = GraphTestUtils.generateSmallGraph()
         val generated = runBlocking(Dispatchers.Default) {
-            val producer = RemovingEdgesGenerator(
+            val producer = RemovingEdgesFlatGenerator(
                 deletionRate = 0.3,
                 seed = 42,
                 coroutineScope = this

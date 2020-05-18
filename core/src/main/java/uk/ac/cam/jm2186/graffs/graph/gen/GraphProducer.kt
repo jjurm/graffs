@@ -15,7 +15,8 @@ interface GraphProducer {
 
     companion object {
         val map: Map<GraphProducerId, GraphProducerFactory> = listOf<GraphProducerInfo>(
-            RemovingEdgesGenerator,
+            RemovingEdgesSequenceGenerator,
+            RemovingEdgesFlatGenerator,
             LinearEdgeThresholdGraphProducer,
             RandomEdgeThresholdGraphProducer
         ).map { info -> info.id to info.factory }.toMap()

@@ -3,13 +3,10 @@ package uk.ac.cam.jm2186.graffs.graph.gen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
-import org.graphstream.graph.Element
 import org.graphstream.graph.Graph
-import org.graphstream.graph.implementations.SingleGraph
-import org.graphstream.util.Filter
 import uk.ac.cam.jm2186.graffs.db.model.PerturbedGraph
-import uk.ac.cam.jm2186.graffs.graph.FilteredGraphReplay
 import uk.ac.cam.jm2186.graffs.graph.hasWeights
+import uk.ac.cam.jm2186.graffs.graph.subgraph
 import kotlin.random.Random
 
 /**
@@ -17,7 +14,7 @@ import kotlin.random.Random
  * _G(N, E')_ where _E' = [ e ∈ E | rand() < [deletionRate] ]_, i.e. each edge is removed with probability
  * [deletionRate].
  */
-class RemovingEdgesGenerator(
+class RemovingEdgesFlatGenerator(
     private val seed: Long,
     /** A number between 0 and 1, the probability to remove an edge. */
     private val deletionRate: Double,
@@ -26,9 +23,9 @@ class RemovingEdgesGenerator(
 ) : GraphProducer {
 
     companion object : GraphProducerInfo {
-        override val id: GraphProducerId = "removing-edges"
+        override val id: GraphProducerId = "removing-edges-flat"
         override val factory: GraphProducerFactory = { seed, params, coroutineScope ->
-            RemovingEdgesGenerator(
+            RemovingEdgesFlatGenerator(
                 seed = seed,
                 deletionRate = params[0].toDouble(),
                 initialThreshold = params.getOrNull(1)?.toDouble(),
@@ -53,27 +50,9 @@ class RemovingEdgesGenerator(
                 val g = baseGraph.await()
                 val graphSeed = random.nextLong()
                 val id = "$baseId-$i"
-                produceSingle(g, graphSeed, id)
+                val gen = g.subgraph(id = id, edgeFilter = RandomElementRemoverFilter(deletionRate, graphSeed))
+                PerturbedGraph(seed, gen)
             }
         }
     }
-
-    private fun produceSingle(sourceGraph: Graph, seed: Long, id: String): PerturbedGraph {
-        val replay = FilteredGraphReplay(
-            "$id-replay",
-            edgeFilter = RandomElementRemoverFilter(seed)
-        )
-        val graph = SingleGraph(id)
-        replay.addSink(graph)
-        replay.replay(sourceGraph)
-        replay.removeSink(graph)
-        return PerturbedGraph(seed, graph)
-    }
-
-    private inner class RandomElementRemoverFilter<E : Element>(seed: Long) : Filter<E> {
-        private val random = Random(seed)
-        private val decided = HashMap<E, Boolean>()
-        override fun isAvailable(e: E): Boolean = decided.computeIfAbsent(e) { random.nextDouble() > deletionRate }
-    }
-
 }

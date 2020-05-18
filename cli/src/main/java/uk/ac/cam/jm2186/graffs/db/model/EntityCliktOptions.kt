@@ -7,7 +7,7 @@ import com.github.ajalt.clikt.parameters.types.double
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.long
 import uk.ac.cam.jm2186.graffs.graph.gen.GraphProducer
-import uk.ac.cam.jm2186.graffs.graph.gen.RemovingEdgesGenerator
+import uk.ac.cam.jm2186.graffs.graph.gen.RemovingEdgesSequenceGenerator
 import uk.ac.cam.jm2186.graffs.graph.storage.GraphDataset
 import uk.ac.cam.jm2186.graffs.graph.storage.GraphDatasetId
 import uk.ac.cam.jm2186.graffs.metric.Metric
@@ -27,7 +27,7 @@ fun CliktCommand.graphGenerator_n() =
 
 fun CliktCommand.graphGenerator_method() =
     option(help = "Algorithm to generate graphs").choice(*GraphProducer.map.keys.toTypedArray())
-        .default(RemovingEdgesGenerator.id)
+        .default(RemovingEdgesSequenceGenerator.id)
 
 fun CliktCommand.graphGenerator_params() =
     option(

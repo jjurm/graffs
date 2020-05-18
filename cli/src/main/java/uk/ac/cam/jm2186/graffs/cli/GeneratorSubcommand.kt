@@ -6,9 +6,10 @@ import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.options.eagerOption
 import uk.ac.cam.jm2186.graffs.db.getAllEntities
 import uk.ac.cam.jm2186.graffs.db.inTransaction
-import uk.ac.cam.jm2186.graffs.graph.gen.RemovingEdgesGenerator
+import uk.ac.cam.jm2186.graffs.graph.gen.RemovingEdgesFlatGenerator
 import uk.ac.cam.jm2186.graffs.db.model.*
 import uk.ac.cam.jm2186.graffs.db.mustNotExist
+import uk.ac.cam.jm2186.graffs.graph.gen.RemovingEdgesSequenceGenerator
 import java.util.*
 
 class GeneratorSubcommand : NoOpCliktCommand(
@@ -54,7 +55,7 @@ class GeneratorSubcommand : NoOpCliktCommand(
                     GraphGenerator(
                         name = "sampleGenerator",
                         n = 10,
-                        method = RemovingEdgesGenerator.id,
+                        method = RemovingEdgesSequenceGenerator.id,
                         params = listOf(0.05),
                         seed = 42L
                     )
