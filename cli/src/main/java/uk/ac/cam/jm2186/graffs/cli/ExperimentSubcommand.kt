@@ -13,15 +13,17 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.apache.commons.lang3.StringUtils.leftPad
 import org.apache.commons.lang3.StringUtils.rightPad
-import org.apache.commons.lang3.time.StopWatch
+import uk.ac.cam.jm2186.graffs.db.getAllEntities
+import uk.ac.cam.jm2186.graffs.db.getNamedEntity
+import uk.ac.cam.jm2186.graffs.db.inTransaction
+import uk.ac.cam.jm2186.graffs.db.model.*
+import uk.ac.cam.jm2186.graffs.db.mustNotExist
 import uk.ac.cam.jm2186.graffs.graph.storage.GraphDataset
 import uk.ac.cam.jm2186.graffs.graph.storage.GraphDatasetId
+import uk.ac.cam.jm2186.graffs.metric.*
 import uk.ac.cam.jm2186.graffs.robustness.GraphCollectionMetadata
 import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasure
 import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasureId
-import uk.ac.cam.jm2186.graffs.db.*
-import uk.ac.cam.jm2186.graffs.db.model.*
-import uk.ac.cam.jm2186.graffs.metric.*
 import uk.ac.cam.jm2186.graffs.util.TimePerf
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -276,7 +278,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
             println("Evaluate metrics")
             timer.phase("Evaluate metrics - prepare")
             val hibernateMutex = Mutex()
-            val metrics = experiment.metrics.map { Metric.map.getValue(it) }
+            val metrics = experiment.metrics.map { Metrics.map.getValue(it) }
 
             coroutineScope {
                 val graphJobs = mutableListOf<Deferred<Unit>>()
@@ -314,7 +316,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
                 it to RobustnessMeasure.map.getValue(it)()
             }
             val metrics = experiment.metrics.map {
-                Metric.map.getValue(it)
+                Metrics.map.getValue(it)
             }.filter { it.isNodeMetric }
 
             // Check existence of Robustness entities

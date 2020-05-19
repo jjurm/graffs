@@ -15,8 +15,8 @@ import uk.ac.cam.jm2186.graffs.db.model.metric_name
 import uk.ac.cam.jm2186.graffs.graph.gen.AbstractEdgeThresholdGraphProducer
 import uk.ac.cam.jm2186.graffs.graph.gen.threshold
 import uk.ac.cam.jm2186.graffs.graph.getNumberAttribute
-import uk.ac.cam.jm2186.graffs.metric.Metric
 import uk.ac.cam.jm2186.graffs.metric.MetricId
+import uk.ac.cam.jm2186.graffs.metric.Metrics
 import uk.ac.cam.jm2186.graffs.robustness.*
 import java.io.File
 import java.util.concurrent.Executors
@@ -56,7 +56,7 @@ class PlotSubcommand : NoOpCliktCommand(
 
         private val metricName: MetricId by metric_name()
         protected val metric by lazy {
-            Metric.map.getValue(metricName)
+            Metrics.map.getValue(metricName)
         }
 
         protected suspend fun Figure.plot() {
@@ -195,7 +195,7 @@ class PlotSubcommand : NoOpCliktCommand(
                             session.update(graphCollection)
 
                             experiment.metrics.map { metric ->
-                                val metricInfo = Metric.map.getValue(metric)
+                                val metricInfo = Metrics.map.getValue(metric)
                                 val overallRanking = OverallNodeRanking(graphCollection, metricInfo)
 
                                 val consecutiveRankingPairs = rankContinuity.consecutiveRankingPairs(overallRanking)
@@ -238,7 +238,7 @@ class PlotSubcommand : NoOpCliktCommand(
                             session.update(graphCollection)
 
                             experiment.metrics.map { metric ->
-                                val metricInfo = Metric.map.getValue(metric)
+                                val metricInfo = Metrics.map.getValue(metric)
                                 val rankings = graphCollection.perturbedGraphs.map {
                                     async {
                                         GraphAttributeNodeRanking(it.graph, metricInfo.attributeName)

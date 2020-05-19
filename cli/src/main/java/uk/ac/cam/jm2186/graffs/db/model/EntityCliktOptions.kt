@@ -10,8 +10,8 @@ import uk.ac.cam.jm2186.graffs.graph.gen.GraphProducer
 import uk.ac.cam.jm2186.graffs.graph.gen.RemovingEdgesSequenceGenerator
 import uk.ac.cam.jm2186.graffs.graph.storage.GraphDataset
 import uk.ac.cam.jm2186.graffs.graph.storage.GraphDatasetId
-import uk.ac.cam.jm2186.graffs.metric.Metric
 import uk.ac.cam.jm2186.graffs.metric.MetricId
+import uk.ac.cam.jm2186.graffs.metric.Metrics
 import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasure
 import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasureId
 
@@ -63,12 +63,12 @@ fun CliktCommand.experiment_generator() =
 private fun CliktCommand.experiment_metrics0() =
     option(
         "--metrics", help = "Graph metrics whose robustness should be calculated, delimited by comma",
-        metavar = Metric.map.keys.joinToString(separator = ",")
+        metavar = Metrics.map.keys.joinToString(separator = ",")
     ).split<String, MetricId>(",")
 
-fun CliktCommand.experiment_metrics() = experiment_metrics0().validate { Metric.map.keys.containsAll(it) }
+fun CliktCommand.experiment_metrics() = experiment_metrics0().validate { Metrics.map.keys.containsAll(it) }
 fun CliktCommand.experiment_metrics_required() =
-    experiment_metrics0().required().validate { Metric.map.keys.containsAll(it) }
+    experiment_metrics0().required().validate { Metrics.map.keys.containsAll(it) }
 
 private fun CliktCommand.experiment_robustnessMeasures0() =
     option(
@@ -86,5 +86,5 @@ fun CliktCommand.experiment_robustnessMeasures_required() =
 
 fun CliktCommand.metric_name() =
     option(
-        "--metric", help = "Graph metric to plot", metavar = Metric.map.keys.joinToString(separator = ",")
-    ).required().validate { Metric.map.keys.contains(it) }
+        "--metric", help = "Graph metric to plot", metavar = Metrics.map.keys.joinToString(separator = ",")
+    ).required().validate { Metrics.map.keys.contains(it) }

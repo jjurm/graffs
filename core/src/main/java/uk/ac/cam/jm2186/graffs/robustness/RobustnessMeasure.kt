@@ -2,7 +2,6 @@ package uk.ac.cam.jm2186.graffs.robustness
 
 import uk.ac.cam.jm2186.graffs.metric.MetricInfo
 import uk.ac.cam.jm2186.graffs.db.model.GraphCollection
-import java.io.Serializable
 
 typealias RobustnessMeasureId = String
 
