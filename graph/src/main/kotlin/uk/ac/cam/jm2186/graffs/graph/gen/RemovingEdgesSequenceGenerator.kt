@@ -50,7 +50,7 @@ class RemovingEdgesSequenceGenerator(
             PerturbedGraph(seed, graph.await())
         }
 
-        return generateSequence(seed to (baseGraph to perturbedAsync(0, baseGraph))) { (i, prev) ->
+        return generateSequence(0 to (baseGraph to perturbedAsync(seed, baseGraph))) { (i, prev) ->
             val graphSeed = random.nextLong()
             val gen = coroutineScope.async {
                 val prevGraph = prev.first.await()

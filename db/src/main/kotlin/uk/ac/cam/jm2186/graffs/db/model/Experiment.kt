@@ -25,6 +25,7 @@ class Experiment(
 ) : NamedEntity(name) {
 
     @OneToMany(mappedBy = "experiment", cascade = [CascadeType.ALL], orphanRemoval = true)
+    @OrderColumn
     @LazyCollection(LazyCollectionOption.FALSE)
     var graphCollections: MutableList<GraphCollection> = datasets.map { GraphCollection(it, this) }.toMutableList()
 

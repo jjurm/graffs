@@ -4,8 +4,7 @@ import org.hibernate.annotations.LazyCollection
 import org.hibernate.annotations.LazyCollectionOption
 import uk.ac.cam.jm2186.graffs.db.NamedEntity
 import uk.ac.cam.jm2186.graffs.graph.gen.GraphProducerId
-import javax.persistence.ElementCollection
-import javax.persistence.Entity
+import javax.persistence.*
 
 @Entity
 class GraphGenerator(
@@ -13,9 +12,13 @@ class GraphGenerator(
 
     val n: Int,
     val method: GraphProducerId,
+
     @ElementCollection
+    @CollectionTable(name = "graphgenerator_params")
+    @OrderColumn
     @LazyCollection(LazyCollectionOption.FALSE)
     val params: List<Double>,
+
     val seed: Long
 ) : NamedEntity(name) {
 

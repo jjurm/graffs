@@ -17,6 +17,7 @@ class GraphCollection(
 ) : AbstractJpaPersistable<Long>() {
 
     @OneToMany(mappedBy = "graphCollection", cascade = [CascadeType.REMOVE], orphanRemoval = true)
+    @OrderColumn
     @LazyCollection(LazyCollectionOption.EXTRA) // Allow querying size without initialising
     val perturbedGraphs: MutableList<PerturbedGraph> = mutableListOf()
 
