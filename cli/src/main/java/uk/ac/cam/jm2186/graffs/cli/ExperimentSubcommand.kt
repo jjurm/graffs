@@ -24,6 +24,7 @@ import uk.ac.cam.jm2186.graffs.metric.*
 import uk.ac.cam.jm2186.graffs.robustness.GraphCollectionMetadata
 import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasure
 import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasureId
+import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasures
 import uk.ac.cam.jm2186.graffs.util.TimePerf
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -313,7 +314,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
             timer.phase("Robustness - prepare")
             val hibernateMutex = Mutex()
             val measures = experiment.robustnessMeasures.map {
-                it to RobustnessMeasure.map.getValue(it)()
+                it to RobustnessMeasures.map.getValue(it)()
             }
             val metrics = experiment.metrics.map {
                 Metrics.map.getValue(it)

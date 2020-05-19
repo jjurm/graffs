@@ -1,2 +1,2 @@
 rootProject.name = 'graffs'
-include 'api', 'core', 'metrics', 'cli', 'figures'
+include 'api', 'core', 'metrics', 'robustness', 'cli', 'figures'

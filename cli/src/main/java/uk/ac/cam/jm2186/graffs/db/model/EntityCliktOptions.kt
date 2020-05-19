@@ -12,8 +12,8 @@ import uk.ac.cam.jm2186.graffs.graph.storage.GraphDataset
 import uk.ac.cam.jm2186.graffs.graph.storage.GraphDatasetId
 import uk.ac.cam.jm2186.graffs.metric.MetricId
 import uk.ac.cam.jm2186.graffs.metric.Metrics
-import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasure
 import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasureId
+import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasures
 
 /* GraphGenerator */
 
@@ -73,14 +73,14 @@ fun CliktCommand.experiment_metrics_required() =
 private fun CliktCommand.experiment_robustnessMeasures0() =
     option(
         "--robustnessMeasures", help = "Robustness measures that should be evaluated for each graph metric",
-        metavar = RobustnessMeasure.map.keys.joinToString(separator = ",")
+        metavar = RobustnessMeasures.map.keys.joinToString(separator = ",")
     ).split<String, RobustnessMeasureId>(",")
 
 fun CliktCommand.experiment_robustnessMeasures() =
-    experiment_robustnessMeasures0().validate { RobustnessMeasure.map.keys.containsAll(it) }
+    experiment_robustnessMeasures0().validate { RobustnessMeasures.map.keys.containsAll(it) }
 
 fun CliktCommand.experiment_robustnessMeasures_required() =
-    experiment_robustnessMeasures0().required().validate { RobustnessMeasure.map.keys.containsAll(it) }
+    experiment_robustnessMeasures0().required().validate { RobustnessMeasures.map.keys.containsAll(it) }
 
 /* Plots */
 

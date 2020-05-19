@@ -72,7 +72,9 @@ task jarUpload(dependsOn: shadowJar) {
 }
 
 dependencies {
+    api project(':api')
     api project(':core')
+    api project(':robustness')
 
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
     implementation group: 'commons-io', name: 'commons-io', version: '2.6'
