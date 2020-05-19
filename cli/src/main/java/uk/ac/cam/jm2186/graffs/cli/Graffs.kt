@@ -5,7 +5,7 @@ import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.output.CliktHelpFormatter
 import com.github.ajalt.clikt.parameters.options.versionOption
-import uk.ac.cam.jm2186.BuildConfig
+import uk.ac.cam.jm2186.graffs.BuildConfig
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
