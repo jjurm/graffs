@@ -31,6 +31,7 @@ println version
 subprojects {
     apply plugin: 'idea'
     apply plugin: 'java'
+    apply plugin: 'java-test-fixtures'
     apply plugin: 'org.jetbrains.kotlin.jvm'
     apply plugin: 'org.jetbrains.kotlin.kapt'
     apply plugin: 'org.jetbrains.kotlin.plugin.jpa'
@@ -42,8 +43,11 @@ subprojects {
 
     dependencies {
         testImplementation "org.junit.jupiter:junit-jupiter:5.5.2"
+        testFixturesImplementation "org.junit.jupiter:junit-jupiter:5.5.2"
 
         implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+        testFixturesImplementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+
         implementation group: 'log4j', name: 'log4j', version: '1.2.17'
         //implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.13.1'
         implementation group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.30'
