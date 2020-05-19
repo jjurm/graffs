@@ -12,10 +12,8 @@ interface Metric {
     companion object {
         val map: Map<MetricId, MetricInfo> by lazy {
             listOf<MetricInfo>(
-                //AverageDegreeMetric,
                 BetweennessCentralityMetric,
                 ClosenessCentrality,
-                //DangalchevClosenessCentralityMetric,
                 DegreeMetric,
                 Ego1EdgesMetric,
                 Ego2NodesMetric,
