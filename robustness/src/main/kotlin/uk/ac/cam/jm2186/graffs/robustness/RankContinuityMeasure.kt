@@ -1,7 +1,6 @@
 package uk.ac.cam.jm2186.graffs.robustness
 
 import uk.ac.cam.jm2186.graffs.db.model.GraphCollection
-import uk.ac.cam.jm2186.graffs.graph.threshold
 import uk.ac.cam.jm2186.graffs.metric.MetricInfo
 
 class RankContinuityMeasure : RobustnessMeasure {
@@ -26,7 +25,7 @@ class RankContinuityMeasure : RobustnessMeasure {
     fun consecutiveRankingPairs(overallRanking: OverallNodeRanking): List<Pair<GraphAttributeNodeRanking, GraphAttributeNodeRanking>> {
         return overallRanking
             .rankings
-            .sortedBy { it.graph.threshold }
+            .sortedBy { it.graph.index }
             .zipWithNext()
     }
 
