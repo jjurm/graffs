@@ -73,7 +73,7 @@ task jarUpload(dependsOn: shadowJar) {
 
 dependencies {
     api project(':api')
-    api project(':core')
+    api project(':db')
     api project(':graph')
     api project(':robustness')
 

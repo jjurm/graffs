@@ -1,6 +1,6 @@
 rootProject.name = 'graffs'
 include 'api'
-include 'core'
+include 'db'
 include 'graph'
 include 'metrics'
 include 'robustness'
