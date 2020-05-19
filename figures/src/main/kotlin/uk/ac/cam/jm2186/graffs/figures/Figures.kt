@@ -146,7 +146,7 @@ In this particular graph, (1) and (2) show similar characteristics (greater valu
 
         graph.getNodeSet<Node>().forEach { it.style("size: 50px;") }
         graph.getEdgeSet<Edge>().forEach { edge ->
-            val w = edge.getNumberAttribute(ATTRIBUTE_NAME_EDGE_WEIGHT) / 1000.0
+            val w = edge.getNumberAttribute(EDGE_ATTRIBUTE_WEIGHT) / 1000.0
             val size = (w * 45) + 4
             edge.style("size: ${size}px; fill-color: #0000A060;")
         }
@@ -285,7 +285,7 @@ The arrows indicate \textsl{inheritance} (``is a'') relationships between classe
         datasets.forEach { dataset ->
             val graph = GraphDataset(dataset).loadGraph()
             val weights = graph.getEachEdge<Edge>().map {
-                val w = it.getNumberAttribute(ATTRIBUTE_NAME_EDGE_WEIGHT)
+                val w = it.getNumberAttribute(EDGE_ATTRIBUTE_WEIGHT)
                 w.toInt()
             }
             sb.append("$dataset,${weights.joinToString(";")}\n")

@@ -14,9 +14,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
-import org.graphstream.graph.Edge
 import org.graphstream.graph.Graph
-import uk.ac.cam.jm2186.graffs.graph.ATTRIBUTE_NAME_EDGE_WEIGHT
 import uk.ac.cam.jm2186.graffs.graph.alg.giantComponent
 import uk.ac.cam.jm2186.graffs.graph.hasWeights
 import uk.ac.cam.jm2186.graffs.graph.storage.GraphDataset

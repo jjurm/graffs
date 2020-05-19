@@ -11,11 +11,10 @@ import org.graphstream.ui.layout.Layout
 import org.graphstream.util.Filter
 import org.graphstream.util.Filters
 
-const val ATTRIBUTE_NAME_EDGE_WEIGHT = "w"
 
 fun Graph.copy() = Graphs.clone(this)
 
-fun Graph.hasWeights() = getEdgeSet<Edge>().firstOrNull()?.hasAttribute(ATTRIBUTE_NAME_EDGE_WEIGHT) ?: false
+fun Graph.hasWeights() = getEdgeSet<Edge>().firstOrNull()?.hasAttribute(EDGE_ATTRIBUTE_WEIGHT) ?: false
 
 fun Graph.subgraph(
     nodeFilter: Filter<Node> = Filters.trueFilter(),

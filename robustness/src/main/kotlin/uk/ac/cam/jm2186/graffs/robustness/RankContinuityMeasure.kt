@@ -1,7 +1,7 @@
 package uk.ac.cam.jm2186.graffs.robustness
 
 import uk.ac.cam.jm2186.graffs.db.model.GraphCollection
-import uk.ac.cam.jm2186.graffs.graph.gen.AbstractEdgeThresholdGraphProducer
+import uk.ac.cam.jm2186.graffs.graph.threshold
 import uk.ac.cam.jm2186.graffs.metric.MetricInfo
 
 class RankContinuityMeasure : RobustnessMeasure {
@@ -24,17 +24,9 @@ class RankContinuityMeasure : RobustnessMeasure {
     }
 
     fun consecutiveRankingPairs(overallRanking: OverallNodeRanking): List<Pair<GraphAttributeNodeRanking, GraphAttributeNodeRanking>> {
-        fun GraphAttributeNodeRanking.threshold(): Double {
-            val number = graph.getNumber(AbstractEdgeThresholdGraphProducer.ATTRIBUTE_EDGE_THRESHOLD)
-            if (number.isNaN()) {
-                throw IllegalStateException("${this::class.simpleName} `${graph.id}` has no threshold attribute")
-            }
-            return number
-        }
-
         return overallRanking
             .rankings
-            .sortedBy { it.threshold() }
+            .sortedBy { it.graph.threshold }
             .zipWithNext()
     }
 

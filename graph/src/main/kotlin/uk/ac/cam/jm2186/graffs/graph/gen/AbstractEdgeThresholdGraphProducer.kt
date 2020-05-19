@@ -7,18 +7,12 @@ import org.graphstream.graph.Edge
 import org.graphstream.graph.Graph
 import org.graphstream.util.Filter
 import uk.ac.cam.jm2186.graffs.db.model.PerturbedGraph
-import uk.ac.cam.jm2186.graffs.graph.ATTRIBUTE_NAME_EDGE_WEIGHT
-import uk.ac.cam.jm2186.graffs.graph.getNumberAttribute
-import uk.ac.cam.jm2186.graffs.graph.subgraph
+import uk.ac.cam.jm2186.graffs.graph.*
 
 abstract class AbstractEdgeThresholdGraphProducer(
     protected val getThresholds: (n: Int) -> List<Double>,
     protected val coroutineScope: CoroutineScope
 ) : GraphProducer {
-
-    companion object {
-        const val ATTRIBUTE_EDGE_THRESHOLD = "edgeThreshold"
-    }
 
     override fun produce(
         sourceGraph: Graph,
@@ -36,18 +30,15 @@ abstract class AbstractEdgeThresholdGraphProducer(
     }
 
     internal class EdgeThresholdFilter(val threshold: Double) : Filter<Edge> {
-        override fun isAvailable(e: Edge): Boolean =
-            e.getAttribute<Double>(ATTRIBUTE_NAME_EDGE_WEIGHT)!! > threshold
+        override fun isAvailable(e: Edge): Boolean = e.weight > threshold
     }
 }
 
 fun Graph.filterAtThreshold(threshold: Double, baseId: String? = this.id, i: Int = 0): Graph {
     val graph = subgraph(
-        edgeFilter = AbstractEdgeThresholdGraphProducer.EdgeThresholdFilter(threshold),
-        id = "$baseId-$i"
+        id = "$baseId-$i",
+        edgeFilter = AbstractEdgeThresholdGraphProducer.EdgeThresholdFilter(threshold)
     )
-    graph.setAttribute(AbstractEdgeThresholdGraphProducer.ATTRIBUTE_EDGE_THRESHOLD, threshold)
+    graph.threshold = threshold
     return graph
 }
-
-fun Graph.threshold() = getNumberAttribute(AbstractEdgeThresholdGraphProducer.ATTRIBUTE_EDGE_THRESHOLD)

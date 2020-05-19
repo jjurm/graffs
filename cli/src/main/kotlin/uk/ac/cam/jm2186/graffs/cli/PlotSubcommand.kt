@@ -12,9 +12,7 @@ import uk.ac.cam.jm2186.graffs.db.getNamedEntity
 import uk.ac.cam.jm2186.graffs.db.model.Experiment
 import uk.ac.cam.jm2186.graffs.db.model.experiment_name
 import uk.ac.cam.jm2186.graffs.db.model.metric_name
-import uk.ac.cam.jm2186.graffs.graph.gen.AbstractEdgeThresholdGraphProducer
-import uk.ac.cam.jm2186.graffs.graph.gen.threshold
-import uk.ac.cam.jm2186.graffs.graph.getNumberAttribute
+import uk.ac.cam.jm2186.graffs.graph.threshold
 import uk.ac.cam.jm2186.graffs.metric.MetricId
 import uk.ac.cam.jm2186.graffs.metric.Metrics
 import uk.ac.cam.jm2186.graffs.robustness.*
@@ -80,10 +78,6 @@ class PlotSubcommand : NoOpCliktCommand(
 
     class RankSimilarityPlot : AbstractPlot(name = "rank-similarity-visual") {
 
-        private fun GraphAttributeNodeRanking.threshold() = graph.getNumberAttribute(
-            AbstractEdgeThresholdGraphProducer.ATTRIBUTE_EDGE_THRESHOLD
-        )
-
         override suspend fun run1() {
             val rankContinuity = RankContinuityMeasure()
 
@@ -106,7 +100,7 @@ class PlotSubcommand : NoOpCliktCommand(
                                 .map { (ranking1, ranking2) ->
                                     async {
                                         val kSimilarity = kSimilarity(k, overallRanking, ranking1, ranking2)
-                                        ranking1.threshold() / 1000 to kSimilarity
+                                        ranking1.graph.threshold / 1000 to kSimilarity
                                     }
                                 }
                                 .awaitAll()
@@ -202,7 +196,7 @@ class PlotSubcommand : NoOpCliktCommand(
                                 val kSimilarities = consecutiveRankingPairs
                                     .map { (ranking1, ranking2) ->
                                         async {
-                                            val threshold = ranking1.graph.threshold() / 1000
+                                            val threshold = ranking1.graph.threshold / 1000
                                             val kSimilarity = kSimilarity(k, overallRanking, ranking1, ranking2)
                                             "${graphCollection.dataset},$metric,$threshold,$kSimilarity\n"
                                         }
@@ -247,14 +241,14 @@ class PlotSubcommand : NoOpCliktCommand(
                                 // Calculate overall ranking only based on the med-high confidence interval
                                 val overallRanking = OverallNodeRanking(
                                     rankings = rankings.filter {
-                                        val t = it.graph.threshold()
+                                        val t = it.graph.threshold
                                         600 <= t + 1e-4 && t - 1e-4 <= 900
                                     }
                                 )
 
                                 val similarities = rankings.map { ranking ->
                                     async {
-                                        val threshold = ranking.graph.threshold() / 1000
+                                        val threshold = ranking.graph.threshold / 1000
                                         val similarity = alphaRelaxedKSimilarity(
                                             k, RankIdentifiabilityMeasure.DEFAULT_ALPHA, nodes = overallRanking,
                                             A = ranking, B = overallRanking

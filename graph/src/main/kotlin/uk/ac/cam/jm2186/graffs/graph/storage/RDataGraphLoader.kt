@@ -12,7 +12,7 @@ import org.renjin.script.RenjinScriptEngine
 import org.renjin.script.RenjinScriptEngineFactory
 import org.renjin.sexp.ListVector
 import org.renjin.sexp.StringVector
-import uk.ac.cam.jm2186.graffs.graph.ATTRIBUTE_NAME_EDGE_WEIGHT
+import uk.ac.cam.jm2186.graffs.graph.EDGE_ATTRIBUTE_WEIGHT
 import java.io.File
 
 internal class RDataGraphLoader(fileFilter: File.() -> Boolean = { true }) : GraphLoader(fileFilter) {
@@ -47,7 +47,7 @@ internal class RDataGraphLoader(fileFilter: File.() -> Boolean = { true }) : Gra
         (protein1 zip protein2 zip combined_score).forEach { (nodes, score) ->
             val (node1, node2) = nodes
             val edge = graph.addEdge<Edge>("$node1-$node2", node1, node2)
-            edge.addAttribute(ATTRIBUTE_NAME_EDGE_WEIGHT, score.toDouble())
+            edge.addAttribute(EDGE_ATTRIBUTE_WEIGHT, score.toDouble())
         }
         return graph
     }
