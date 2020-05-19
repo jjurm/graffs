@@ -1,6 +1,6 @@
 dependencies {
     api project(':api')
-    api project(':graph')
+    api project(':db')
 
     implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
 }

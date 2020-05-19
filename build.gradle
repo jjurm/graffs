@@ -22,8 +22,6 @@ allprojects {
         maven { url "https://jitpack.io/" }
     }
 
-    apply plugin: 'idea'
-
     group 'uk.ac.cam.jm2186'
     version '1.1-' + gitVersion()
 }
@@ -31,6 +29,7 @@ allprojects {
 println version
 
 subprojects {
+    apply plugin: 'idea'
     apply plugin: 'java'
     apply plugin: 'org.jetbrains.kotlin.jvm'
     apply plugin: 'org.jetbrains.kotlin.kapt'
