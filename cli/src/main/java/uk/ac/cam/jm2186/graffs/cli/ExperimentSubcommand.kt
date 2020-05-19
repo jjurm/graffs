@@ -287,8 +287,9 @@ class ExperimentSubcommand : NoOpCliktCommand(
                         val graphJob = evaluateMetricsAsync(metrics,
                             getGraph = { distortedGraph.graph },
                             log = { metric, result -> log(metric, result, graphCollection.dataset, distortedGraph) },
-                            storeResults = { saveTo ->
-                                saveTo(distortedGraph)
+                            storeResults = { graph, timings ->
+                                distortedGraph.graph = graph
+                                distortedGraph.addTimings(timings)
                                 hibernateMutex.withLock {
                                     hibernate.inTransaction { save(distortedGraph) }
                                 }

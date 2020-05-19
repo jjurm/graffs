@@ -3,8 +3,6 @@ package uk.ac.cam.jm2186.graffs.metric
 import kotlinx.coroutines.*
 import org.graphstream.graph.Graph
 import org.graphstream.graph.Node
-import uk.ac.cam.jm2186.graffs.db.model.PerturbedGraph
-import uk.ac.cam.jm2186.graffs.graph.getNumberAttribute
 
 fun Collection<MetricInfo>.topologicalOrderWithDependencies(): List<MetricInfo> {
     // include also all dependencies needed to compute
@@ -22,14 +20,17 @@ fun CoroutineScope.evaluateMetricsAsync(
     metrics: Collection<MetricInfo>,
     getGraph: () -> Graph,
     log: (metric: MetricInfo, result: MetricResult) -> Unit = { _, _ -> },
-    storeResults: suspend (saveTo: (PerturbedGraph) -> Unit) -> Unit = { }
+    storeResults: suspend (graph: Graph, timings: Map<MetricId, Long>) -> Unit = { _, _ -> }
 ): Deferred<Unit> {
     val graphDeferred = async { getGraph() }
 
     val metricsToCompute = metrics.topologicalOrderWithDependencies()
 
     return async(start = CoroutineStart.LAZY) {
-        val metricList = metricsToCompute.map { it to it.factory() }
+        val metricList = metricsToCompute.map {
+            val metric: Metric = it.factory()
+            it to metric
+        }
         val graph = graphDeferred.await()
         val timings = metricList.mapNotNull { (metricInfo, metric) ->
             val result = metric.evaluate(graph)
@@ -43,10 +44,7 @@ fun CoroutineScope.evaluateMetricsAsync(
         }
         // store any new results
         if (timings.isNotEmpty()) {
-            storeResults { perturbedGraph ->
-                perturbedGraph.graph = graph
-                perturbedGraph.addTimings(timings)
-            }
+            storeResults(graph, timings.toMap())
         }
     }
 }
@@ -64,4 +62,10 @@ fun MetricInfo.evaluateSingle(graph: Graph) {
     }
 }
 
-fun Node.getMetricValue(metric: MetricInfo): Double = getNumberAttribute(metric.attributeName)
+fun Node.getMetricValue(metric: MetricInfo): Double {
+    val number = getNumber(metric.attributeName)
+    if (number.isNaN()) {
+        throw IllegalStateException("${this::class.simpleName} `${id}` has NaN value for metric `${metric.id}`")
+    }
+    return number
+}

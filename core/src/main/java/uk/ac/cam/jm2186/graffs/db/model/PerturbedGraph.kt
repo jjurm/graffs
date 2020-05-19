@@ -40,7 +40,7 @@ class PerturbedGraph(
     @CollectionTable(joinColumns = [JoinColumn(name = "perturbedgraph")])
     var timings: MutableMap<MetricId, Long>? = mutableMapOf()
 
-    fun addTimings(timings: List<Pair<MetricId, Long>>) {
+    fun addTimings(timings: Map<MetricId, Long>) {
         val t = this.timings ?: mutableMapOf()
         t.putAll(timings)
         this.timings = t
