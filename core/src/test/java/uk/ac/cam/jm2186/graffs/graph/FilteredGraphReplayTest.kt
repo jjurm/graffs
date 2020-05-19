@@ -5,7 +5,6 @@ import org.graphstream.graph.Node
 import org.graphstream.graph.implementations.DefaultGraph
 import org.graphstream.util.Filters
 import org.junit.jupiter.api.Test
-import uk.ac.cam.jm2186.graffs.GraphAssert
 
 internal class FilteredGraphReplayTest {
 

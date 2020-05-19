@@ -1,22 +1,21 @@
 package uk.ac.cam.jm2186.graffs.graph
 
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-import org.junit.jupiter.api.Assertions.*
-import uk.ac.cam.jm2186.graffs.GraphAssert
 
 internal class GraphTestUtilsTest {
 
     @Test
     fun createGraphId() {
         val id = GraphTestUtils.createGraphId()
-        assertEquals("uk.ac.cam.jm2186.graffs.graph.GraphTestUtilsTest.createGraphId:12", id)
+        assertEquals("uk.ac.cam.jm2186.graffs.graph.GraphTestUtilsTest.createGraphId:11", id)
     }
 
     @Test
     fun createGraphId_ofParent() {
         val id = createGraphId_ofParent_createId()
-        assertEquals("uk.ac.cam.jm2186.graffs.graph.GraphTestUtilsTest.createGraphId_ofParent:18", id)
+        assertEquals("uk.ac.cam.jm2186.graffs.graph.GraphTestUtilsTest.createGraphId_ofParent:17", id)
     }
 
     private fun createGraphId_ofParent_createId() = GraphTestUtils.createGraphId(1)
@@ -24,7 +23,7 @@ internal class GraphTestUtilsTest {
     @Test
     fun createGraphId_withIndex() {
         val id = GraphTestUtils.createGraphId(0, 7)
-        assertEquals("uk.ac.cam.jm2186.graffs.graph.GraphTestUtilsTest.createGraphId_withIndex:26-7", id)
+        assertEquals("uk.ac.cam.jm2186.graffs.graph.GraphTestUtilsTest.createGraphId_withIndex:25-7", id)
     }
 
     @Test

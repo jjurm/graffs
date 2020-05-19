@@ -1,4 +1,4 @@
-package uk.ac.cam.jm2186.graffs
+package uk.ac.cam.jm2186.graffs.graph
 
 import org.graphstream.graph.Graph
 import org.junit.jupiter.api.Assertions
