@@ -74,6 +74,7 @@ task jarUpload(dependsOn: shadowJar) {
 dependencies {
     api project(':api')
     api project(':core')
+    api project(':graph')
     api project(':robustness')
 
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'

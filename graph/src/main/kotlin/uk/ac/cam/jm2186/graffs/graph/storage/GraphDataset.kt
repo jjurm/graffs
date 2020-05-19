@@ -5,8 +5,6 @@ import java.io.File
 import java.io.IOException
 
 
-typealias GraphDatasetId = String
-
 class GraphDataset(val id: GraphDatasetId, validate: Boolean = false) {
 
     init {
