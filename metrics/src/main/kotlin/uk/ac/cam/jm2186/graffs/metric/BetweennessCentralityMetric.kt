@@ -24,4 +24,3 @@ object BetweennessCentralityMetric : SingletonMetric("Betweenness") {
         alg.compute()
     }
 }
-

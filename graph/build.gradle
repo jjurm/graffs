@@ -1,6 +1,5 @@
 dependencies {
     api project(':db')
-    testImplementation testFixtures(project(':api'))
 
     implementation group: 'org.graphstream', name: 'gs-algo', version: '1.3'
     implementation group: 'org.apache.commons', name: 'commons-pool2', version: '2.8.0'
@@ -8,4 +7,6 @@ dependencies {
         exclude group: 'org.slf4j', module: 'slf4j-api'
         exclude group: 'org.slf4j', module: 'slf4j-jdk14'
     }
+
+    testImplementation testFixtures(project(':api'))
 }
