@@ -285,16 +285,16 @@ class ExperimentSubcommand : NoOpCliktCommand(
                 val graphJobs = mutableListOf<Deferred<Unit>>()
 
                 graphCollectionSubset.forEach { graphCollection ->
-                    graphCollection.perturbedGraphs.forEach { distortedGraph ->
+                    graphCollection.perturbedGraphs.forEach { perturbedGraph ->
 
                         val graphJob = evaluateMetricsAsync(metrics,
-                            getGraph = { distortedGraph.graph },
-                            log = { metric, result -> log(metric, result, graphCollection.dataset, distortedGraph) },
+                            getGraph = { perturbedGraph.graph },
+                            log = { metric, result -> log(metric, result, graphCollection.dataset, perturbedGraph) },
                             storeResults = { graph, timings ->
-                                distortedGraph.graph = graph
-                                distortedGraph.addTimings(timings)
+                                perturbedGraph.graph = graph
+                                perturbedGraph.addTimings(timings)
                                 hibernateMutex.withLock {
-                                    hibernate.inTransaction { save(distortedGraph) }
+                                    hibernate.inTransaction { save(perturbedGraph) }
                                 }
                             }
                         )

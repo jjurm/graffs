@@ -15,7 +15,7 @@ import javax.persistence.*
 
 @Entity
 class PerturbedGraph(
-    val hash: Long,
+    val index: Int,
     graph: Graph,
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -46,7 +46,7 @@ class PerturbedGraph(
         this.timings = t
     }
 
-    /** Access the deserialized version of the distorted graph (with underlying cache) */
+    /** Access the deserialized version of the perturbed graph (with underlying cache) */
     var graph: Graph
         get() = when (val cached = _graph) {
             null -> {
@@ -77,9 +77,7 @@ class PerturbedGraph(
     }
 
     fun getShortHash(): String {
-        val v1 = hash.hashCode()
-        val v2 = (v1 and 0xffff) xor ((v1 shr 16) and 0xffff)
-        return v2.toString(16)
+        return index.toString(16)
     }
 
 }

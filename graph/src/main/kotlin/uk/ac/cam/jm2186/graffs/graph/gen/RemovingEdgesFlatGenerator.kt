@@ -51,7 +51,7 @@ class RemovingEdgesFlatGenerator(
                 val graphSeed = random.nextLong()
                 val id = "$baseId-$i"
                 val gen = g.subgraph(id = id, edgeFilter = RandomElementRemoverFilter(deletionRate, graphSeed))
-                PerturbedGraph(seed, gen)
+                PerturbedGraph(i, gen)
             }
         }
     }

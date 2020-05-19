@@ -46,18 +46,19 @@ class RemovingEdgesSequenceGenerator(
             } else sourceGraph.copy()
         }
 
-        fun perturbedAsync(seed: Long, graph: Deferred<Graph>) = coroutineScope.async {
-            PerturbedGraph(seed, graph.await())
+        fun perturbedAsync(index: Int, graph: Deferred<Graph>) = coroutineScope.async {
+            PerturbedGraph(index, graph.await())
         }
 
-        return generateSequence(0 to (baseGraph to perturbedAsync(seed, baseGraph))) { (i, prev) ->
+        return generateSequence(0 to (baseGraph to perturbedAsync(0, baseGraph))) { (i, prev) ->
+            val index = i + 1
             val graphSeed = random.nextLong()
             val gen = coroutineScope.async {
                 val prevGraph = prev.first.await()
                 val id = "$baseId-$i"
-                prevGraph.subgraph(id = id, edgeFilter = RandomElementRemoverFilter(deletionRate, seed))
+                prevGraph.subgraph(id = id, edgeFilter = RandomElementRemoverFilter(deletionRate, graphSeed))
             }
-            (i + 1) to (gen to perturbedAsync(graphSeed, gen))
+            index to (gen to perturbedAsync(index, gen))
         }.map { it.second.second }.take(n).toList()
     }
 
