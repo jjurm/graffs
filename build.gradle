@@ -7,7 +7,6 @@ buildscript {
 plugins {
     id 'org.jetbrains.dokka' version '0.10.0'
     id 'com.palantir.git-version' version '0.12.2'
-    id 'de.fuerstenau.buildconfig' version '1.1.8'
     id "co.riiid.gradle" version "0.4.2"
 
     id 'org.jetbrains.kotlin.jvm' version '1.3.70' apply false
@@ -27,10 +26,6 @@ allprojects {
 
     group 'uk.ac.cam.jm2186'
     version '1.1-' + gitVersion()
-
-    def javaVersion = JavaVersion.VERSION_1_8
-    sourceCompatibility = javaVersion
-    targetCompatibility = javaVersion
 }
 
 println version
@@ -77,10 +72,6 @@ subprojects {
     }
 }
 
-buildConfig {
-    buildConfigField 'java.time.Instant', 'BUILD_DATE', 'java.time.Instant.ofEpochMilli(' + System.currentTimeMillis() + 'L)'
-}
-
 dokka {
     outputFormat = 'html'
     outputDirectory = "$buildDir/javadoc"
@@ -90,25 +81,6 @@ dokka {
     }
 }
 
-/*publishing {
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/jjurm/graffs")
-            credentials {
-                //username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
-                //password = project.findProperty("gpr.key") ?: System.getenv("PASSWORD")
-                username = buildProperties.secrets['gpr.user'].string
-                password = buildProperties.secrets['gpr.key'].string
-            }
-        }
-    }
-    publications {
-        gpr(MavenPublication) {
-            from(components.java)
-        }
-    }
-}*/
 
 github {
     owner = 'jjurm'
@@ -122,8 +94,9 @@ github {
     name = "v${version}"
     //body = """"""
     assets = [
-            "${project(':cli').buildDir}/libs/${archivesBaseName}-${version}.jar"
+            "${project(':cli').buildDir}/libs/${project(':cli').archivesBaseName}-${version}.jar"
     ]
 }
 
+githubRelease.dependsOn("build")
 githubRelease.dependsOn(":cli:shadowJar")

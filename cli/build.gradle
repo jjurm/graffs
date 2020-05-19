@@ -1,5 +1,7 @@
 plugins {
     id 'application'
+    id 'idea'
+    id 'de.fuerstenau.buildconfig' version '1.1.8'
     id 'com.github.johnrengelman.shadow' version '5.2.0'
 }
 
@@ -9,6 +11,25 @@ dependencies {
 
 mainClassName = "uk.ac.cam.jm2186.graffs.cli.GraffsKt"
 archivesBaseName = rootProject.name
+
+defaultTasks 'run'
+
+buildConfig {
+    appName = "graffs-cli"
+    buildConfigField 'java.time.Instant', 'BUILD_DATE', 'java.time.Instant.ofEpochMilli(' + System.currentTimeMillis() + 'L)'
+}
+// Java version for the BuildConfig generated class
+def javaVersion = JavaVersion.VERSION_1_8
+sourceCompatibility = javaVersion
+targetCompatibility = javaVersion
+
+idea {
+    module {
+        def buildConfigGenerated = file('build/gen/buildconfig/src/main')
+        sourceDirs += buildConfigGenerated
+        generatedSourceDirs += buildConfigGenerated
+    }
+}
 
 jar {
     manifest {
@@ -50,7 +71,6 @@ task jarUpload(dependsOn: shadowJar) {
 }
 
 dependencies {
-    api project(':')
     api project(':core')
 
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
