@@ -12,6 +12,7 @@ var Graph.threshold: Double
         ?: throw IllegalStateException("Graph `$id` does not have any threshold stored")
     set(threshold) = setAttribute(GRAPH_ATTRIBUTE_EDGE_THRESHOLD, threshold)
 
-val Edge.weight: Double
+var Edge.weight: Double
     get() = getNumber(EDGE_ATTRIBUTE_WEIGHT).takeUnless { it.isNaN() }
         ?: throw IllegalStateException("Edge `$id` of graph `${getNode0<Node>().graph}` has no weight")
+    set(weight) = setAttribute(EDGE_ATTRIBUTE_WEIGHT, weight)

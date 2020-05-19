@@ -1,7 +1,10 @@
 package uk.ac.cam.jm2186.graffs.graph
 
 import org.graphstream.algorithm.generator.RandomGenerator
+import org.graphstream.graph.Edge
+import org.graphstream.graph.Graph
 import org.graphstream.graph.implementations.DefaultGraph
+import kotlin.random.Random
 
 object GraphTestUtils {
 
@@ -58,4 +61,11 @@ object GraphTestUtils {
         return graph
     }
 
+}
+
+fun Graph.addRandomWeights() {
+    val random = Random(42)
+    getEachEdge<Edge>().forEach {
+        it.weight = random.nextDouble()
+    }
 }

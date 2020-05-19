@@ -6,6 +6,7 @@ import kotlinx.coroutines.async
 import org.graphstream.graph.Graph
 import uk.ac.cam.jm2186.graffs.db.model.PerturbedGraph
 import uk.ac.cam.jm2186.graffs.graph.copy
+import uk.ac.cam.jm2186.graffs.graph.filterAtThreshold
 import uk.ac.cam.jm2186.graffs.graph.hasWeights
 import uk.ac.cam.jm2186.graffs.graph.subgraph
 import kotlin.random.Random

@@ -10,6 +10,7 @@ import org.graphstream.stream.GraphReplay
 import org.graphstream.ui.layout.Layout
 import org.graphstream.util.Filter
 import org.graphstream.util.Filters
+import uk.ac.cam.jm2186.graffs.graph.gen.AbstractEdgeThresholdGraphProducer
 
 
 fun Graph.copy() = Graphs.clone(this)
@@ -38,6 +39,15 @@ fun Graph.subgraph(
     edgeFilter = edgeSet?.let { set -> Filter<Edge> { it in set } } ?: Filters.trueFilter(),
     id = id
 )
+
+fun Graph.filterAtThreshold(threshold: Double, baseId: String? = this.id, i: Int = 0): Graph {
+    val graph = subgraph(
+        id = "$baseId-$i",
+        edgeFilter = AbstractEdgeThresholdGraphProducer.EdgeThresholdFilter(threshold)
+    )
+    graph.threshold = threshold
+    return graph
+}
 
 fun Element.getNumberAttribute(attributeName: String): Double {
     val number = getNumber(attributeName)

@@ -40,7 +40,8 @@ private fun exportGraph(graph: Graph, out: Writer) {
     var newline = graph.attributeCount > 0
 
     val processed = HashSet<Node>()
-    for (node in graph) {
+    val nodes = graph.sortedBy { it.index }
+    for (node in nodes) {
         if (newline) out.write("\n")
         newline = true
 
@@ -55,6 +56,7 @@ private fun exportGraph(graph: Graph, out: Writer) {
                 }
             }
             .filterNotNull()
+            .sortedBy { it.second.index }
             .iterator()
         if (edgesToPrint.hasNext()) {
             out.write(" [")

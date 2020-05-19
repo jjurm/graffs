@@ -11,7 +11,6 @@ import uk.ac.cam.jm2186.graffs.cli.Graffs
 import uk.ac.cam.jm2186.graffs.cli.GraphVisualiser
 import uk.ac.cam.jm2186.graffs.graph.*
 import uk.ac.cam.jm2186.graffs.graph.alg.giantComponent
-import uk.ac.cam.jm2186.graffs.graph.gen.filterAtThreshold
 import uk.ac.cam.jm2186.graffs.graph.storage.GraphDataset
 import uk.ac.cam.jm2186.graffs.metric.*
 import uk.ac.cam.jm2186.graffs.util.removeAll

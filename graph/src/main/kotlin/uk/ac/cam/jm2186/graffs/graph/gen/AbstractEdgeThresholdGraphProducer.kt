@@ -33,12 +33,3 @@ abstract class AbstractEdgeThresholdGraphProducer(
         override fun isAvailable(e: Edge): Boolean = e.weight > threshold
     }
 }
-
-fun Graph.filterAtThreshold(threshold: Double, baseId: String? = this.id, i: Int = 0): Graph {
-    val graph = subgraph(
-        id = "$baseId-$i",
-        edgeFilter = AbstractEdgeThresholdGraphProducer.EdgeThresholdFilter(threshold)
-    )
-    graph.threshold = threshold
-    return graph
-}
