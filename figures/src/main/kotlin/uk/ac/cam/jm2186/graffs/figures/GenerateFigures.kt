@@ -4,21 +4,18 @@ import kotlinx.coroutines.*
 import java.io.File
 
 
-val texFiguresDir = File(System.getProperty("graffs.figures_dir", "../partii/figures_gen"))
+val texFiguresDir = File(System.getProperty("graffs.figures_dir", "figures_gen"))
 
-fun CoroutineScope.generateAndExportAll(args: Array<String>) {
+fun generateAndExportAll(args: Array<String>) {
     getAllFigures()
         .filter { args.isEmpty() || it.context.figureName in args }
         .forEach {
-            launch { it.generate().export() }
+            runBlocking {
+                it.generate().export()
+            }
         }
 }
 
 fun main(args: Array<String>) {
-    runBlocking {
-
-        Figures::coverGraphImg.figure().generate().export()
-        //generateAndExportAll(args)
-
-    }
+    generateAndExportAll(args)
 }

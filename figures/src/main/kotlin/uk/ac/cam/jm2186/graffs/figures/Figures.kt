@@ -26,7 +26,8 @@ abstract class Figures : FigureContext {
 
     @Figure(
         "ecoli_giant_at_900",
-        gfxArgs = "height=10cm",
+        beginEndFigure = false,
+        gfxArgs = """width=\linewidth""",
         caption = """An interaction network of proteins from the \textit{Escherichia coli} organism from the STRING database, thresholded at the $0.9$ score (high confidence). Only nodes of the giant component are shown."""
     )
     fun figure1() {
@@ -43,8 +44,10 @@ abstract class Figures : FigureContext {
 
     @Figure(
         "simple_graph",
-        gfxArgs = "height=6cm",
-        caption = """A small example of a \textsl{connected} \textsl{simple} graph (i.e. \textsl{undirected} and \textsl{anti-reflexive})."""
+        wrapfigureArgs = """[11]{R}{0.31\textwidth}""",
+        vspaceAround = "-10mm",
+        gfxArgs = """width=\linewidth""",
+        caption = """A small example of a \textsl{connected} \textsl{simple} graph (\textsl{undirected} and \textsl{anti-reflexive})."""
     )
     fun figureSimpleGraph() {
         val graph = simpleGraph.copy()
@@ -55,7 +58,8 @@ abstract class Figures : FigureContext {
 
     @Figure(
         "disconnecting_graph",
-        gfxArgs = "height=8cm",
+        gfxArgs = "height=6cm",
+        vspaceAround = "-4mm",
         caption = """Illustrated is how thresholding (a subgraph of) a protein network (left) results in one giant component (red) and multiple small disconnected components.
 The left is a certain subgraph of the \textit{ecoli} dataset (all edges with confidence $>0.4$), the right graph has only edges with confidence $>0.5$."""
     )
@@ -127,8 +131,9 @@ In this particular graph, (1) and (2) show similar characteristics (greater valu
 
     @Figure(
         "graph_example_scored_edges",
-        gfxArgs = "height=4cm,trim=0 3cm 0 3cm,clip",
-        caption = """A tiny subgraph of the \textsl{ecoli} dataset with scored edges"""
+        wrapfigureArgs = """[11]{R}{0.24\textwidth}""",
+        gfxArgs = """width=\linewidth,trim=0 3.4cm 0 3.2cm,clip,angle=90,origin=c""",
+        caption = """A tiny subgraph of the \texttt{ecoli} dataset with the width of edges proportional to their scores"""
     )
     fun figureScoredEdges() {
         var graph = GraphDataset("ecoli").loadGraph().copy()

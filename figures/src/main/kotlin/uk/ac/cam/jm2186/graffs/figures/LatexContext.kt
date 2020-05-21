@@ -23,13 +23,8 @@ interface FigureContext {
 }
 
 class LatexContext(private val annotation: Figure) : Figures() {
-    val figureName get() = annotation.name
-    val figurePos get() = annotation.figurePos
-    val gfxArgs get() = annotation.gfxArgs
-    val caption get() = annotation.caption
-    val captionPos get() = annotation.captionPos
-    val generateTex get() = annotation.generateTex
-    val ignore get() = annotation.ignore
+    val a get() = annotation
+    val figureName get() = a.name
 
     private fun filename(index: Int, fileType: FileType) =
         "$figureName${if (index == 0) "" else (index + 1).toString()}.${fileType.extension}"
@@ -52,28 +47,43 @@ class LatexContext(private val annotation: Figure) : Figures() {
         get() {
             val sb = StringBuilder()
 
-            val captionAndLabel = """\caption{$caption}
-\label{fig:$figureName}"""
-            sb.append("""\begin{figure}${figurePos * { "[$it]" }}""" + "\n")
-            if (captionPos == TOP) sb.append(captionAndLabel + "\n")
+            if (a.beginEndFigure) {
+                if (a.wrapfigureArgs.isEmpty()) {
+                    sb.append("""\begin{figure}${a.figurePos * { "[$it]" }}""" + "\n")
+                } else {
+                    sb.append("""\begin{wrapfigure}${a.wrapfigureArgs}""" + "\n")
+                }
+            }
 
+            val captionAndLabel = """\caption{${a.caption}}
+\label{fig:$figureName}"""
+            if (a.captionPos == TOP) sb.append(captionAndLabel + "\n")
+
+            sb.append(a.vspaceAround * { "\\vspace*{$it}\n" })
             val files = filenames.joinToString("", transform = { (type, file) ->
                 when (type) {
-                    PDF, PNG -> """\includegraphics[$gfxArgs]{$file}"""
+                    PDF, PNG -> """\includegraphics[${a.gfxArgs}]{$file}"""
                     TEX -> file(file).readText()
                     CSV -> ""
                 }
             })
             sb.append(files + "\n")
+            sb.append(a.vspaceAround * { "\\vspace*{$it}\n" })
 
-            if (captionPos == BOTTOM) sb.append(captionAndLabel + "\n")
-            sb.append("""\end{figure}""" + "\n")
+            if (a.captionPos == BOTTOM) sb.append(captionAndLabel + "\n")
+            if (a.beginEndFigure) {
+                if (a.wrapfigureArgs.isEmpty()) {
+                    sb.append("""\end{figure}""" + "\n")
+                } else {
+                    sb.append("""\end{wrapfigure}""" + "\n")
+                }
+            }
 
             return sb.toString()
         }
 
     suspend fun generateFigure(callable: KFunction<*>) {
-        if (ignore) return
+        if (a.ignore) return
         try {
             callable.callSuspend(this)
         } catch (e: InvocationTargetException) {
@@ -83,13 +93,13 @@ class LatexContext(private val annotation: Figure) : Figures() {
     }
 
     suspend fun exportTex(texFiguresDir: File) {
-        if (ignore) return
+        if (a.ignore) return
         try {
             withContext(Dispatchers.IO) {
                 filenames.forEach { (_, filename) ->
                     FileUtils.copyFile(file(filename), File(texFiguresDir, filename))
                 }
-                if (generateTex) {
+                if (a.generateTex) {
                     FileUtils.writeStringToFile(File(texFiguresDir, "$figureName.tex"), texCode, Charsets.UTF_8)
                 }
             }

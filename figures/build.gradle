@@ -2,8 +2,11 @@ dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter:5.5.2"
     implementation "org.jetbrains.kotlin:kotlin-reflect:1.3.70"
 
+    api project(':api')
     api project(':db')
-    implementation project(':cli')
+    api project(':graph')
+    api project(':metrics')
+    api project(':cli')
 
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
     implementation group: 'commons-io', name: 'commons-io', version: '2.6'
