@@ -17,5 +17,8 @@ fun generateAndExportAll(args: Array<String>) {
 }
 
 fun main(args: Array<String>) {
-    generateAndExportAll(args)
+    //generateAndExportAll(args)
+    runBlocking {
+        Figures::diagramDataModelClasses.figure().generate().export()
+    }
 }

@@ -101,5 +101,8 @@ github {
     ]
 }
 
+
 githubRelease.dependsOn("build")
 githubRelease.dependsOn(":cli:shadowJar")
+task build {}
+build.dependsOn project(':cli').tasks.build

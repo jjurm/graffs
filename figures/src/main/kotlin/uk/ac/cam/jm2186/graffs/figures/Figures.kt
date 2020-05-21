@@ -159,7 +159,7 @@ In this particular graph, (1) and (2) show similar characteristics (greater valu
 
     @Figure(
         "data_model_diagram",
-        gfxArgs = """width=0.9\linewidth""",
+        gfxArgs = """width=0.8\linewidth""",
         caption = """Data model diagram showing \textsl{persistence schema}, i.e. entities stored in the database.
 The arrows indicate \textsl{association} links, i.e. ``has a'' or ``refers to'' relationships.
 The diagram is created from the Java Persistence API schema inferred from the source code."""
@@ -170,9 +170,11 @@ The diagram is created from the Java Persistence API schema inferred from the so
 
     @Figure(
         "data_model_classes_diagram",
+        figurePos = "H",
         gfxArgs = """width=\linewidth""",
         caption = """\textsl{Entity classes} (i.e. classes defining the persistence model presented in \autoref{fig:data_model_diagram}), and their inheritance hierarchy.
-The arrows indicate \textsl{inheritance} (``is a'') relationships between classes."""
+The arrows indicate \textsl{inheritance} (``is a'') relationships between classes.
+Below are displayed JPA metamodel classes automatically generated from the entities by Hibernate."""
     )
     fun diagramDataModelClasses() {
         convertSvgToPdf(File("diagrams/data-model-classes.svg"), newTargetFile(FileType.PDF))
@@ -181,8 +183,8 @@ The arrows indicate \textsl{inheritance} (``is a'') relationships between classe
     @Figure(
         "graphstream_diagram",
         figurePos = "h",
-        gfxArgs = """width=0.8\linewidth""",
-        caption = """A simplified diagram of the most relevant interfaces from the GraphStream library"""
+        gfxArgs = """width=0.65\linewidth""",
+        caption = """A simplified diagram of key interfaces from the GraphStream library"""
     )
     fun diagramGraphstream() {
         convertSvgToPdf(File("diagrams/graphstream.svg"), newTargetFile(FileType.PDF))
@@ -190,6 +192,7 @@ The arrows indicate \textsl{inheritance} (``is a'') relationships between classe
 
     @Figure(
         "data_dir_structure",
+        wrapfigureArgs = """[7]{R}{0.27\textwidth}""",
         caption = """An example structure of the \texttt{data} directory"""
     )
     fun treeDatasets() {
@@ -221,7 +224,9 @@ The arrows indicate \textsl{inheritance} (``is a'') relationships between classe
 
     @Figure(
         "cli_commands_hierarchy",
-        caption = """Hierarchy of supported command-line interface commands, and their brief description""",
+        caption = """Hierarchy of supported command-line interface commands, and their brief description.
+The essential commands for running the main pipeline (\autoref{fig:main_data_flow}) are highlighted in bold.
+        """,
         captionPos = CaptionPos.TOP
     )
     fun treeCliCommands() {

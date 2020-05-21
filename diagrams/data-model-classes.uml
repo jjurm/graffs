@@ -3,20 +3,71 @@
   <ID>JAVA</ID>
   <OriginalElement>uk.ac.cam.jm2186.graffs.db</OriginalElement>
   <nodes>
-    <node x="307.25" y="102.0">uk.ac.cam.jm2186.graffs.db.model.Robustness</node>
-    <node x="511.25" y="146.0">uk.ac.cam.jm2186.graffs.db.AbstractJpaPersistable</node>
-    <node x="167.25" y="146.0">uk.ac.cam.jm2186.graffs.db.NamedEntity</node>
-    <node x="605.5" y="338.0">uk.ac.cam.jm2186.graffs.db.model.GraphCollection</node>
-    <node x="264.0" y="316.0">uk.ac.cam.jm2186.graffs.db.model.GraphGenerator</node>
+    <node x="330.75" y="102.0">uk.ac.cam.jm2186.graffs.db.model.Robustness</node>
+    <node x="418.25" y="605.0">uk.ac.cam.jm2186.graffs.db.AbstractJpaPersistable_</node>
+    <node x="657.0" y="327.0">uk.ac.cam.jm2186.graffs.db.model.GraphCollection</node>
+    <node x="278.0" y="503.0">uk.ac.cam.jm2186.graffs.db.Entity_</node>
+    <node x="259.25" y="605.0">uk.ac.cam.jm2186.graffs.db.model.Robustness_</node>
+    <node x="549.0" y="707.0">uk.ac.cam.jm2186.graffs.db.model.PerturbedGraph_</node>
+    <node x="353.0" y="707.0">uk.ac.cam.jm2186.graffs.db.model.GraphCollection_</node>
+    <node x="0.0" y="707.0">uk.ac.cam.jm2186.graffs.db.model.GraphGenerator_</node>
     <node x="0.0" y="294.0">uk.ac.cam.jm2186.graffs.db.model.Experiment</node>
-    <node x="354.0" y="0.0">uk.ac.cam.jm2186.graffs.db.Entity</node>
+    <node x="432.0" y="305.0">uk.ac.cam.jm2186.graffs.db.model.PerturbedGraph</node>
+    <node x="377.5" y="0.0">uk.ac.cam.jm2186.graffs.db.Entity</node>
+    <node x="550.0" y="146.0">uk.ac.cam.jm2186.graffs.db.AbstractJpaPersistable</node>
+    <node x="95.25" y="605.0">uk.ac.cam.jm2186.graffs.db.NamedEntity_</node>
+    <node x="167.25" y="146.0">uk.ac.cam.jm2186.graffs.db.NamedEntity</node>
+    <node x="188.0" y="707.0">uk.ac.cam.jm2186.graffs.db.model.Experiment_</node>
+    <node x="264.0" y="316.0">uk.ac.cam.jm2186.graffs.db.model.GraphGenerator</node>
   </nodes>
   <notes />
   <edges>
+    <edge source="uk.ac.cam.jm2186.graffs.db.model.Experiment_" target="uk.ac.cam.jm2186.graffs.db.NamedEntity_">
+      <point x="0.0" y="-26.0" />
+      <point x="256.0" y="682.0" />
+      <point x="203.25" y="682.0" />
+      <point x="36.0" y="26.0" />
+    </edge>
+    <edge source="uk.ac.cam.jm2186.graffs.db.model.Robustness_" target="uk.ac.cam.jm2186.graffs.db.Entity_">
+      <point x="0.0" y="-26.0" />
+      <point x="327.25" y="580.0" />
+      <point x="330.0" y="580.0" />
+      <point x="0.0" y="26.0" />
+    </edge>
+    <edge source="uk.ac.cam.jm2186.graffs.db.AbstractJpaPersistable" target="uk.ac.cam.jm2186.graffs.db.Entity">
+      <point x="0.0" y="-27.0" />
+      <point x="654.0" y="77.0" />
+      <point x="444.1666666666667" y="77.0" />
+      <point x="26.666666666666686" y="26.0" />
+    </edge>
+    <edge source="uk.ac.cam.jm2186.graffs.db.NamedEntity_" target="uk.ac.cam.jm2186.graffs.db.Entity_">
+      <point x="0.0" y="-26.0" />
+      <point x="167.25" y="580.0" />
+      <point x="295.3333333333333" y="580.0" />
+      <point x="-34.666666666666686" y="26.0" />
+    </edge>
+    <edge source="uk.ac.cam.jm2186.graffs.db.model.GraphGenerator_" target="uk.ac.cam.jm2186.graffs.db.NamedEntity_">
+      <point x="0.0" y="-26.0" />
+      <point x="84.0" y="682.0" />
+      <point x="131.25" y="682.0" />
+      <point x="-36.0" y="26.0" />
+    </edge>
+    <edge source="uk.ac.cam.jm2186.graffs.db.model.GraphCollection_" target="uk.ac.cam.jm2186.graffs.db.AbstractJpaPersistable_">
+      <point x="0.0" y="-26.0" />
+      <point x="441.0" y="682.0" />
+      <point x="476.25" y="682.0" />
+      <point x="-58.0" y="26.0" />
+    </edge>
+    <edge source="uk.ac.cam.jm2186.graffs.db.AbstractJpaPersistable_" target="uk.ac.cam.jm2186.graffs.db.Entity_">
+      <point x="0.0" y="-26.0" />
+      <point x="534.25" y="580.0" />
+      <point x="364.66666666666663" y="580.0" />
+      <point x="34.66666666666663" y="26.0" />
+    </edge>
     <edge source="uk.ac.cam.jm2186.graffs.db.model.Robustness" target="uk.ac.cam.jm2186.graffs.db.Entity">
       <point x="0.0" y="-71.0" />
-      <point x="391.25" y="77.0" />
-      <point x="394.0" y="77.0" />
+      <point x="414.75" y="77.0" />
+      <point x="417.5" y="77.0" />
       <point x="0.0" y="26.0" />
     </edge>
     <edge source="uk.ac.cam.jm2186.graffs.db.model.Experiment" target="uk.ac.cam.jm2186.graffs.db.NamedEntity">
@@ -25,17 +76,23 @@
       <point x="197.25" y="269.0" />
       <point x="-30.0" y="27.0" />
     </edge>
-    <edge source="uk.ac.cam.jm2186.graffs.db.AbstractJpaPersistable" target="uk.ac.cam.jm2186.graffs.db.Entity">
-      <point x="0.0" y="-27.0" />
-      <point x="615.25" y="77.0" />
-      <point x="420.6666666666667" y="77.0" />
-      <point x="26.666666666666686" y="26.0" />
+    <edge source="uk.ac.cam.jm2186.graffs.db.model.PerturbedGraph_" target="uk.ac.cam.jm2186.graffs.db.AbstractJpaPersistable_">
+      <point x="0.0" y="-26.0" />
+      <point x="633.0" y="682.0" />
+      <point x="592.25" y="682.0" />
+      <point x="58.0" y="26.0" />
     </edge>
     <edge source="uk.ac.cam.jm2186.graffs.db.NamedEntity" target="uk.ac.cam.jm2186.graffs.db.Entity">
       <point x="0.0" y="-27.0" />
       <point x="227.25" y="77.0" />
-      <point x="367.3333333333333" y="77.0" />
+      <point x="390.8333333333333" y="77.0" />
       <point x="-26.666666666666686" y="26.0" />
+    </edge>
+    <edge source="uk.ac.cam.jm2186.graffs.db.model.PerturbedGraph" target="uk.ac.cam.jm2186.graffs.db.AbstractJpaPersistable">
+      <point x="0.0" y="-71.0" />
+      <point x="534.5" y="269.0" />
+      <point x="602.0" y="269.0" />
+      <point x="-52.0" y="27.0" />
     </edge>
     <edge source="uk.ac.cam.jm2186.graffs.db.model.GraphGenerator" target="uk.ac.cam.jm2186.graffs.db.NamedEntity">
       <point x="0.0" y="-60.0" />
@@ -44,16 +101,14 @@
       <point x="30.0" y="27.0" />
     </edge>
     <edge source="uk.ac.cam.jm2186.graffs.db.model.GraphCollection" target="uk.ac.cam.jm2186.graffs.db.AbstractJpaPersistable">
-      <point x="0.0" y="-38.0" />
-      <point x="722.5" y="269.0" />
-      <point x="667.25" y="269.0" />
+      <point x="0.0" y="-49.0" />
+      <point x="779.0" y="269.0" />
+      <point x="706.0" y="269.0" />
       <point x="52.0" y="27.0" />
     </edge>
   </edges>
-  <settings layout="Hierarchic Group" zoom="1.0" x="425.0" y="229.0" />
-  <SelectedNodes>
-    <node>uk.ac.cam.jm2186.graffs.db.model.Robustness</node>
-  </SelectedNodes>
+  <settings layout="Hierarchic Group" zoom="0.7578027465667915" x="406.0" y="468.2537067545305" />
+  <SelectedNodes />
   <Categories>
     <Category>Properties</Category>
   </Categories>
