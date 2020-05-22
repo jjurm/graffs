@@ -11,7 +11,7 @@ val query = session.criteriaBuilder.createQuery(String::class.java)
 
 // The following will compile (Experiment::name is of type String)
 query.select(query.from(Experiment::class.java).get(Experiment_.name))
-// The following won't compile because Experiment::generator is not of type String
+// The following will not compile because Experiment::generator is not of type String
 query.select(query.from(Experiment::class.java).get(Experiment_.generator))
 
 // The result is checked to be String

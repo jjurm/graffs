@@ -20,7 +20,7 @@ fun CoroutineScope.evaluateMetricsAsync(
     metrics: Collection<MetricInfo>,
     getGraph: () -> Graph,
     log: (metric: MetricInfo, result: MetricResult) -> Unit = { _, _ -> },
-    storeResults: suspend (graph: Graph, timings: Map<MetricId, Long>) -> Unit = { _, _ -> }
+    callback: suspend (graph: Graph, timings: Map<MetricId, Long>) -> Unit = { _, _ -> }
 ): Deferred<Unit> {
     val graphDeferred = async { getGraph() }
 
@@ -44,7 +44,7 @@ fun CoroutineScope.evaluateMetricsAsync(
         }
         // store any new results
         if (timings.isNotEmpty()) {
-            storeResults(graph, timings.toMap())
+            callback(graph, timings.toMap())
         }
     }
 }

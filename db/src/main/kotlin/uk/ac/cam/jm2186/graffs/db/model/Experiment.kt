@@ -8,15 +8,21 @@ import uk.ac.cam.jm2186.graffs.metric.MetricId
 import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasureId
 import javax.persistence.*
 
+/**
+ * An evaluation of a _set of metrics_ using a set of _robustness measures_, generating graphs from a set of _datasets_
+ * using a given _graph producer_.
+ */
 @Entity
 class Experiment(
     name: String,
 
     @ManyToOne(fetch = FetchType.EAGER)
     var generator: GraphGenerator,
+
     @ElementCollection
     @LazyCollection(LazyCollectionOption.FALSE)
     var metrics: List<MetricId> = listOf(),
+
     @ElementCollection
     @LazyCollection(LazyCollectionOption.FALSE)
     var robustnessMeasures: List<RobustnessMeasureId> = listOf(),
@@ -24,6 +30,7 @@ class Experiment(
     datasets: Collection<GraphDatasetId> = listOf()
 ) : NamedEntity(name) {
 
+    /* GraphCollections are created from the [datasets] constructor param */
     @OneToMany(mappedBy = "experiment", cascade = [CascadeType.ALL], orphanRemoval = true)
     @OrderColumn
     @LazyCollection(LazyCollectionOption.FALSE)

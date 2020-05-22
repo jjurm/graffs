@@ -21,10 +21,7 @@ import uk.ac.cam.jm2186.graffs.db.mustNotExist
 import uk.ac.cam.jm2186.graffs.graph.storage.GraphDataset
 import uk.ac.cam.jm2186.graffs.graph.storage.GraphDatasetId
 import uk.ac.cam.jm2186.graffs.metric.*
-import uk.ac.cam.jm2186.graffs.robustness.GraphCollectionMetadata
-import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasure
-import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasureId
-import uk.ac.cam.jm2186.graffs.robustness.RobustnessMeasures
+import uk.ac.cam.jm2186.graffs.robustness.*
 import uk.ac.cam.jm2186.graffs.util.TimePerf
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -290,7 +287,7 @@ class ExperimentSubcommand : NoOpCliktCommand(
                         val graphJob = evaluateMetricsAsync(metrics,
                             getGraph = { perturbedGraph.graph },
                             log = { metric, result -> log(metric, result, graphCollection.dataset, perturbedGraph) },
-                            storeResults = { graph, timings ->
+                            callback = { graph, timings ->
                                 perturbedGraph.graph = graph
                                 perturbedGraph.addTimings(timings)
                                 hibernateMutex.withLock {
@@ -334,12 +331,13 @@ class ExperimentSubcommand : NoOpCliktCommand(
                         val metadata = GraphCollectionMetadata(graphCollection, metric, this)
                         measures.map { (measureId, measure) ->
                             async(start = CoroutineStart.LAZY) {
-                                if (!existingRobustness.any { robustness ->
-                                        robustness.experiment == experiment
-                                                && robustness.dataset == graphCollection.dataset
-                                                && robustness.metric == metric.id
-                                                && robustness.robustnessMeasure == measureId
-                                    }) {
+                                val value = existingRobustness.firstOrNull { robustness ->
+                                    robustness.experiment == experiment
+                                            && robustness.dataset == graphCollection.dataset
+                                            && robustness.metric == metric.id
+                                            && robustness.robustnessMeasure == measureId
+                                }
+                                if (value == null) {
                                     val result = measure.evaluateAndLog(
                                         metric, graphCollection, metadata, graphCollection.dataset, measureId
                                     )
@@ -349,7 +347,8 @@ class ExperimentSubcommand : NoOpCliktCommand(
                                     hibernateMutex.withLock {
                                         hibernate.inTransaction { saveOrUpdate(robustness) }
                                     }
-                                }
+                                    robustness
+                                } else value
                             }
                         }
                     }
@@ -358,7 +357,20 @@ class ExperimentSubcommand : NoOpCliktCommand(
                 val n = experiment.datasets.size * experiment.metrics.size * experiment.robustnessMeasures.size
                 println("Computing (at most) $n robustness values (${experiment.datasets.size} datasets * ${experiment.metrics.size} metrics * ${experiment.robustnessMeasures.size} robustness measures)")
                 timer.phase("Robustness - compute")
-                jobs.awaitAll()
+                val values = jobs.awaitAll()
+
+                val perMetric = values.groupBy { it.metric }.mapValues { (_, values) ->
+                    val metricScore =
+                        values.groupBy { it.robustnessMeasure }
+                            .mapValues { (_, robustnessValues) ->
+                                robustnessValues.map { it.value }.average()
+                            }.overallRobustness()
+                    metricScore
+                }
+                println("Metrics, by overall robustness:")
+                perMetric.entries.sortedBy { -it.value }.forEach { (metric, score) ->
+                    println("- $metric: $score")
+                }
             }
         }
 
