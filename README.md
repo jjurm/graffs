@@ -1,6 +1,6 @@
 # graffs
 
-[![jjurm](https://circleci.com/gh/jjurm/graffs.svg?style=shield)](https://circleci.com/gh/jjurm/graffs) [![GitHub license](https://img.shields.io/github/license/jjurm/graffs)](https://github.com/jjurm/graffs/blob/master/LICENSE)
+[![jjurm](https://circleci.com/gh/jjurm/graffs.svg?style=shield)](https://circleci.com/gh/jjurm/graffs) [![GitHub license](https://img.shields.io/github/license/jjurm/graffs)](https://github.com/jjurm/graffs/blob/master/LICENSE) [![DOI](https://zenodo.org/badge/220221191.svg)](https://zenodo.org/badge/latestdoi/220221191)
 
 *Framework for empirical analysis of graph metric robustness.*
 
