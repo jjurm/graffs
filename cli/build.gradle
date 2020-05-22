@@ -7,6 +7,8 @@ plugins {
 
 dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter:5.5.2"
+
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.3"
 }
 
 mainClassName = "uk.ac.cam.jm2186.graffs.cli.GraffsKt"

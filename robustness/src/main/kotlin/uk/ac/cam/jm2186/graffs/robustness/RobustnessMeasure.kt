@@ -20,3 +20,10 @@ interface RobustnessMeasure {
 }
 
 typealias RobustnessMeasureFactory = () -> RobustnessMeasure
+
+fun Map<RobustnessMeasureId, Double>.overallRobustness() = map { (id, value) ->
+    when (id) {
+        "RankInstability" -> -value
+        else -> value
+    }
+}.sum()
