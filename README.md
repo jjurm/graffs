@@ -8,6 +8,12 @@ Using experimental evaluation of various graph metrics on input graphs, this too
 
 This project is done as part of the Part II Project of the Computer Science Tripos at the **University of Cambridge**.
 
+## Report
+
+Read the associated *dissertation* below, or see the [dissertation](https://github.com/jjurm/dissertation) repo for its source.
+
+<a href="https://github.com/jjurm/partii/blob/master/dissertation.pdf" target="_blank"><img src="https://github.com/jjurm/partii/raw/master/assets/diss-01.png" width="300" height="424" /></a>
+
 ## License
 
 *graffs* is available under the GPLv3 (or higher) license, see LICENSE for the full text of the license.
