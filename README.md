@@ -6,7 +6,7 @@
 
 Using experimental evaluation of various graph metrics on input graphs, this tool estimates *robustness* of graph metrics.
 
-This project is done as part of the Part II Project of the Computer Science Tripos at the **University of Cambridge**.
+This project is done as part of the Part II Project of the Computer Science Tripos at the **University of Cambridge**, supervised by [Dr Timothy Griffin](https://www.cl.cam.ac.uk/~tgg22/).
 
 ## Report
 
